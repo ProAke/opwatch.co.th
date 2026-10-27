@@ -44,7 +44,9 @@
     "register": "Sign Up",
     "logout": "Sign Out",
     "admin": "Manage",
-    "install": "Install"
+    "install": "Install",
+    "aboutUs": "About Us",
+    "contactUs": "Contact Us"
   },
   "home": {
     "heroEyebrow": "Swiss-grade timepieces",
@@ -67,7 +69,8 @@
     "ctaEyebrow": "Get started",
     "ctaTitle": "Find your perfect timepiece",
     "ctaBody": "New members receive 10% off and free shipping across Thailand.",
-    "ctaButton": "Become a Member"
+    "ctaButton": "Become a Member",
+    "craft": "We choose timepieces that reward a second look."
   },
   "products": {
     "title": "The Collection",
@@ -146,7 +149,8 @@
     "loginNow": "Sign In",
     "note": "Note (optional)",
     "items": "Items",
-    "backToShop": "Back to Shop"
+    "backToShop": "Back to Shop",
+    "paymentCod": "Cash on Delivery"
   },
   "account": {
     "title": "My Account",
@@ -322,7 +326,8 @@
     "securityNotice": "Note: this installer writes a single config file. Use it in a controlled environment.",
     "language": "Language",
     "defaultLocale": "Default Language",
-    "logoHint": "You can update your branding and images later from the admin panel"
+    "logoHint": "You can update your branding and images later from the admin panel",
+    "dbNameInvalid": "The database name may only contain letters, numbers and underscores"
   },
   "errors": {
     "notFound": "Page not found",

@@ -20,6 +20,11 @@ const reviews = computed(() => data.value?.reviews || [])
 const related = computed(() => data.value?.related || [])
 const category = computed(() => data.value?.category)
 
+// Unknown slug: render the friendly block but answer 404 to search engines.
+if (error.value || !product.value) {
+  setResponseStatus(404)
+}
+
 const activeImage = ref(0)
 const quantity = ref(1)
 const reviewForm = reactive({ customerName: '', rating: 5, comment: '' })
