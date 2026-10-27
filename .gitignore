@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Nuxt build output
+.nuxt/
+.output/
+dist/
+.nitro/
+.cache/
+
+# Local store data (JSON adapter)
+data/*.json
+
+# Local runtime configuration (created by the installer)
+config/site.config.json
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editor / OS
+.DS_Store
+.idea/
+.vscode/
+*.swp
