@@ -1,0 +1,30 @@
+{
+  "_comment": "Copy this file to config/site.config.json (or run the /install wizard) and adjust for your environment. config/site.config.json is gitignored.",
+  "installed": false,
+  "secret": "REPLACE_WITH_A_RANDOM_SECRET",
+  "site": {
+    "name": "Opwatch",
+    "tagline": "Time, beautifully kept",
+    "email": "hello@opwatch.co.th",
+    "phone": "+66 2 000 0000",
+    "currency": "THB",
+    "currencySymbol": "฿",
+    "defaultLocale": "th",
+    "announcement": "",
+    "shippingFee": 50,
+    "freeShippingThreshold": 5000
+  },
+  "admin": {
+    "email": "admin@opwatch.co.th",
+    "passwordHash": "REPLACE_WITH_BCRYPT_HASH"
+  },
+  "db": {
+    "driver": "mysql",
+    "host": "127.0.0.1",
+    "port": 3306,
+    "user": "opwatch",
+    "password": "",
+    "database": "opwatch"
+  },
+  "installedAt": ""
+}
