@@ -1,0 +1,46 @@
+# ai.uarea.in — app + MariaDB
+#   docker compose up -d --build
+#   docker compose exec app npm run db:migrate -- --seed   # ครั้งแรกเท่านั้น
+services:
+  db:
+    image: mariadb:11.4
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootpass}
+      MARIADB_DATABASE: ${DB_NAME:-ai_uarea}
+      MARIADB_USER: ${DB_USER:-ai_uarea}
+      MARIADB_PASSWORD: ${DB_PASSWORD:-ai_uarea_pass}
+    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci"]
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_PORT: "3306"
+      DB_NAME: ${DB_NAME:-ai_uarea}
+      DB_USER: ${DB_USER:-ai_uarea}
+      DB_PASSWORD: ${DB_PASSWORD:-ai_uarea_pass}
+      SESSION_SECRET: ${SESSION_SECRET:-change-me}
+      MNG_BASE_URL: ${MNG_BASE_URL:-https://mng.uarea.in}
+      MNG_API_KEY: ${MNG_API_KEY:-}
+      MCP_TOKEN: ${MCP_TOKEN:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+    ports:
+      - "3000:3000"
+
+volumes:
+  db_data:
