@@ -5,6 +5,7 @@ import { loadSnapshot } from "@/lib/store";
 import { fmtDateTime, fmtDuration, relTime } from "@/lib/metrics";
 import { Card, EmptyState, KV, Metric, Progress, SectionTitle, SeverityTag, StatusPill } from "@/components/ui";
 import QuickRun from "@/components/QuickRun";
+import ExportProjectButton from "@/components/ExportProjectButton";
 
 export const dynamic = "force-dynamic";
 
@@ -69,6 +70,12 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
           </div>
           <div className="flex flex-col items-end gap-2">
             <QuickRun flows={flows.map((f) => ({ id: f.id, name: f.name, projectId: f.projectId }))} label="รัน flow ของโปรเจกต์นี้" />
+            <div className="flex items-center gap-2">
+              <ExportProjectButton projectId={project.id} keyName={project.key} />
+              <Link href="/projects/new" className="btn btn-sm">
+                <Workflow size={12} /> สร้างโปรเจกต์ใหม่
+              </Link>
+            </div>
             <div className="flex items-center gap-2">
               <Link href="/flows/new" className="btn btn-sm">
                 <Workflow size={12} /> สร้าง flow

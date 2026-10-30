@@ -47,6 +47,7 @@ AI ออกแบบ Flow ──► AI เล่นเหมือนผู้�
 | --- | --- |
 | **ศูนย์ควบคุม** | KPI อัตราผ่าน 7 วัน, เทรนด์ 14 วัน, สุขภาพโปรเจกต์, ฟีดการทำงานของ AI, Issue ที่ต้องจับตา, run สด |
 | **หลายโปรเจกต์** | แต่ละโปรเจกต์มี env, repo, โฟลเดอร์ Drive, agent, flow, ตาราง และเอกสารของตัวเอง (`/projects/[id]`) |
+| **Onboarding wizard** | `/projects/new` — เพิ่ม/ย้ายโปรเจกต์ 4 ขั้น: ข้อมูล → ชุด agent (4 แม่แบบ) → flow แรกจาก SPEC → ตารางรัน · หรือย้ายด้วย bundle (`/api/projects/:id/export` → `/api/projects/import`) |
 | **Flow Builder + AI** | เขียน SPEC เป็นภาษาคน → AI แปลงเป็นขั้นตอน (LLM จริงถ้ามีคีย์ / heuristic ภายในถ้าไม่มี) แก้/เลื่อน/ลบขั้นได้ (`/flows/new`) |
 | **Run แบบเรียลไทม์** | Timeline ทีละขั้น + progress + หลักฐาน + AI วิเคราะห์, poll ทุก 1.5s (`/runs/[id]`) |
 | **ตรวจหลายชั้น** | UI (`click/expect`), API (`api.request`), DB (`db.query`), รายงาน (`report.check`), AI ตรวจทาน (`ai.review`) |
@@ -98,6 +99,20 @@ docker compose exec app npm run db:migrate -- --seed
 
 ---
 
+## 3.1 ย้ายไปโปรเจกต์ใหม่ (สรุปสั้น)
+
+| อยากทำอะไร | ทำแบบนี้ |
+| --- | --- |
+| เพิ่มโปรเจกต์ใหม่ | `/projects` → **เพิ่มโปรเจกต์** → `/projects/new` กรอก 4 ขั้น (ข้อมูล → agent crew → flow จาก SPEC → ตาราง) แล้วกดสร้างครั้งเดียวจบ |
+| ย้ายโปรเจกต์เดิม (มี flow/agent อยู่แล้ว) | `/projects/[id]` → **ส่งออก bundle** → `/projects/new` → แท็บ **ย้ายโปรเจกต์เดิมเข้ามา** → ตั้งชื่อ/รหัสใหม่ → นำเข้า (id ถูก remap ให้ทั้งหมด) |
+| ย้ายทั้งแพลตฟอร์ม (โดเมน/เซิร์ฟเวอร์) | `mysqldump` → `.env` ใหม่ → `npm run build && npm start` หรือ `docker compose up -d` → อัปเดต webhook ที่ mng.uarea.in → ยิง smoke test |
+
+รายละเอียดทั้งหมด (พร้อมคำสั่ง curl, checklist และตารางแก้ปัญหา) อยู่ที่
+**[`docs/MOVE-PROJECT.md`](docs/MOVE-PROJECT.md)**
+
+หลังสร้างโปรเจกต์ใหม่ 5 อย่างที่ควรทำต่อ: ต่อ GitHub/Drive → ตรวจนโยบาย → สลับโมเดลราย agent →
+รันมือ 1 รอบ → เปิดตารางอัตโนมัติที่ `/schedule`
+
 ## 4. Environment variables
 
 | ตัวแปร | ใช้ทำอะไร |
@@ -118,6 +133,10 @@ docker compose exec app npm run db:migrate -- --seed
 | Method | Path | คำอธิบาย |
 | --- | --- | --- |
 | `GET` | `/api/health` | สถานะระบบ + โหมดจัดเก็บ + จำนวนข้อมูล |
+| `GET/POST` | `/api/projects/onboard` | แม่แบบ agent / สร้างโปรเจกต์ + agent + flow + ตาราง ในครั้งเดียว |
+| `GET` | `/api/projects/:id/export` | ส่งออก bundle ของโปรเจกต์ (`?download=1` เพื่อดาวน์โหลด) |
+| `POST` | `/api/projects/import` | นำเข้า bundle เป็นโปรเจกต์ใหม่ (remap id ให้อัตโนมัติ) |
+| `GET/POST` | `/api/cron` | ตรวจตารางที่ถึงกำหนดแล้วยิงรัน (มี `[scheduler]` ticker 60 วิในตัว) |
 | `GET/POST` | `/api/runs` | list / สั่งรัน (`{flowId, projectId?, trigger?}`) |
 | `GET` | `/api/runs/:id` | advance + ดูสถานะ/ขั้นตอน (ใช้ poll) |
 | `GET/POST` | `/api/flows` | list / สร้าง–แก้ flow |

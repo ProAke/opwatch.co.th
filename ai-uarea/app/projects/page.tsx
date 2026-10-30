@@ -3,7 +3,8 @@ import { ArrowUpRight, Boxes, ExternalLink, FolderGit2, HardDrive, Layers, Shiel
 import { loadSnapshot } from "@/lib/store";
 import { dashboardStats, fmtDuration, relTime } from "@/lib/metrics";
 import { Card, Metric, Progress, SectionTitle, Sparkline, StatusPill } from "@/components/ui";
-import ProjectCreate from "@/components/ProjectCreate";
+import Link2 from "next/link";
+import { Plus } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -21,7 +22,9 @@ export default async function ProjectsPage() {
             ฝูง AI หนึ่งชุดรองรับได้หลายโปรเจกต์ — แยก environment, หลักฐาน, repository และโฟลเดอร์ Drive ของแต่ละงาน
           </p>
         </div>
-        <ProjectCreate />
+        <Link2 href="/projects/new" className="btn btn-primary btn-sm">
+          <Plus size={13} /> เพิ่มโปรเจกต์
+        </Link2>
       </div>
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
