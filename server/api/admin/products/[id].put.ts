@@ -9,9 +9,10 @@ export default defineEventHandler(async (event) => {
 
   const patch: Record<string, any> = {}
   for (const key of [
-    'name', 'nameEn', 'nameTh', 'sku', 'brand', 'categoryId', 'price', 'priceCompare', 'currency',
-    'images', 'shortDescription', 'description', 'descriptionEn', 'descriptionTh', 'specs', 'stock',
-    'status', 'featured', 'sortOrder'
+    'name', 'nameEn', 'nameTh', 'sku', 'brand', 'brandId', 'categoryId', 'price',
+    'originalPrice', 'priceCompare', 'currency', 'images', 'shortDescription',
+    'description', 'descriptionEn', 'descriptionTh', 'specs', 'stock',
+    'status', 'badges', 'featured', 'sortOrder'
   ]) {
     if (body?.[key] !== undefined) patch[key] = body[key]
   }
@@ -20,8 +21,17 @@ export default defineEventHandler(async (event) => {
   if (patch.specs && typeof patch.specs === 'string') {
     try { patch.specs = JSON.parse(patch.specs) } catch { /* ignore */ }
   }
+  if (patch.badges !== undefined) {
+    patch.badges = Array.isArray(patch.badges) ? patch.badges : [String(patch.badges)]
+  }
   if (patch.categoryId !== undefined) patch.categoryId = patch.categoryId ? Number(patch.categoryId) : null
+  if (patch.brandId !== undefined) patch.brandId = patch.brandId ? Number(patch.brandId) : null
   if (patch.featured !== undefined) patch.featured = !!patch.featured
+  if (patch.originalPrice !== undefined && patch.originalPrice !== '') {
+    patch.originalPrice = Number(patch.originalPrice)
+  } else if (patch.originalPrice === '') {
+    patch.originalPrice = null
+  }
 
   if (patch.slug !== undefined) {
     patch.slug = ensureUniqueSlug(slugify(patch.slug), await store.all('products'), id)
