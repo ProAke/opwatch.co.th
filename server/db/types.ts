@@ -1,4 +1,12 @@
-export type Entity = 'categories' | 'products' | 'customers' | 'orders' | 'order_items' | 'reviews'
+export type Entity =
+  | 'brands'
+  | 'categories'
+  | 'products'
+  | 'customers'
+  | 'orders'
+  | 'order_items'
+  | 'reviews'
+  | 'campaigns'
 
 export type OrderStatus =
   | 'pending'
@@ -35,15 +43,17 @@ export interface Store {
 
 /** Column whitelist per entity — also serves as the SQL injection guard. */
 export const COLUMNS: Record<Entity, string[]> = {
-  categories: ['id', 'slug', 'name', 'name_en', 'name_th', 'description', 'description_en', 'description_th', 'image', 'sort_order', 'created_at'],
-  products: ['id', 'sku', 'name', 'name_en', 'name_th', 'slug', 'category_id', 'brand', 'price', 'price_compare', 'currency', 'images', 'short_description', 'description', 'description_en', 'description_th', 'specs', 'stock', 'status', 'featured', 'sort_order', 'created_at', 'updated_at'],
+  brands: ['id', 'slug', 'name', 'name_en', 'name_th', 'country', 'country_en', 'movement', 'movement_en', 'positioning', 'tagline', 'tagline_en', 'story', 'story_en', 'accent_color', 'logo', 'hero_image', 'sort_order', 'active', 'created_at'],
+  categories: ['id', 'slug', 'name', 'name_en', 'name_th', 'parent_id', 'description', 'description_en', 'description_th', 'image', 'icon', 'banner_image', 'sort_order', 'created_at'],
+  products: ['id', 'sku', 'name', 'name_en', 'name_th', 'slug', 'brand_id', 'brand', 'category_id', 'price', 'original_price', 'price_compare', 'currency', 'images', 'short_description', 'description', 'description_en', 'description_th', 'specs', 'stock', 'status', 'badges', 'featured', 'sort_order', 'created_at', 'updated_at'],
   customers: ['id', 'name', 'email', 'password_hash', 'phone', 'address', 'city', 'postal_code', 'country', 'is_admin', 'points', 'total_spent', 'created_at'],
   orders: ['id', 'order_no', 'customer_id', 'customer_name', 'customer_email', 'phone', 'address', 'city', 'postal_code', 'country', 'subtotal', 'shipping_fee', 'discount', 'total', 'currency', 'status', 'payment_method', 'note', 'created_at', 'updated_at'],
   order_items: ['id', 'order_id', 'product_id', 'sku', 'name', 'image', 'price', 'quantity'],
-  reviews: ['id', 'product_id', 'customer_name', 'rating', 'comment', 'status', 'created_at']
+  reviews: ['id', 'product_id', 'customer_name', 'rating', 'comment', 'status', 'created_at'],
+  campaigns: ['id', 'slug', 'title', 'title_en', 'title_th', 'subtitle', 'subtitle_en', 'subtitle_th', 'banner', 'link', 'brand_id', 'type', 'sort_order', 'active', 'created_at']
 }
 
-export const ENTITIES: Entity[] = ['categories', 'products', 'customers', 'orders', 'order_items', 'reviews']
+export const ENTITIES: Entity[] = ['brands', 'categories', 'products', 'customers', 'orders', 'order_items', 'reviews', 'campaigns']
 
 export const toSnake = (key: string): string =>
   key.replace(/([a-z0-9])([A-Z])/g, '$1_$2').replace(/([A-Z]+)([A-Z][a-z])/g, '$1_$2').toLowerCase()
@@ -66,13 +76,17 @@ export function shape<T extends Record<string, any> | null>(row: T): T {
   const r: any = { ...row }
   if (r.featured !== undefined) r.featured = Number(r.featured) === 1
   if (r.isAdmin !== undefined) r.isAdmin = Number(r.isAdmin) === 1
+  if (r.active !== undefined) r.active = Number(r.active) === 1
   if (r.images && typeof r.images === 'string') {
     try { r.images = JSON.parse(r.images) } catch { r.images = [r.images] }
   }
   if (r.specs && typeof r.specs === 'string') {
     try { r.specs = JSON.parse(r.specs) } catch { r.specs = {} }
   }
-  const numericFields = ['price', 'priceCompare', 'stock', 'sortOrder', 'shippingFee', 'discount', 'subtotal', 'total', 'totalSpent', 'points', 'rating', 'quantity', 'shipping_fee', 'freeShippingThreshold']
+  if (r.badges && typeof r.badges === 'string') {
+    try { r.badges = JSON.parse(r.badges) } catch { r.badges = [] }
+  }
+  const numericFields = ['price', 'priceCompare', 'originalPrice', 'stock', 'sortOrder', 'shippingFee', 'discount', 'subtotal', 'total', 'totalSpent', 'points', 'rating', 'quantity', 'brandId', 'categoryId', 'parentId', 'shipping_fee', 'freeShippingThreshold']
   for (const f of numericFields) {
     if (r[f] !== undefined && r[f] !== null && r[f] !== '') r[f] = Number(r[f])
   }
