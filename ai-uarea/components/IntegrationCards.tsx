@@ -109,9 +109,16 @@ export default function IntegrationCards({ integrations }: { integrations: Integ
 
               <div className="mt-2 flex items-center justify-between border-t border-line-soft pt-2">
                 <span className="text-[9.5px] text-txt-mute">ซิงก์ล่าสุด {relTime(int.lastSyncAt)}</span>
-                <button onClick={() => test(int.id)} disabled={busy !== null} className="btn btn-sm">
-                  {busy === int.id ? <Loader2 size={11} className="animate-spin" /> : <RefreshCw size={11} />} ทดสอบ
-                </button>
+                <div className="flex items-center gap-1.5">
+                  {int.kind === "github" && (
+                    <a href="#github-repos" className="btn btn-sm">
+                      <FolderGit2 size={11} /> เปลี่ยน repo
+                    </a>
+                  )}
+                  <button onClick={() => test(int.id)} disabled={busy !== null} className="btn btn-sm">
+                    {busy === int.id ? <Loader2 size={11} className="animate-spin" /> : <RefreshCw size={11} />} ทดสอบ
+                  </button>
+                </div>
               </div>
               {notes[int.id] && (
                 <div className="mt-2 rounded-lg border border-[rgba(34,211,238,0.25)] bg-[rgba(34,211,238,0.06)] px-2 py-1 text-[10px] text-cyan-glow">

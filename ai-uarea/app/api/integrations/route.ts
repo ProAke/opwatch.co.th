@@ -26,13 +26,28 @@ export async function POST(req: Request) {
       status = "connected";
     }
   } else if (integration.kind === "github") {
+    const owner = integration.config?.owner;
+    const repo = integration.config?.repo;
+    const headers: Record<string, string> = {
+      "user-agent": "ai-uarea-uat-orchestrator",
+      accept: "application/vnd.github+json",
+    };
+    if (process.env.GITHUB_TOKEN) headers.authorization = `Bearer ${process.env.GITHUB_TOKEN}`;
+    const target = owner && repo ? `https://api.github.com/repos/${owner}/${repo}` : "https://api.github.com/rate_limit";
     try {
-      const res = await fetch("https://api.github.com/rate_limit", {
-        headers: process.env.GITHUB_TOKEN ? { authorization: `Bearer ${process.env.GITHUB_TOKEN}` } : {},
-        signal: AbortSignal.timeout(6000),
-      });
-      note = `GitHub API ตอบ HTTP ${res.status}${process.env.GITHUB_TOKEN ? "" : " (ไม่ได้ตั้ง token — อ่านสาธารณะ)"}`;
-      status = res.ok ? "connected" : "error";
+      const res = await fetch(target, { headers, signal: AbortSignal.timeout(6000) });
+      if (res.ok) {
+        const data = (await res.json()) as { full_name?: string; default_branch?: string; open_issues_count?: number; private?: boolean };
+        note = data.full_name
+          ? `repo ${data.full_name} เข้าถึงได้ · branch ${data.default_branch} · issue เปิด ${data.open_issues_count ?? 0}${
+              data.private ? " · private" : ""
+            }`
+          : `GitHub API ตอบ HTTP ${res.status}`;
+        status = "connected";
+      } else {
+        note = `เข้าถึง repo ไม่ได้ (HTTP ${res.status}) — ตรวจสิทธิ์ของ GITHUB_TOKEN`;
+        status = "error";
+      }
     } catch {
       note = "ตรวจ GitHub ไม่สำเร็จในสภาพแวดล้อมนี้";
     }

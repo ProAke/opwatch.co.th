@@ -79,6 +79,23 @@ export default function ProjectWizard({
     color: "#22d3ee",
   });
 
+  // ── github repos (quick pick)
+  const [ghRepos, setGhRepos] = useState<{ fullName: string; private: boolean }[]>([]);
+  const [loadingRepos, setLoadingRepos] = useState(false);
+
+  async function loadRepos() {
+    setLoadingRepos(true);
+    try {
+      const res = await fetch("/api/github/repos", { cache: "no-store" });
+      const json = await res.json();
+      setGhRepos(json?.repos ?? []);
+    } catch {
+      setGhRepos([]);
+    } finally {
+      setLoadingRepos(false);
+    }
+  }
+
   // ── agents
   const [template, setTemplate] = useState("full");
   const [modelId, setModelId] = useState(models.find((m) => m.status === "active")?.id ?? models[0]?.id ?? "");
@@ -459,6 +476,27 @@ export default function ProjectWizard({
             </Field>
             <Field label="GitHub repo">
               <input className="input font-mono" value={p.repoUrl} onChange={(e) => set("repoUrl", e.target.value)} placeholder="https://github.com/org/repo" />
+              <div className="mt-1">
+                <button type="button" onClick={loadRepos} disabled={loadingRepos} className="text-[10px] font-semibold text-cyan-glow hover:underline">
+                  {loadingRepos ? "กำลังดึงรายการ…" : "เลือกจาก GitHub repo ที่มีสิทธิ์"}
+                </button>
+                {ghRepos.length > 0 && (
+                  <div className="mt-1 flex max-h-[92px] flex-wrap gap-1 overflow-y-auto">
+                    {ghRepos.slice(0, 12).map((r) => (
+                      <button
+                        key={r.fullName}
+                        type="button"
+                        onClick={() => set("repoUrl", `https://github.com/${r.fullName}`)}
+                        className={`chip py-0 font-mono text-[8.5px] ${
+                          p.repoUrl.includes(r.fullName) ? "border-[rgba(34,211,238,0.45)] text-cyan-glow" : ""
+                        }`}
+                      >
+                        {r.fullName}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </Field>
             <Field label="โฟลเดอร์ Google Drive">
               <input

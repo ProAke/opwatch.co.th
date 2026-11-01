@@ -20,7 +20,8 @@
 ```
 
 1. **ข้อมูลโปรเจกต์** — ชื่อ, key (ขึ้นต้นเลข Ticket เช่น `SMLHR-101`), environment, URL ระบบจริง,
-   repo GitHub, โฟลเดอร์ Drive, เจ้าของ, จำนวนเมนู, สีประจำโปรเจกต์
+   repo GitHub (กด *“เลือกจาก GitHub repo ที่มีสิทธิ์”* เพื่อเลือกจากรายการจริงได้ ไม่ต้องพิมพ์เอง),
+   โฟลเดอร์ Drive, เจ้าของ, จำนวนเมนู, สีประจำโปรเจกต์
 2. **ชุด AI Agent** — เลือกแม่แบบ
    | แม่แบบ | ได้อะไร | เหมาะกับ |
    | --- | --- | --- |
@@ -112,8 +113,8 @@ curl -X POST https://ai.uarea.in/api/projects/import \
 
 | ต้องแก้ | ที่ไหน | หมายเหตุ |
 | --- | --- | --- |
-| `baseUrl` | `/projects/[id]` (หรือ `PATCH /api/projects`) | ให้ชี้โดเมนของระบบใหม่ |
-| repo / Drive | หน้าเดียวกัน | แยก Issue/หลักฐานของโปรเจกต์ใหม่ |
+| `baseUrl` | `/projects/[id]` (หรือ `PATCH /api/projects/:id`) | ให้ชี้โดเมนของระบบใหม่ |
+| repo / Drive | `/integrations` → *เลือก GitHub repository* หรือตาราง “repo ของแต่ละโปรเจกต์” | เลือก repo อื่นได้ทันที (ไม่ต้องแก้ `.env`) — ใช้ `POST /api/github/connect` |
 | env | `staging` / `demo` | อย่าให้ชี้ `production` ระหว่างทดสอบรอบแรก |
 | selector ในขั้นตอน | `/flows/[id]/edit` | ถ้า UI เปลี่ยน ต้องแก้ `target` |
 | ตารางรัน | `/schedule` | เปิดหลังยืนยันว่า flow ผ่าน |
@@ -206,5 +207,5 @@ docker compose logs -f app                      # ดู [scheduler] ticker
 | --- | --- |
 | โปรเจกต์, agent + system prompt, flow + steps, ตาราง, เอกสาร, issue | กุญแจ API ทั้งหมด (อ่านจาก environment) |
 | ประวัติ run/หลักฐาน | ไฟล์หลักฐานจริงใน Drive |
-| | สิทธิ์ GitHub / webhook endpoint |
+| | สิทธิ์ GitHub / webhook endpoint (เลือก repo ใหม่ได้ที่ `/integrations` ด้วย `GITHUB_TOKEN` ตัวใหม่) |
 | | โดเมน, TLS, reverse proxy |

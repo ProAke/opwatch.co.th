@@ -593,6 +593,11 @@ export async function createIssue(input: {
   const project = s.projects.find((p) => p.id === input.projectId);
   if (!project) throw new Error("project not found");
   const key = nextIssueKey(s, project);
+  const repoSlug = project.repoUrl
+    ? project.repoUrl.replace(/^https?:\/\/github\.com\//i, "").replace(/\.git$/i, "").replace(/\/$/, "")
+    : process.env.GITHUB_OWNER
+      ? `${process.env.GITHUB_OWNER}`
+      : null;
   const issue: Issue = {
     id: uid("iss"),
     key,
@@ -606,7 +611,8 @@ export async function createIssue(input: {
     source: input.source ?? "manual",
     assignee: input.assignee ?? "ยังไม่มอบหมาย",
     agentId: input.agentId ?? null,
-    githubUrl: process.env.GITHUB_TOKEN ? `https://github.com/${process.env.GITHUB_OWNER ?? "jaturapornchai"}/issues` : null,
+    // ผูกกับ repo ของโปรเจกต์ (เลือกได้ที่หน้า Integrations) ไม่ใช่ค่า global
+    githubUrl: repoSlug ? `https://github.com/${repoSlug}/issues` : null,
     fixBranch: null,
     fixPrUrl: null,
     recheckRunId: null,

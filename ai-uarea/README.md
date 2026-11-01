@@ -57,6 +57,7 @@ AI ออกแบบ Flow ──► AI เล่นเหมือนผู้�
 | **ตาราง & ปฏิทิน** | cadence (hourly/daily/weekdays/weekly/monthly), โซนเวลา Asia/Bangkok, ปฏิทินรายเดือน, หยุด/เปิด/ลบ, รันเดี๋ยวนี้ |
 | **คู่มือ & วิดีโอ** | สร้างคู่มือผู้ใช้ / reference / API / MCP / สคริปต์วิดีโอภาพรวม–ละเอียด / release note จาก flow + หลักฐานจริง |
 | **Integrations** | GitHub (Issue/PR), Google Drive (หลักฐาน), mng.uarea.in (รายงาน + webhook), Slack, MCP — พร้อมปุ่มทดสอบการเชื่อมต่อจริง |
+| **เลือก GitHub repo ได้** | หน้า Integrations มี repo picker: ดึงรายการ repo จาก GitHub จริง (ถ้าตั้ง `GITHUB_TOKEN`) หรือรายการตัวอย่าง, เลือก branch, ตั้งเป็นค่าเริ่มต้นของ integration และผูกแยกรายโปรเจกต์ได้ |
 | **MCP Gateway** | JSON-RPC 2.0 (initialize / tools/list / tools/call) + REST ย่อ — 6 tools สำหรับ Claude Code / Antigravity |
 | **Policies** | นโยบาย Zero Touch, เกณฑ์ผ่าน, auto-issue, auto-fix, DB read-only, masking, SLA 90 วินาที |
 | **2 โหมดข้อมูล** | MariaDB เมื่อตั้ง `DB_*` · โหมดสาธิต in-memory เมื่อไม่ตั้ง (เดโมได้ทันที) |
@@ -113,6 +114,41 @@ docker compose exec app npm run db:migrate -- --seed
 หลังสร้างโปรเจกต์ใหม่ 5 อย่างที่ควรทำต่อ: ต่อ GitHub/Drive → ตรวจนโยบาย → สลับโมเดลราย agent →
 รันมือ 1 รอบ → เปิดตารางอัตโนมัติที่ `/schedule`
 
+## 3.2 เชื่อมต่อ / เปลี่ยน GitHub repo
+
+ไปที่ **`/integrations`** → การ์ด GitHub กด **“เปลี่ยน repo”** (หรือเลื่อนลงไปที่หัวข้อ *เลือก GitHub repository ที่จะเชื่อมต่อ*)
+
+| ทำอะไร | วิธี |
+| --- | --- |
+| ดู repo ที่มีสิทธิ์ | ระบบเรียก `GET /api/github/repos` → มี `GITHUB_TOKEN` จะได้ repo จริงสูงสุด 100 รายการ (เรียงตามที่อัปเดตล่าสุด) + repo ของ `GITHUB_OWNER` ถ้าตั้งไว้ · ไม่มี token = รายการตัวอย่าง |
+| เปลี่ยน repo หลัก | เลือก repo → เลือก **Branch เริ่มต้น** (ดึงจาก GitHub จริง) → *นำไปใช้กับ: ค่าเริ่มต้นของ integration* → **เชื่อมต่อ repo นี้** |
+| ผูกเฉพาะโปรเจกต์ | เลือก repo → *นำไปใช้กับ: ผูกเฉพาะโปรเจกต์…* → **ผูกกับโปรเจกต์นี้** (หรือใช้ dropdown ในตาราง “repo ของแต่ละโปรเจกต์”) |
+| ยกเลิกการผูก | เลือก “— ไม่ผูก —” ในตารางรายโปรเจกต์ หรือกดปุ่มถังขยะเพื่อยกเลิกทั้ง integration |
+
+ผลที่ตามมา:
+
+- `projects.repoUrl` ของโปรเจกต์นั้นเปลี่ยน → หน้าโปรเจกต์/flow แสดง repo ใหม่
+- Issue ที่ระบบสร้าง (`IssueMate`) จะได้ `githubUrl` ชี้ repo ของ **โปรเจกต์นั้น** ไม่ใช่ค่า global
+- Auto Fixer จะสร้าง branch `fix/<issue-key>` และเปิด PR ใน repo ที่ผูกไว้
+
+ผ่าน API:
+
+```bash
+# ผูก repo ให้โปรเจกต์เดียว (ไม่กระทบค่าเริ่มต้น)
+curl -X POST https://ai.uarea.in/api/github/connect \
+  -H 'content-type: application/json' \
+  -d '{"repo":"ProAke/mng-erp","projectId":"prj_opwatch","projectOnly":true}'
+
+# ตั้ง repo หลักของ integration พร้อม branch
+curl -X POST https://ai.uarea.in/api/github/connect \
+  -H 'content-type: application/json' \
+  -d '{"repo":"ProAke/csf.co.th","branch":"main"}'
+```
+
+> **ในเครื่องที่ผ่าน proxy/self-signed CA** (เช่น sandbox, corporate proxy) ให้รัน
+> `NODE_EXTRA_CA_CERTS=/etc/ssl/certs/ca-certificates.crt npm run dev`
+> ไม่งั้น Node จะเรียก `api.github.com` ไม่ได้ (ระบบจะ fallback ไปรายการตัวอย่างพร้อมข้อความบอก)
+
 ## 4. Environment variables
 
 | ตัวแปร | ใช้ทำอะไร |
@@ -120,7 +156,7 @@ docker compose exec app npm run db:migrate -- --seed
 | `DB_HOST` / `DB_PORT` / `DB_NAME` / `DB_USER` / `DB_PASSWORD` | เปิดโหมด MariaDB (ว่าง = โหมดสาธิต) |
 | `MCP_TOKEN` | บังคับ Bearer token ที่ `/api/mcp` |
 | `MNG_BASE_URL` / `MNG_API_KEY` | ส่งรายงานเข้า mng.uarea.in (`POST /api/uat/report`) |
-| `GITHUB_TOKEN` / `GITHUB_OWNER` | เปิด Issue/PR จริงจาก Auto Fixer |
+| `GITHUB_TOKEN` / `GITHUB_OWNER` | `GITHUB_TOKEN` = ใช้ดึงรายการ repo จริง + เปิด Issue/PR; `GITHUB_OWNER` (ไม่บังคับ) = ดึง repo ขององค์กรเพิ่ม |
 | `GOOGLE_DRIVE_FOLDER_ID` | ปลายทางหลักฐาน/คู่มือ |
 | `ANTHROPIC_API_KEY` / `GEMINI_API_KEY` / `OPENAI_API_KEY` / `ZHIPU_API_KEY` / `OLLAMA_API_KEY` | เปิดใช้ LLM จริง (มีตัวไหนใช้ตัวนั้น) |
 
@@ -147,7 +183,11 @@ docker compose exec app npm run db:migrate -- --seed
 | `PATCH` | `/api/policies` | เปลี่ยนนโยบาย |
 | `PATCH` | `/api/agents` · `/api/models` | สลับโมเดล / หยุด agent |
 | `POST` | `/api/docs` | ให้ AI ผลิตคู่มือ/สคริปต์วิดีโอ |
-| `POST` | `/api/integrations` | ทดสอบการเชื่อมต่อ (mng/GitHub ยิงจริง) |
+| `POST` | `/api/integrations` | ทดสอบการเชื่อมต่อ (mng/GitHub ยิงจริง — ตรวจ repo ที่ผูกอยู่) |
+| `GET` | `/api/github/repos` | รายการ repo ที่เลือกเชื่อมต่อได้ (+ repo ที่ผูกกับแต่ละโปรเจกต์) |
+| `GET` | `/api/github/branches?repo=` | รายการ branch ของ repo |
+| `POST` | `/api/github/connect` | เปลี่ยน repo (ระดับ integration หรือผูกกับ `projectId`) / ยกเลิกการผูก |
+| `PATCH` | `/api/projects/:id` | อัปเดต repoUrl / baseUrl / env / owner ของโปรเจกต์ |
 | `POST` | `/api/sync` | ดันสรุปทั้ง workspace เข้า mng.uarea.in |
 | `GET/POST` | `/api/mcp` | MCP gateway (JSON-RPC 2.0) |
 
