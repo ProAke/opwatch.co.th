@@ -120,7 +120,8 @@ docker compose exec app npm run db:migrate -- --seed
 
 | ทำอะไร | วิธี |
 | --- | --- |
-| ดู repo ที่มีสิทธิ์ | ระบบเรียก `GET /api/github/repos` → มี `GITHUB_TOKEN` จะได้ repo จริงสูงสุด 100 รายการ (เรียงตามที่อัปเดตล่าสุด) + repo ของ `GITHUB_OWNER` ถ้าตั้งไว้ · ไม่มี token = รายการตัวอย่าง |
+| ดู repo ที่มีสิทธิ์ | ระบบเรียก `GET /api/github/repos` → มี `GITHUB_TOKEN` จะได้ repo จริงสูงสุด 100 รายการ (เรียงตามที่อัปเดตล่าสุด) + repo ของ `GITHUB_OWNER` ถ้าตั้งไว้ + repo ที่ปักหมุดไว้ · ไม่มี token = รายการตัวอย่าง |
+| repo ที่ไม่แสดงในรายการ (private / อยู่นอก 100 รายการ) | พิมพ์ `owner/name` หรือวาง URL เต็มในช่อง *“วาง URL / owner/name”* แล้วกด **ใช้ repo นี้** (ตัด `https://github.com/` และ `.git` ให้เอง) |
 | เปลี่ยน repo หลัก | เลือก repo → เลือก **Branch เริ่มต้น** (ดึงจาก GitHub จริง) → *นำไปใช้กับ: ค่าเริ่มต้นของ integration* → **เชื่อมต่อ repo นี้** |
 | ผูกเฉพาะโปรเจกต์ | เลือก repo → *นำไปใช้กับ: ผูกเฉพาะโปรเจกต์…* → **ผูกกับโปรเจกต์นี้** (หรือใช้ dropdown ในตาราง “repo ของแต่ละโปรเจกต์”) |
 | ยกเลิกการผูก | เลือก “— ไม่ผูก —” ในตารางรายโปรเจกต์ หรือกดปุ่มถังขยะเพื่อยกเลิกทั้ง integration |
@@ -145,6 +146,10 @@ curl -X POST https://ai.uarea.in/api/github/connect \
   -d '{"repo":"ProAke/csf.co.th","branch":"main"}'
 ```
 
+> ค่าเริ่มต้นในชุดข้อมูลคือ **`ProAke/aixaccountuat`** (branch `main`) — ขั้นตอนเปลี่ยน repo แบบละเอียด
+> (รวมสิทธิ์ของ `GITHUB_TOKEN`, อาการ 403/404 และ checklist หลังเปลี่ยน) อยู่ที่
+> **[`docs/CHANGE-GITHUB-REPO.md`](docs/CHANGE-GITHUB-REPO.md)**
+>
 > **ในเครื่องที่ผ่าน proxy/self-signed CA** (เช่น sandbox, corporate proxy) ให้รัน
 > `NODE_EXTRA_CA_CERTS=/etc/ssl/certs/ca-certificates.crt npm run dev`
 > ไม่งั้น Node จะเรียก `api.github.com` ไม่ได้ (ระบบจะ fallback ไปรายการตัวอย่างพร้อมข้อความบอก)

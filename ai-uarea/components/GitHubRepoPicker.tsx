@@ -61,6 +61,7 @@ export default function GitHubRepoPicker({
   const [branches, setBranches] = useState<string[]>([]);
   const [branchNote, setBranchNote] = useState<string | null>(null);
   const [notice, setNotice] = useState<{ kind: "ok" | "err"; msg: string } | null>(null);
+  const [manual, setManual] = useState("");
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -90,6 +91,40 @@ export default function GitHubRepoPicker({
         (r.language ?? "").toLowerCase().includes(term),
     );
   }, [data, q]);
+
+  function normalizeSlug(value: string): string {
+    return value
+      .trim()
+      .replace(/^https?:\/\/(www\.)?github\.com\//i, "")
+      .replace(/^git@github\.com:/i, "")
+      .replace(/\.git$/i, "")
+      .replace(/\/+$/, "");
+  }
+
+  function pickManual() {
+    const slug = normalizeSlug(manual);
+    if (!/^[\w.-]+\/[\w.-]+$/.test(slug)) {
+      setNotice({ kind: "err", msg: "ต้องอยู่ในรูปแบบ owner/name หรือ URL ของ GitHub" });
+      return;
+    }
+    const known = data?.repos.find((r) => r.fullName.toLowerCase() === slug.toLowerCase());
+    const repo: Repo =
+      known ?? {
+        fullName: slug,
+        owner: slug.split("/")[0],
+        name: slug.split("/")[1],
+        description: "repo ที่พิมพ์เอง (อาจเป็น private หรืออยู่นอกบัญชีที่ token เห็น)",
+        private: true,
+        defaultBranch: "main",
+        language: null,
+        stars: 0,
+        openIssues: 0,
+        updatedAt: null,
+        url: `https://github.com/${slug}`,
+        source: "catalog",
+      };
+    void pickRepo(repo);
+  }
 
   async function pickRepo(repo: Repo) {
     setSelected(repo);
@@ -134,9 +169,11 @@ export default function GitHubRepoPicker({
       }
       setNotice({
         kind: "ok",
-        msg: isDefault
-          ? `เชื่อมต่อ GitHub กับ ${selected.fullName} (branch ${json?.repo?.branch ?? branch}) แล้ว`
-          : `ผูก ${selected.fullName} ให้โปรเจกต์ ${projects.find((p) => p.id === target)?.name ?? ""} แล้ว`,
+        msg: `${
+          isDefault
+            ? `เชื่อมต่อ GitHub กับ ${selected.fullName} (branch ${json?.repo?.branch ?? branch}) แล้ว`
+            : `ผูก ${selected.fullName} ให้โปรเจกต์ ${projects.find((p) => p.id === target)?.name ?? ""} แล้ว`
+        }${json?.warning ? ` — หมายเหตุ: ${json.warning}` : ""}`,
       });
       await load();
       router.refresh();
@@ -242,6 +279,20 @@ export default function GitHubRepoPicker({
                 className="w-full bg-transparent text-[11.5px] outline-none placeholder:text-[#4a5a78]"
               />
               <span className="shrink-0 font-mono text-[9.5px] text-txt-mute">{repos.length} repo</span>
+            </div>
+
+            <div className="mt-1.5 flex items-center gap-1.5 rounded-lg border border-dashed border-[#26344f] bg-[#0a1220]/60 px-2 py-1.5">
+              <Link2 size={11} className="shrink-0 text-txt-mute" />
+              <input
+                value={manual}
+                onChange={(e) => setManual(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && pickManual()}
+                placeholder="วาง URL / owner/name ของ repo ที่ไม่แสดงในรายการ (เช่น ProAke/aixaccountuat)"
+                className="w-full bg-transparent font-mono text-[10.5px] outline-none placeholder:text-[#4a5a78]"
+              />
+              <button onClick={pickManual} disabled={!manual.trim()} className="btn btn-sm shrink-0 py-0.5 text-[10px]">
+                ใช้ repo นี้
+              </button>
             </div>
 
             <div className="mt-2 max-h-[330px] space-y-1.5 overflow-y-auto pr-0.5">

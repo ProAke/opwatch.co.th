@@ -88,9 +88,13 @@ export async function POST(req: Request) {
 
     // ── อัปเดต integration เป็นค่าเริ่มต้น (เว้นแต่ projectOnly) ─────────────
     let integrationUpdate = integration;
+    let warning: string | null = null;
     if (!projectOnly) {
       const branchList = await listBranches(clean);
       const finalBranch = branch?.trim() || branchList.defaultBranch || "main";
+      if (branchList.source !== "live") {
+        warning = `ผูก repo แล้ว แต่ยังยืนยันกับ GitHub ไม่ได้ (${branchList.note}) — ตรวจสิทธิ์ของ GITHUB_TOKEN ให้มี Issues: write, Pull requests: write, Contents: read ใน repo นี้`;
+      }
       integrationUpdate = (await updateIntegration(integration.id, {
         status: "connected",
         account: clean,
@@ -114,6 +118,7 @@ export async function POST(req: Request) {
       integration: integrationUpdate,
       project: projectUpdate,
       repo: { fullName: clean, url: repoUrl(clean), branch: integrationUpdate.config.branch ?? branch ?? null },
+      warning,
     });
   } catch (err) {
     return NextResponse.json({ error: (err as Error).message }, { status: 500 });

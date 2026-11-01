@@ -32,6 +32,20 @@ export interface RepoListResult {
 /** Repos ที่มีอยู่ในชุดข้อมูลสาธิต + ตัวเลือกที่สมจริงสำหรับงาน ERP/UAT */
 export const CATALOG_REPOS: GithubRepo[] = [
   {
+    fullName: "ProAke/aixaccountuat",
+    owner: "ProAke",
+    name: "aixaccountuat",
+    description: "UAT suite ของ AI Account (Playwright + MCP runner) — repo หลักที่ใช้อยู่",
+    private: true,
+    defaultBranch: "main",
+    language: "TypeScript",
+    stars: 0,
+    openIssues: 0,
+    updatedAt: null,
+    url: "https://github.com/ProAke/aixaccountuat",
+    source: "catalog",
+  },
+  {
     fullName: "jaturapornchai/smlaiaccountuat01",
     owner: "jaturapornchai",
     name: "smlaiaccountuat01",
@@ -257,6 +271,12 @@ export async function listRepos(query?: string): Promise<RepoListResult> {
       repos: CATALOG_REPOS.filter(match),
       note: `ดึงรายการจาก GitHub ไม่สำเร็จ (${errors.join(" · ") || "ไม่ทราบสาเหตุ"}) — แสดงรายการตัวอย่างแทน`,
     };
+  }
+
+  // repo ที่ระบบรู้จัก (catalog/ผูกอยู่) ต้องเลือกได้เสมอ แม้อยู่นอกหน้าต่าง 100 รายการแรก
+  // หรือเป็น private repo ที่ token นี้มองไม่เห็น
+  for (const pinned of CATALOG_REPOS) {
+    if (!collected.has(pinned.fullName)) collected.set(pinned.fullName, pinned);
   }
 
   // ให้ repo ที่ผูกอยู่ในระบบขึ้นก่อน แล้วเรียงตามการอัปเดต

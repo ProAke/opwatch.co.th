@@ -44,8 +44,14 @@ export async function POST(req: Request) {
             }`
           : `GitHub API ตอบ HTTP ${res.status}`;
         status = "connected";
+      } else if (res.status === 404) {
+        note = `ไม่พบ repo ${owner}/${repo} — ตรวจชื่อ repo หรือสิทธิ์ของ GITHUB_TOKEN`;
+        status = "error";
+      } else if (res.status === 401 || res.status === 403) {
+        note = `GITHUB_TOKEN ไม่มีสิทธิ์เข้าถึง ${owner}/${repo} (HTTP ${res.status}) — ต้องให้สิทธิ์ Issues: write, Pull requests: write, Contents: read กับ repo นี้`;
+        status = "error";
       } else {
-        note = `เข้าถึง repo ไม่ได้ (HTTP ${res.status}) — ตรวจสิทธิ์ของ GITHUB_TOKEN`;
+        note = `เข้าถึง repo ไม่ได้ (HTTP ${res.status})`;
         status = "error";
       }
     } catch {

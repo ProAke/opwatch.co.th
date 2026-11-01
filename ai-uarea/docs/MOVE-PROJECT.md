@@ -114,7 +114,7 @@ curl -X POST https://ai.uarea.in/api/projects/import \
 | ต้องแก้ | ที่ไหน | หมายเหตุ |
 | --- | --- | --- |
 | `baseUrl` | `/projects/[id]` (หรือ `PATCH /api/projects/:id`) | ให้ชี้โดเมนของระบบใหม่ |
-| repo / Drive | `/integrations` → *เลือก GitHub repository* หรือตาราง “repo ของแต่ละโปรเจกต์” | เลือก repo อื่นได้ทันที (ไม่ต้องแก้ `.env`) — ใช้ `POST /api/github/connect` |
+| repo / Drive | `/integrations` → *เลือก GitHub repository* หรือตาราง “repo ของแต่ละโปรเจกต์” | เลือก repo อื่นได้ทันที (ไม่ต้องแก้ `.env`) — ดู [`CHANGE-GITHUB-REPO.md`](CHANGE-GITHUB-REPO.md) |
 | env | `staging` / `demo` | อย่าให้ชี้ `production` ระหว่างทดสอบรอบแรก |
 | selector ในขั้นตอน | `/flows/[id]/edit` | ถ้า UI เปลี่ยน ต้องแก้ `target` |
 | ตารางรัน | `/schedule` | เปิดหลังยืนยันว่า flow ผ่าน |
