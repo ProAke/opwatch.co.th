@@ -1,15 +1,15 @@
 <script setup lang="ts">
-const { t} = useI18n()
+const { t } = useI18n()
 const localePath = useLocalePath()
 const { site } = useSite()
-const { login, isAuthenticated, isAdmin } = useAuth()
+const { login, logout, isAuthenticated, isAdmin } = useAuth()
 
 const form = reactive({ email: '', password: '' })
 const errors = ref<Record<string, string>>({})
 const submitting = ref(false)
 
 if (isAuthenticated.value && isAdmin.value) {
-  navigateTo('/admin')
+  navigateTo(localePath('/office'))
 }
 
 async function submit() {
@@ -26,7 +26,7 @@ async function submit() {
       await logout()
       return
     }
-    navigateTo('/admin')
+    navigateTo(localePath('/office'))
   } catch (err: any) {
     const data = err?.data?.errors
     if (data) errors.value = data
@@ -36,25 +36,26 @@ async function submit() {
   }
 }
 
-const { logout } = useAuth()
-
 useHead({ title: `${t('admin.title')} — ${site.value.name}` })
 definePageMeta({ layout: false })
 </script>
 
 <template>
-  <div class="adminlogin">
-    <div class="adminlogin__inner">
-      <div class="brandrow">
-        <span class="brandmark">OP</span>
-        <div>
-          <p class="serif adminlogin__title">Opwatch</p>
-          <p class="tiny upper faint">{{ t('admin.dashboard') }}</p>
+  <div class="officelogin">
+    <div class="officelogin__inner">
+      <div class="between" style="margin-bottom: 30px">
+        <div class="brandrow">
+          <span class="brandmark">OP</span>
+          <div>
+            <p class="serif officelogin__title">{{ site.name || 'Opwatch' }}</p>
+            <p class="tiny upper" style="color: var(--gold)">BACK OFFICE · /office</p>
+          </div>
         </div>
+        <LocaleSwitch />
       </div>
 
-      <h1 class="page-title" style="font-size: 2rem">{{ t('admin.pleaseLogin') }}</h1>
-      <p class="muted" style="margin: 10px 0 30px">{{ t('auth.loginSubtitle') }}</p>
+      <h1 class="page-title" style="font-size: 1.9rem">{{ t('admin.pleaseLogin') }}</h1>
+      <p class="muted" style="margin: 8px 0 28px">{{ t('auth.loginSubtitle') }}</p>
 
       <form @submit.prevent="submit">
         <div class="field" style="margin-bottom: 18px">
@@ -68,19 +69,22 @@ definePageMeta({ layout: false })
           <span v-if="errors.password" class="field-error">{{ errors.password }}</span>
         </div>
         <button class="btn btn--gold btn--block" type="submit" :disabled="submitting">
-          {{ submitting ? t('common.loading') : t('admin.dashboard') }}
+          {{ submitting ? t('common.loading') : t('admin.loginToOffice') }}
         </button>
       </form>
 
-      <NuxtLink :to="localePath('/')" class="link-underline" style="margin-top: 24px">{{ t('admin.backToSite') }}</NuxtLink>
+      <div style="margin-top: 24px">
+        <NuxtLink :to="localePath('/')" class="link-underline">{{ t('admin.backToSite') }}</NuxtLink>
+      </div>
     </div>
+    <ToastHost />
   </div>
 </template>
 
 <style scoped>
-.adminlogin { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--ink); padding: 40px 24px; }
-.adminlogin__inner { width: 100%; max-width: 400px; background: var(--paper); border-radius: var(--radius-lg); padding: 44px 40px; border: 1px solid rgba(255,255,255,0.08); }
-.brandrow { display: flex; align-items: center; gap: 12px; margin-bottom: 34px; }
-.brandmark { font-family: var(--font-display); font-size: 18px; font-weight: 600; color: var(--gold); border: 1px solid var(--gold); border-radius: 50%; width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; }
-.adminlogin__title { font-size: 24px; font-weight: 600; letter-spacing: 0.08em; }
+.officelogin { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #121110; padding: 40px 24px; }
+.officelogin__inner { width: 100%; max-width: 420px; background: var(--paper); border-radius: var(--radius-lg); padding: 42px 38px; border: 1px solid rgba(176,141,87,0.25); box-shadow: var(--shadow-lg); }
+.brandrow { display: flex; align-items: center; gap: 12px; }
+.brandmark { font-family: var(--font-roman, var(--font-display)); font-size: 16px; font-weight: 600; color: var(--gold); border: 1px solid var(--gold); border-radius: 50%; width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; }
+.officelogin__title { font-size: 22px; font-weight: 600; letter-spacing: 0.08em; }
 </style>

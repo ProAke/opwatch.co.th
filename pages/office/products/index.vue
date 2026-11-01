@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const { t, locale} = useI18n()
+const { t, locale } = useI18n()
 const localePath = useLocalePath()
 const { site } = useSite()
 const localeTag = computed(() => (locale.value === 'en' ? 'en-US' : 'th-TH'))
@@ -32,19 +32,19 @@ async function remove(p: Record<string, any>) {
 }
 
 useHead({ title: `${t('admin.products')} — ${site.value.name}` })
-definePageMeta({ layout: 'admin', middleware: 'admin' })
+definePageMeta({ layout: 'office', middleware: 'office' })
 </script>
 
 <template>
   <div>
     <div class="pagehead">
       <h1 class="page-title" style="font-size: 2rem">{{ t('admin.products') }}</h1>
-      <NuxtLink to="/admin/products/new" class="btn btn--sm btn--gold">{{ t('admin.add') }} {{ t('admin.products') }}</NuxtLink>
+      <NuxtLink :to="localePath('/office/products/new')" class="btn btn--sm btn--gold">{{ t('admin.newProduct') }}</NuxtLink>
     </div>
 
     <div class="toolbar">
       <input v-model="search" class="input" style="max-width: 320px" :placeholder="t('admin.searchPlaceholder')" />
-      <span class="small muted">{{ items.length }} {{ t('products.results', { count: items.length }) }}</span>
+      <span class="small muted">{{ t('products.results', { count: items.length }) }}</span>
     </div>
 
     <div class="panel" style="padding: 0; overflow: hidden">
@@ -71,8 +71,8 @@ definePageMeta({ layout: 'admin', middleware: 'admin' })
                   <img :src="(Array.isArray(p.images) ? p.images[0] : p.images) || '/images/hero-watch.jpg'" :alt="locale === 'en' ? p.nameEn : p.nameTh" loading="lazy" />
                 </div>
                 <div>
-                  <div class="prodcell__name">{{ locale === 'en' ? p.nameEn : p.nameTh }}</div>
-                  <div class="tiny upper faint">{{ p.brand }}</div>
+                  <div class="prodcell__name">{{ locale === 'en' ? p.nameEn || p.name : p.nameTh || p.name }}</div>
+                  <div class="tiny upper faint">{{ typeof p.brand === 'object' ? p.brand?.name : p.brand }}</div>
                 </div>
               </div>
             </td>
@@ -89,7 +89,7 @@ definePageMeta({ layout: 'admin', middleware: 'admin' })
             </td>
             <td style="text-align: right">
               <div class="row gap-8" style="justify-content: flex-end">
-                <NuxtLink :to="localePath('/admin/products/' + p.id)" class="btn btn--sm btn--ghost">{{ t('common.edit') }}</NuxtLink>
+                <NuxtLink :to="localePath('/office/products/' + p.id)" class="btn btn--sm btn--ghost">{{ t('common.edit') }}</NuxtLink>
                 <button class="btn btn--sm btn--ghost danger" @click="remove(p)">{{ t('common.delete') }}</button>
               </div>
             </td>
@@ -108,6 +108,6 @@ definePageMeta({ layout: 'admin', middleware: 'admin' })
 .prodcell { display: flex; align-items: center; gap: 14px; }
 .prodcell__img { width: 44px; height: 44px; background: var(--sand); border-radius: var(--radius); overflow: hidden; flex: none; }
 .prodcell__img img { width: 100%; height: 100%; object-fit: cover; }
-.prodcell__name { font-family: var(--font-display); font-size: 15px; }
+.prodcell__name { font-family: var(--font-display); font-size: 16px; }
 .danger:hover { color: var(--danger) !important; border-color: var(--danger) !important; }
 </style>

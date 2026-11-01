@@ -78,12 +78,17 @@ const remainingForFreeShipping = computed(() => {
             <span>{{ t('cart.grandTotal') }}</span>
             <span class="price price--lg">{{ fmt(totals.total) }}</span>
           </div>
-          <NuxtLink :to="localePath('/checkout')" class="btn btn--block" @click="cart.drawerOpen.value = false">
+          <NuxtLink :to="localePath('/checkout')" class="btn btn--gold btn--block" @click="cart.drawerOpen.value = false">
             {{ t('cart.checkout') }}
           </NuxtLink>
-          <button class="dfoot__continue" @click="cart.drawerOpen.value = false">
-            {{ t('cart.continueShopping') }}
-          </button>
+          <div class="between" style="padding-top: 4px">
+            <NuxtLink :to="localePath('/cart')" class="link-underline" @click="cart.drawerOpen.value = false">
+              {{ t('common.viewCart') }}
+            </NuxtLink>
+            <button class="dfoot__continue" @click="cart.drawerOpen.value = false">
+              {{ t('cart.continueShopping') }}
+            </button>
+          </div>
         </footer>
       </aside>
     </div>

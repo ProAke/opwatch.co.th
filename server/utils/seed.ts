@@ -283,7 +283,16 @@ export const defaultProducts = (): SeedProduct[] => {
     specs: Record<string, string>
   ): SeedProduct => ({
     sku, name, nameEn, nameTh, slug: sku.toLowerCase(), categorySlug, brandSlug,
-    price, originalPrice, currency: 'THB', images: [FACES[sortOrder % FACES.length]],
+    price, originalPrice, currency: 'THB',
+    images: [
+      FACES[sortOrder % FACES.length],
+      FACES[(sortOrder + 2) % FACES.length],
+      categorySlug === 'women-watches' || categorySlug === 'women-jewelry'
+        ? '/images/c-ladies.jpg'
+        : categorySlug === 'sport-watches'
+          ? '/images/c-sport.jpg'
+          : '/images/hero-watch.jpg'
+    ],
     shortDescription, shortDescriptionEn: shortDescriptionEn,
     description: descriptionEn, descriptionEn: descriptionEn, descriptionTh: descriptionTh,
     specs, stock, status: 'active', badges, featured: badges.includes('NEW'), sortOrder

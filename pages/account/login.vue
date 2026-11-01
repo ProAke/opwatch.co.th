@@ -66,7 +66,7 @@ useHead({ title: `${t('auth.loginTitle')} — ${site.value.name}` })
           <NuxtLink :to="localePath('/account/register')" class="link-underline">{{ t('auth.createAccount') }}</NuxtLink>
         </p>
         <p class="auth__switch auth__admin">
-          <NuxtLink to="/admin" class="link-underline">{{ t('nav.admin') }}</NuxtLink>
+          <NuxtLink :to="localePath('/office')" class="link-underline">{{ t('nav.admin') }} (/office)</NuxtLink>
         </p>
       </div>
 

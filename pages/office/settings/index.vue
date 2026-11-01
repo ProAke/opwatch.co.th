@@ -20,12 +20,15 @@ const form = reactive({
 const saved = ref(false)
 const saving = ref(false)
 
-const { data } = await useFetch<{
-  site: Record<string, any>
-  admin: { email: string }
-  db: Record<string, any>
-  installedAt: string
-}>('/api/admin/settings')
+const reqFetch = useRequestFetch()
+const { data } = await useAsyncData('office-settings', () =>
+  reqFetch<{
+    site: Record<string, any>
+    admin: { email: string }
+    db: Record<string, any>
+    installedAt: string
+  }>('/api/admin/settings')
+)
 
 onMounted(() => {
   const s = data.value?.site || {}
@@ -66,7 +69,7 @@ async function save() {
 }
 
 useHead({ title: `${t('admin.settings')} — ${useSite().site.value.name}` })
-definePageMeta({ layout: 'admin', middleware: 'admin' })
+definePageMeta({ layout: 'office', middleware: 'office' })
 </script>
 
 <template>

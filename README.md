@@ -15,7 +15,7 @@ built with **Nuxt 3** and **MariaDB / MySQL**.
 | **Storefront** | Hero, featured collection, category showcase, product grid with search / sort / price filter, product detail with gallery, specs & reviews |
 | **Ecommerce** | Persistent shopping cart (local storage), quantity steppers, free-shipping progress, checkout with contact + shipping address + payment method, order confirmation |
 | **Membership** | Sign up / sign in, member benefits, reward points (1 pt per 50 ฿), total spend, order history, order tracking |
-| **Admin panel** | Dashboard with revenue / orders / customers / low-stock, product CRUD, category CRUD, order management with status workflow, member list, store settings |
+| **Back Office (`/office`)** | Dashboard with revenue / orders / customers / low-stock, product CRUD, brand CRUD, category CRUD, order management with status workflow, member list, store settings |
 | **Localisation** | Thai and English, locale-aware URLs, currency formatting, bilingual product data |
 | **Installation** | Web installer at `/install` — sets store details, administrator, and database connection; creates the schema and seeds the catalogue |
 
@@ -52,7 +52,7 @@ You only need a server with a user that can `CREATE DATABASE`.
 Then open:
 
 - Storefront: `http://localhost:3000`
-- Admin panel: `http://localhost:3000/admin`
+- Back Office: `http://localhost:3000/office` (`opwatch.co.th/office`)
 
 ---
 
@@ -108,9 +108,9 @@ assets/css/main.css        Design system (palette, type, components)
 locales/                   th.json / en.json — all UI strings
 composables/               useSite · useAuth · useCart · useToast
 components/                AppHeader · AppFooter · ProductCard · CartDrawer · …
-layouts/                   default (storefront) · admin (back-office)
-pages/                     storefront pages
-pages/admin/               back-office pages
+layouts/                   default (storefront) · office (back-office)
+pages/                     storefront pages + /brands/:slug
+pages/office/              back-office pages (/office)
 server/
   db/                      Store interface, MySQL adapter, JSON adapter, schema.sql
   utils/                   config, auth, installer, seed, slug

@@ -38,7 +38,7 @@ async function remove(c: Record<string, any>) {
 }
 
 useHead({ title: `${t('admin.categories')} — ${useSite().site.value.name}` })
-definePageMeta({ layout: 'admin', middleware: 'admin' })
+definePageMeta({ layout: 'office', middleware: 'office' })
 </script>
 
 <template>

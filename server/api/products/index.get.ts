@@ -2,43 +2,60 @@ export default defineEventHandler(async (event) => {
   const q = getQuery(event)
   const store = useStore()
 
-  const opts: Record<string, any> = { status: 'active' }
+  const where: Record<string, any> = { status: 'active' }
+  let categoryIds: number[] | null = null
 
   if (q.category) {
     const cat = await store.findOne('categories', { where: { slug: String(q.category) } })
-    if (cat) opts.categoryId = Number(cat.id)
+    if (cat) {
+      const children = await store.find('categories', { where: { parentId: Number(cat.id) } })
+      if (children.length) {
+        categoryIds = [Number(cat.id), ...children.map((c) => Number(c.id))]
+      } else {
+        where.categoryId = Number(cat.id)
+      }
+    } else {
+      return { items: [], total: 0 }
+    }
   }
+
   if (q.brand) {
     const brand = await store.findOne('brands', { where: { slug: String(q.brand) } })
-    if (brand) opts.brandId = Number(brand.id)
-  }
-
-  // Search across the English and Thai names plus SKU.
-  const term = q.q && String(q.q).trim() ? String(q.q).trim() : ''
-  let items: Record<string, any>[]
-
-  if (term) {
-    items = await store.find('products', { like: { name: term, nameEn: term, nameTh: term, sku: term } })
-  } else {
-    const orderMap: Record<string, any> = {
-      featured: { orderBy: 'sortOrder', orderDir: 'asc' },
-      price_asc: { orderBy: 'price', orderDir: 'asc' },
-      price_desc: { orderBy: 'price', orderDir: 'desc' },
-      newest: { orderBy: 'createdAt', orderDir: 'desc' }
+    if (brand) {
+      where.brandId = Number(brand.id)
+    } else {
+      return { items: [], total: 0 }
     }
-    const sort = String(q.sort || 'featured')
-    const order = orderMap[sort] || orderMap.featured
-    items = await store.find('products', { where: opts, orderBy: order.orderBy, orderDir: order.orderDir })
   }
 
-  // `featured` is a boolean in JSON and an int in MySQL — filter in JS.
+  const orderMap: Record<string, { orderBy: string; orderDir: 'asc' | 'desc' }> = {
+    featured: { orderBy: 'sortOrder', orderDir: 'asc' },
+    price_asc: { orderBy: 'price', orderDir: 'asc' },
+    price_desc: { orderBy: 'price', orderDir: 'desc' },
+    newest: { orderBy: 'createdAt', orderDir: 'desc' },
+    created_at_desc: { orderBy: 'createdAt', orderDir: 'desc' }
+  }
+  const sort = String(q.sort || 'featured')
+  const order = orderMap[sort] || orderMap.featured
+
+  const term = q.q && String(q.q).trim() ? String(q.q).trim() : ''
+
+  let items = await store.find('products', {
+    where,
+    ...(categoryIds ? { in: { categoryId: categoryIds } } : {}),
+    ...(term ? { like: { name: term, nameEn: term, nameTh: term, sku: term, brand: term } } : {}),
+    orderBy: order.orderBy,
+    orderDir: order.orderDir
+  })
+
+  // `featured` is normalised to boolean in shape().
   if (q.featured === 'true' || q.featured === '1') {
     items = items.filter((p) => p.featured === true || Number(p.featured) === 1)
   }
 
-  // Price band (Central-style filtering).
-  const min = q.price_min !== undefined ? Number(q.price_min) : null
-  const max = q.price_max !== undefined ? Number(q.price_max) : null
+  // Price band filter.
+  const min = q.price_min !== undefined && q.price_min !== '' ? Number(q.price_min) : null
+  const max = q.price_max !== undefined && q.price_max !== '' ? Number(q.price_max) : null
   if (min !== null || max !== null) {
     items = items.filter((p) => {
       const price = Number(p.price) || 0
@@ -46,25 +63,39 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  // Sort by discount depth, the way Central's "ลดเยอะสุด" works.
-  if (term === '' && (q.sort === 'discount_percentage_desc' || q.sort === 'discount')) {
+  // Sort by discount depth or newest.
+  if (sort === 'discount_percentage_desc' || sort === 'discount') {
     items = items
       .map((p) => ({ p, pct: discountPercent(p) }))
       .sort((a, b) => b.pct - a.pct)
       .map((x) => x.p)
-  } else if (term === '' && (q.sort === 'newest' || q.sort === 'created_at_desc')) {
+  } else if (sort === 'newest' || sort === 'created_at_desc') {
     items = items.slice().sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')))
   }
 
-  // Attach the owning brand and normalise badges.
-  const brandIds = [...new Set(items.map((p) => Number(p.brandId)).filter(Boolean))]
-  const brands = brandIds.length ? await Promise.all(brandIds.map((id) => store.findById('brands', id))) : []
-  const byId = new Map(brands.filter(Boolean).map((b) => [Number(b.id), b]))
+  // Attach owning brand + category name and normalise badges.
+  const [allBrands, allCategories] = await Promise.all([
+    store.all('brands'),
+    store.all('categories')
+  ])
+  const brandById = new Map(allBrands.map((b) => [Number(b.id), b]))
+  const catById = new Map(allCategories.map((c) => [Number(c.id), c]))
 
   items = items.map((p) => {
     const badges = Array.isArray(p.badges) ? p.badges : []
-    const brand = p.brandId ? byId.get(Number(p.brandId)) || null : null
-    return { ...p, badges, brand, discountPercent: discountPercent(p) }
+    const brandObj = p.brandId ? brandById.get(Number(p.brandId)) || null : null
+    const catObj = p.categoryId ? catById.get(Number(p.categoryId)) || null : null
+    return {
+      ...p,
+      badges,
+      brand: brandObj,
+      brandName: brandObj?.name || (typeof p.brand === 'string' ? p.brand : 'Opwatch'),
+      brandSlug: brandObj?.slug || null,
+      categorySlug: catObj?.slug || null,
+      categoryName: catObj?.nameTh || catObj?.name || null,
+      categoryNameEn: catObj?.nameEn || catObj?.name || null,
+      discountPercent: discountPercent(p)
+    }
   })
 
   const total = items.length
@@ -73,7 +104,6 @@ export default defineEventHandler(async (event) => {
   return { items: items.slice(offset, offset + limit), total }
 })
 
-/** Percentage off relative to originalPrice (or priceCompare as a fallback). */
 function discountPercent(p: Record<string, any>): number {
   const original = Number(p.originalPrice ?? p.priceCompare)
   const price = Number(p.price) || 0
