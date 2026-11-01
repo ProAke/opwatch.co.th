@@ -73,9 +73,11 @@ export class JsonStore implements Store {
       }
     }
     if (opts.like) {
-      for (const [k, v] of Object.entries(opts.like)) {
-        if (!v) continue
-        rows = rows.filter((r) => String(r[k] ?? '').toLowerCase().includes(String(v).toLowerCase()))
+      const entries = Object.entries(opts.like).filter(([, v]) => Boolean(v))
+      if (entries.length) {
+        rows = rows.filter((r) =>
+          entries.some(([k, v]) => String(r[k] ?? '').toLowerCase().includes(String(v).toLowerCase()))
+        )
       }
     }
     if (opts.in) {

@@ -11,7 +11,7 @@ export interface MysqlConfig {
 }
 
 /** Columns stored as JSON in MariaDB — must be stringified before binding. */
-const JSON_COLUMNS = new Set(['images', 'specs'])
+const JSON_COLUMNS = new Set(['images', 'specs', 'badges'])
 
 function jsonify(col: string, value: any): any {
   if (JSON_COLUMNS.has(col) && value !== null && value !== undefined && typeof value !== 'string') {
@@ -73,10 +73,14 @@ export class MysqlStore implements Store {
       }
     }
     if (opts.like) {
+      const likeClauses: string[] = []
       for (const [k, v] of Object.entries(opts.like)) {
         if (v === undefined || v === null || v === '') continue
-        clauses.push(`${this.validate(entity, k)} LIKE ?`)
+        likeClauses.push(`${this.validate(entity, k)} LIKE ?`)
         params.push(`%${v}%`)
+      }
+      if (likeClauses.length) {
+        clauses.push(`(${likeClauses.join(' OR ')})`)
       }
     }
     if (opts.in) {

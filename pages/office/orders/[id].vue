@@ -9,9 +9,10 @@ const fmt = (v: number) => formatPrice(v, site.value.currencySymbol, localeTag.v
 
 const id = computed(() => String(route.params.id))
 
-const { data, error } = await useFetch<{ order: Record<string, any>; items?: Record<string, any>[] }>(
-  () => `/api/orders/${id.value}`,
-  { key: 'admin-order-' + id.value }
+const reqFetch = useRequestFetch()
+const { data, error, refresh } = await useAsyncData(
+  () => 'office-order-' + id.value,
+  () => reqFetch<{ order: Record<string, any>; items?: Record<string, any>[] }>(`/api/orders/${id.value}`)
 )
 
 const order = computed(() => data.value?.order)
@@ -32,14 +33,14 @@ async function saveNote() {
 }
 
 useHead({ title: `${t('admin.order')} — ${site.value.name}` })
-definePageMeta({ layout: 'admin', middleware: 'admin' })
+definePageMeta({ layout: 'office', middleware: 'office' })
 </script>
 
 <template>
   <div>
     <div class="pagehead">
       <div>
-        <NuxtLink to="/admin/orders" class="link-underline" style="margin-bottom: 12px">{{ t('common.back') }} ←</NuxtLink>
+        <NuxtLink :to="localePath('/office/orders')" class="link-underline" style="margin-bottom: 12px">{{ t('common.back') }} ←</NuxtLink>
         <h1 class="page-title" style="font-size: 2rem">{{ order?.orderNo || t('admin.order') }}</h1>
         <p class="tiny upper faint" v-if="order">{{ formatDateTime(order.createdAt, localeTag) }}</p>
       </div>

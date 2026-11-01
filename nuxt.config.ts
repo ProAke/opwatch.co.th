@@ -6,24 +6,24 @@ export default defineNuxtConfig({
   modules: ['@nuxtjs/i18n', '@pinia/nuxt'],
 
   app: {
-    router: {
-      middleware: ['install']
-    },
     head: {
       htmlAttrs: { lang: 'th-TH' },
-      title: 'Opwatch — Timeless Watches',
+      title: 'Opwatch — Official Watch Boutique',
       meta: [
         { charset: 'utf-8' },
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-        { name: 'description', content: 'Opwatch — curated automatic and dress watches. Crafted for those who value time.' },
-        { name: 'theme-color', content: '#1a1a1a' }
+        {
+          name: 'description',
+          content: 'Opwatch Official Boutique — Olym Pianus, Ogival & Opwatch fine automatic, Swiss & Japanese movement timepieces.'
+        },
+        { name: 'theme-color', content: '#121110' }
       ],
       link: [
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
         { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
         {
           rel: 'stylesheet',
-          href: 'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap'
+          href: 'https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&family=Noto+Sans+Thai:wght@300;400;500;600&family=Noto+Serif+Thai:wght@400;500;600&display=swap'
         }
       ]
     }
@@ -39,7 +39,6 @@ export default defineNuxtConfig({
       { code: 'en', language: 'en-US', name: 'English', file: 'en.json' }
     ],
     langDir: 'locales',
-    // Keep locales at <root>/locales instead of the module's restructured i18n/ folder.
     restructureDir: false,
     detectBrowserLanguage: false,
     bundle: {
@@ -55,5 +54,11 @@ export default defineNuxtConfig({
 
   nitro: {
     compressPublicAssets: true
+  },
+
+  vite: {
+    server: {
+      allowedHosts: true
+    }
   }
 })

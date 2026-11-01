@@ -20,7 +20,7 @@ watch(search, load)
 onMounted(load)
 
 useHead({ title: `${t('admin.customers')} — ${site.value.name}` })
-definePageMeta({ layout: 'admin', middleware: 'admin' })
+definePageMeta({ layout: 'office', middleware: 'office' })
 </script>
 
 <template>

@@ -180,8 +180,8 @@ definePageMeta({ layout: false })
         <p class="center serif inst__store">{{ installedName }}</p>
 
         <div class="row gap-16" style="justify-content: center; margin-top: 30px; flex-wrap: wrap">
-          <NuxtLink to="/admin" class="btn btn--gold">{{ t('install.openAdmin') }}</NuxtLink>
-          <NuxtLink to="/" class="btn btn--ghost">{{ t('install.visitSite') }}</NuxtLink>
+          <NuxtLink :to="localePath('/office')" class="btn btn--gold">{{ t('install.openAdmin') }}</NuxtLink>
+          <NuxtLink :to="localePath('/')" class="btn btn--ghost">{{ t('install.visitSite') }}</NuxtLink>
         </div>
 
         <div class="done__reinstall">

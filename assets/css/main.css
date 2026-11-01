@@ -5,27 +5,28 @@
 
 :root {
   /* Palette */
-  --ivory: #fbfaf7;
+  --ivory: #faf8f5;
   --paper: #ffffff;
-  --sand: #f3efe7;
-  --line: #e4ded3;
-  --line-strong: #d3cab9;
+  --sand: #f2eee6;
+  --line: #e6e0d5;
+  --line-strong: #d2c9b8;
 
-  --ink: #1c1a17;
-  --ink-soft: #45403a;
-  --ink-muted: #7c756b;
-  --ink-faint: #a8a094;
+  --ink: #141311;
+  --ink-soft: #3d3934;
+  --ink-muted: #766f65;
+  --ink-faint: #a39b8f;
 
-  --gold: #a9844e;
-  --gold-soft: #c8a972;
-  --gold-tint: #f2ead9;
+  --gold: #b08d57;
+  --gold-soft: #cbb07d;
+  --gold-tint: #f4ecde;
 
   --success: #2f6b4f;
   --danger: #9b3a32;
 
   /* Type */
-  --font-display: 'Cormorant Garamond', 'Noto Serif Thai', 'Sarabun', Georgia, 'Times New Roman', serif;
-  --font-sans: 'Inter', 'Noto Sans Thai', 'Sarabun', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-roman: 'Cinzel', 'Cormorant Garamond', 'Noto Serif Thai', Georgia, serif;
+  --font-display: 'Cormorant Garamond', 'Noto Serif Thai', Georgia, 'Times New Roman', serif;
+  --font-sans: 'Inter', 'Noto Sans Thai', system-ui, -apple-system, 'Segoe UI', sans-serif;
 
   /* Layout */
   --container: 1240px;
@@ -128,6 +129,37 @@ p { margin: 0; }
 .muted { color: var(--ink-muted); }
 .faint { color: var(--ink-faint); }
 .serif { font-family: var(--font-display); }
+.roman { font-family: var(--font-roman); letter-spacing: 0.18em; text-transform: uppercase; }
+.op-sec-head {
+  text-align: center;
+  margin-bottom: 52px;
+}
+.op-sec-title {
+  font-family: var(--font-roman);
+  font-size: clamp(1.55rem, 2.8vw, 2.25rem);
+  font-weight: 500;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--ink);
+  display: inline-flex;
+  align-items: center;
+  gap: 22px;
+}
+.op-sec-title::before,
+.op-sec-title::after {
+  content: '';
+  width: 44px;
+  height: 1px;
+  background: var(--gold);
+  opacity: 0.65;
+}
+.op-sec-sub {
+  max-width: 600px;
+  margin: 14px auto 0;
+  color: var(--ink-muted);
+  font-size: 15px;
+  line-height: 1.75;
+}
 .small { font-size: 13px; }
 .tiny { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; }
 .upper { text-transform: uppercase; letter-spacing: 0.08em; }

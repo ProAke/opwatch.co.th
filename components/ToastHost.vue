@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const { t } = useI18n()
+const { t, te } = useI18n()
 const { toasts, dismiss } = useToast()
 </script>
 
@@ -13,7 +13,7 @@ const { toasts, dismiss } = useToast()
         <svg v-else width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
           <path d="M12 8v5M12 16.5v.5" /><circle cx="12" cy="12" r="9" />
         </svg>
-        <span>{{ tst.message }}</span>
+        <span>{{ tst.message.includes('.') && te(tst.message) ? t(tst.message) : tst.message }}</span>
       </div>
     </TransitionGroup>
   </div>

@@ -32,7 +32,7 @@ async function setStatus(order: Record<string, any>, next: string) {
 }
 
 useHead({ title: `${t('admin.orders')} — ${site.value.name}` })
-definePageMeta({ layout: 'admin', middleware: 'admin' })
+definePageMeta({ layout: 'office', middleware: 'office' })
 </script>
 
 <template>
@@ -66,7 +66,7 @@ definePageMeta({ layout: 'admin', middleware: 'admin' })
         </thead>
         <tbody>
           <tr v-for="o in items" :key="o.id">
-            <td><NuxtLink :to="localePath('/admin/orders/' + o.id)" class="link">{{ o.orderNo }}</NuxtLink></td>
+            <td><NuxtLink :to="localePath('/office/orders/' + o.id)" class="link">{{ o.orderNo }}</NuxtLink></td>
             <td>
               <div>{{ o.customerName }}</div>
               <div class="tiny upper faint">{{ o.customerEmail }}</div>
