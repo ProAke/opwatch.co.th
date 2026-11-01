@@ -4,15 +4,27 @@ const localePath = useLocalePath()
 const { site, brands } = useSite()
 const year = new Date().getFullYear()
 
+// Exact 7 Regional Distributors in exact olympianus.com order
 const distributors = [
-  { country: 'THAILAND', partner: 'Inter Times Co., Ltd. · Opwatch Official Boutique' },
-  { country: 'TAIWAN', partner: 'Bamboo Shadow Co., Ltd.' },
-  { country: 'VIET NAM', partner: 'Truong Hoan Co., Ltd.' },
-  { country: 'LAOS', partner: 'XG Watches Co., Ltd.' },
+  { country: 'BANGLADESH', partner: 'Kallol Group Of Companies' },
   { country: 'CAMBODIA', partner: 'Europe Swiss Watch' },
+  { country: 'LAOS', partner: 'XG Watches Co., Ltd.' },
   { country: 'MYANMAR', partner: 'Cherry Oo Service Center' },
-  { country: 'BANGLADESH', partner: 'Kallol Group Of Companies' }
+  { country: 'TAIWAN', partner: 'Bamboo Shadow Co., Ltd.' },
+  { country: 'THAILAND', partner: 'Inter Times Co., Ltd. · Opwatch Official' },
+  { country: 'VIET NAM', partner: 'Truong Hoan Co., Ltd.' }
 ]
+
+const showTopBtn = ref(false)
+
+onMounted(() => {
+  const onScroll = () => {
+    showTopBtn.value = window.scrollY > 360
+  }
+  onScroll()
+  window.addEventListener('scroll', onScroll, { passive: true })
+  onUnmounted(() => window.removeEventListener('scroll', onScroll))
+})
 
 function scrollToTop() {
   if (import.meta.client) {
@@ -22,202 +34,218 @@ function scrollToTop() {
 </script>
 
 <template>
-  <footer class="ftr">
-    <!-- Olym Pianus style Regional Distributors & Direct Contact Band -->
-    <div class="dist">
-      <div class="container dist__inner">
-        <p class="dist__eyebrow tiny upper">{{ t('home.distributorsTitle') }}</p>
-        <ul class="dist__list">
-          <li v-for="d in distributors" :key="d.country" :class="{ 'is-th': d.country === 'THAILAND' }">
-            <span class="dist__country">({{ d.country }})</span>
-            <span class="dist__sep">–</span>
-            <span class="dist__partner">{{ d.partner }}</span>
-          </li>
-        </ul>
+  <footer class="opftr">
+    <div class="container opftr__inner">
+      <!-- 1. Centered 7 Regional Distributors List (exact olympianus.com layout) -->
+      <ul class="opftr__dist">
+        <li v-for="d in distributors" :key="d.country" :class="{ 'is-th': d.country === 'THAILAND' }">
+          <span class="opftr__country">({{ d.country }})</span>
+          <span class="opftr__dash">–</span>
+          <span class="opftr__partner">{{ d.partner }}</span>
+        </li>
+      </ul>
 
-        <div class="dist__actions">
-          <NuxtLink :to="localePath('/contact')" class="btn btn--outline-gold btn--sm">
-            {{ t('nav.contactUs') }}
-          </NuxtLink>
-          <div class="dist__socials">
-            <a
-              href="https://line.me"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="socpill socpill--line"
-              aria-label="LINE Official"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 3c-5 0-9 3.3-9 7.5 0 2.5 1.5 4.7 3.8 6.1-.2.9-.8 2.3-1.6 3.4 1.8-.4 3.4-1.4 4.5-2.5.8.1 1.5.2 2.3.2 5 0 9-3.3 9-7.5S17 3 12 3z" />
-              </svg>
-              <span>LINE</span>
-            </a>
-            <a
-              href="https://www.facebook.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="socpill"
-              aria-label="Facebook"
-            >
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M14 9h3V6h-3c-2 0-3 1.5-3 3v2H8v3h3v7h3v-7h2.5l.5-3H14V9.5c0-.5.3-.5.5-.5z" />
-              </svg>
-              <span>Facebook</span>
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Main E-Commerce Footer -->
-    <div class="container ftr__top">
-      <div class="ftr__brand">
-        <div class="brand">
-          <span class="brand__mark">OP</span>
-          <span class="brand__word">{{ site.name || 'OPWATCH' }}</span>
-        </div>
-        <p class="ftr__about">{{ t('footer.aboutBody') }}</p>
-        <p class="tiny upper faint" style="margin-top: 14px">{{ site.phone }} · {{ site.email }}</p>
+      <!-- 2. Centered [Contact Us] Button -->
+      <div class="opftr__cta">
+        <NuxtLink :to="localePath('/contact')" class="btn btn--ghost-light btn--sm">
+          {{ locale === 'en' ? 'Contact Us' : t('nav.contactUs') }}
+        </NuxtLink>
       </div>
 
-      <div class="ftr__col">
-        <h4 class="tiny upper">{{ t('nav.collections') }}</h4>
-        <NuxtLink :to="localePath({ path: '/products', query: { category: 'men-watches' } })">Men Watch</NuxtLink>
-        <NuxtLink :to="localePath({ path: '/products', query: { category: 'women-watches' } })">Ladies Watch</NuxtLink>
-        <NuxtLink :to="localePath({ path: '/products', query: { category: 'sport-watches' } })">Sport Watch</NuxtLink>
-        <NuxtLink :to="localePath({ path: '/products', query: { category: 'classic-watches' } })">Classic Watch</NuxtLink>
+      <!-- 3. Circular LINE & Facebook Icons (exact olympianus.com pair) -->
+      <div class="opftr__socials">
+        <a
+          href="https://line.me"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="opsoc opsoc--line"
+          aria-label="LINE Official"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 3c-5.2 0-9.4 3.4-9.4 7.6 0 3.7 3.3 6.9 7.8 7.5.3.1.7.2.8.5.1.3.1.7 0 1l-.3 1.6c-.1.4-.4 1.6 1.4.9 1.8-.8 5.9-3.5 8-6 1.5-1.6 2.1-3.4 2.1-5.5C21.4 6.4 17.2 3 12 3z" />
+          </svg>
+        </a>
+        <a
+          href="https://www.facebook.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="opsoc opsoc--fb"
+          aria-label="Facebook"
+        >
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M14 9h3V5.5h-3c-2.4 0-3.8 1.5-3.8 3.8V11H7.5v3.4h2.7V21h3.6v-6.6h2.9l.5-3.4h-3.4V9.6c0-.4.2-.6.6-.6z" />
+          </svg>
+        </a>
       </div>
 
-      <div class="ftr__col">
-        <h4 class="tiny upper">{{ t('nav.brands') }}</h4>
+      <!-- 4. Large Centered Crown-Shield OP + Olym Pianus Typographic Emblem -->
+      <div class="opftr__emblem">
+        <NuxtLink :to="localePath('/')">
+          <OpCrest size="lg" :stacked="true" :sublabel="`${(site.name || 'OPWATCH').toUpperCase()} OFFICIAL BOUTIQUE`" />
+        </NuxtLink>
+      </div>
+
+      <!-- 5. Clean Minimal Single-Line E-Commerce & Back-Office Navigation -->
+      <nav class="opftr__links" aria-label="Footer">
+        <NuxtLink :to="localePath('/')">{{ locale === 'en' ? 'Home' : t('nav.home') }}</NuxtLink>
+        <NuxtLink :to="localePath('/about')">{{ t('nav.aboutUs') }}</NuxtLink>
+        <NuxtLink :to="localePath('/products')">{{ locale === 'en' ? 'Collections' : t('nav.collections') }}</NuxtLink>
         <NuxtLink v-for="b in brands" :key="b.slug" :to="localePath('/brands/' + b.slug)">
           {{ locale === 'en' ? b.nameEn || b.name : b.nameTh || b.name }}
         </NuxtLink>
-        <NuxtLink v-if="!brands.length" :to="localePath('/products')">Opwatch · Olympinus · Ogival</NuxtLink>
-        <NuxtLink :to="localePath('/about')">{{ t('nav.aboutUs') }}</NuxtLink>
-      </div>
-
-      <div class="ftr__col">
-        <h4 class="tiny upper">{{ t('footer.customerService') }}</h4>
+        <NuxtLink :to="localePath('/news')">{{ locale === 'en' ? 'News' : t('nav.news') }}</NuxtLink>
         <NuxtLink :to="localePath('/cart')">{{ t('nav.cart') }}</NuxtLink>
-        <NuxtLink :to="localePath('/account/orders')">{{ t('account.orders') }}</NuxtLink>
-        <NuxtLink :to="localePath('/account')">{{ t('account.profile') }}</NuxtLink>
-        <NuxtLink :to="localePath('/office')">{{ t('nav.office') }} (/office)</NuxtLink>
-      </div>
+        <NuxtLink :to="localePath('/account')">{{ t('nav.account') }}</NuxtLink>
+        <NuxtLink :to="localePath('/office')">{{ t('nav.office') }}</NuxtLink>
+      </nav>
+
+      <!-- 6. Copyright Line -->
+      <p class="opftr__copy">
+        © Copyright {{ year }} - Olym Pianus · {{ site.name || 'Opwatch' }} ({{ site.phone }} · {{ site.email }})
+      </p>
     </div>
 
-    <div class="ftr__bottom">
-      <div class="container between wrap gap-12">
-        <p class="tiny upper faint">© {{ year }} {{ site.name || 'Opwatch' }} · OLYM PIANUS HERITAGE. {{ t('footer.rights') }}</p>
-        <button type="button" class="topbtn tiny upper" @click="scrollToTop">
-          Scroll to top ↑
-        </button>
-      </div>
-    </div>
+    <!-- Floating Scroll-to-Top Square Button (#top on olympianus.com) -->
+    <button
+      v-show="showTopBtn"
+      type="button"
+      class="optop"
+      aria-label="Scroll to top"
+      title="Scroll to top"
+      @click="scrollToTop"
+    >
+      ↑
+    </button>
   </footer>
 </template>
 
 <style scoped>
-.ftr { background: #11100f; color: #d9d2c6; margin-top: 0; }
-
-.dist {
-  background: #171614;
-  border-top: 1px solid rgba(176, 141, 87, 0.22);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-  padding-block: 56px;
+.opftr {
+  background: #080808;
+  color: #bdbdbd;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-block: 80px 44px;
   text-align: center;
+  position: relative;
 }
-.dist__inner { max-width: 820px; }
-.dist__eyebrow { color: var(--gold); margin-bottom: 22px; letter-spacing: 0.24em; }
-.dist__list {
-  list-style: none;
-  padding: 0;
-  margin: 0 auto 30px;
+.opftr__inner {
+  max-width: 860px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  font-size: 13px;
-  letter-spacing: 0.08em;
-  color: #aba395;
+  align-items: center;
 }
-.dist__list li.is-th { color: #f4efe6; font-weight: 500; }
-.dist__country { color: var(--gold-soft); }
-.dist__sep { margin-inline: 8px; opacity: 0.5; }
-.dist__actions {
+
+.opftr__dist {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-family: var(--font-geo);
+  font-size: 13px;
+  font-weight: 300;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.72);
+}
+.opftr__dist li.is-th {
+  color: #ffffff;
+  font-weight: 500;
+}
+.opftr__country {
+  letter-spacing: 0.14em;
+}
+.opftr__dash {
+  margin-inline: 8px;
+  color: var(--gold);
+}
+
+.opftr__cta {
+  margin-bottom: 28px;
+}
+
+.opftr__socials {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 16px;
-  flex-wrap: wrap;
+  margin-bottom: 48px;
 }
-.dist__socials { display: flex; align-items: center; gap: 10px; }
-.socpill {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 9px 16px;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  color: #e6dfd2;
-  font-size: 11px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  transition: all 0.2s;
-}
-.socpill:hover { border-color: var(--gold); color: var(--gold); }
-.socpill--line:hover { border-color: #06c755; color: #06c755; }
-
-.ftr__top {
-  display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1.1fr;
-  gap: 44px;
-  padding-block: 56px 48px;
-}
-.ftr__brand .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
-.brand__mark {
-  font-family: var(--font-roman);
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--gold);
-  border: 1px solid var(--gold);
+.opsoc {
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
-  width: 34px;
-  height: 34px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  color: #ffffff;
+  transition: transform 0.25s var(--ease), opacity 0.25s;
 }
-.brand__word {
-  font-family: var(--font-roman);
-  font-size: 19px;
-  font-weight: 600;
-  letter-spacing: 0.16em;
+.opsoc:hover {
+  transform: translateY(-2px);
+  opacity: 0.9;
+}
+.opsoc--line {
+  background: #06c755;
+}
+.opsoc--fb {
+  background: #1877f2;
+}
+
+.opftr__emblem {
+  margin-bottom: 40px;
+}
+
+.opftr__links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px 24px;
+  padding-block: 22px;
+  width: 100%;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  font-family: var(--font-geo);
+  font-size: 10.5px;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: #f4f0e8;
 }
-.ftr__about { max-width: 340px; font-size: 14px; line-height: 1.75; color: #a1998c; }
-.ftr__col { display: flex; flex-direction: column; gap: 10px; font-size: 13.5px; }
-.ftr__col h4 { margin-bottom: 6px; color: var(--gold); font-family: var(--font-sans); letter-spacing: 0.18em; }
-.ftr__col a { color: #bfb7a9; transition: color 0.2s; }
-.ftr__col a:hover { color: #fff; }
+.opftr__links a {
+  color: rgba(255, 255, 255, 0.6);
+  transition: color 0.2s;
+}
+.opftr__links a:hover {
+  color: var(--gold);
+}
 
-.ftr__bottom { border-top: 1px solid rgba(255, 255, 255, 0.08); padding-block: 20px; }
-.ftr__bottom .tiny { color: #7e776a; }
-.topbtn {
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  color: #cfc8b9;
-  padding: 7px 14px;
-  border-radius: 999px;
-  transition: all 0.2s;
+.opftr__copy {
+  margin-top: 24px;
+  font-family: var(--font-geo);
+  font-size: 11px;
+  font-weight: 300;
+  letter-spacing: 0.12em;
+  color: rgba(255, 255, 255, 0.42);
 }
-.topbtn:hover { border-color: var(--gold); color: var(--gold); }
 
-@media (max-width: 900px) {
-  .ftr__top { grid-template-columns: 1fr 1fr; gap: 36px; }
-  .ftr__brand { grid-column: 1 / -1; }
+.optop {
+  position: fixed;
+  right: 26px;
+  bottom: 26px;
+  z-index: 55;
+  width: 44px;
+  height: 44px;
+  background: rgba(14, 14, 14, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  color: #ffffff;
+  font-size: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.22s, border-color 0.22s, color 0.22s;
 }
-@media (max-width: 560px) {
-  .ftr__top { grid-template-columns: 1fr; }
+.optop:hover {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: #080808;
 }
 </style>

@@ -1,9 +1,7 @@
 <script setup lang="ts">
-defineProps<{ navItems: { key: string; label: string; to: string }[] }>()
-
 const { t, locale } = useI18n()
 const localePath = useLocalePath()
-const { site, categories, brands } = useSite()
+const { site, brands } = useSite()
 const { isAuthenticated, isAdmin } = useAuth()
 const cart = useCart()
 const route = useRoute()
@@ -12,35 +10,35 @@ const mobileOpen = ref(false)
 const searchOpen = ref(false)
 const query = ref('')
 const collectionsOpen = ref(false)
-const brandsOpen = ref(false)
 const scrolled = ref(false)
 
 let collTimer: any = null
-let brandTimer: any = null
 
 function onCollectionsEnter() {
   clearTimeout(collTimer)
   collectionsOpen.value = true
 }
 function onCollectionsLeave() {
-  collTimer = setTimeout(() => (collectionsOpen.value = false), 140)
-}
-function onBrandsEnter() {
-  clearTimeout(brandTimer)
-  brandsOpen.value = true
-}
-function onBrandsLeave() {
-  brandTimer = setTimeout(() => (brandsOpen.value = false), 140)
+  collTimer = setTimeout(() => (collectionsOpen.value = false), 150)
 }
 
 onMounted(() => {
   const onScroll = () => {
-    scrolled.value = window.scrollY > 36
+    scrolled.value = window.scrollY > 40
   }
   onScroll()
   window.addEventListener('scroll', onScroll, { passive: true })
   onUnmounted(() => window.removeEventListener('scroll', onScroll))
 })
+
+watch(
+  () => route.fullPath,
+  () => {
+    mobileOpen.value = false
+    collectionsOpen.value = false
+    searchOpen.value = false
+  }
+)
 
 function submitSearch() {
   const q = query.value.trim()
@@ -49,16 +47,51 @@ function submitSearch() {
   navigateTo(localePath({ path: '/products', query: q ? { q } : {} }))
 }
 
-const categoryLinks = computed(() =>
-  categories.value
-    .filter((c) => c.slug !== 'watches-jewelry')
-    .slice(0, 6)
-    .map((c) => ({
-      slug: c.slug,
-      name: locale.value === 'en' ? c.nameEn || c.name : c.nameTh || c.name,
-      image: c.image || '/images/p1.jpg'
-    }))
-)
+// Exact 6 Olym Pianus Collections
+const opCollections = computed(() => [
+  {
+    key: 'men',
+    en: 'Men Watch',
+    th: 'นาฬิกาผู้ชาย (Men Watch)',
+    to: localePath({ path: '/products', query: { category: 'men-watches' } }),
+    img: '/images/op/watch-990-083-blue.png'
+  },
+  {
+    key: 'ladies',
+    en: 'Ladies Watch',
+    th: 'นาฬิกาผู้หญิง (Ladies Watch)',
+    to: localePath({ path: '/products', query: { category: 'women-watches' } }),
+    img: '/images/op/watch-990-45-lady.png'
+  },
+  {
+    key: 'sport',
+    en: 'Sport Watch',
+    th: 'นาฬิกาสปอร์ต (Sport Watch)',
+    to: localePath({ path: '/products', query: { category: 'sport-watches' } }),
+    img: '/images/op/watch-899831-green.png'
+  },
+  {
+    key: 'classic',
+    en: 'Classic Watch',
+    th: 'นาฬิกาคลาสสิก (Classic Watch)',
+    to: localePath({ path: '/products', query: { category: 'classic-watches' } }),
+    img: '/images/op/watch-990-083-white.png'
+  },
+  {
+    key: 'essential',
+    en: 'Essential Selection',
+    th: 'Essential Selection',
+    to: localePath({ path: '/products', query: { brand: 'opwatch' } }),
+    img: '/images/op/watch-990-163-black.png'
+  },
+  {
+    key: 'special',
+    en: 'Special Occasion',
+    th: 'Special Occasion',
+    to: localePath({ path: '/products', query: { brand: 'ogival' } }),
+    img: '/images/op/watch-82672-lady.png'
+  }
+])
 
 const brandLinks = computed(() =>
   brands.value.map((b) => ({
@@ -68,417 +101,526 @@ const brandLinks = computed(() =>
   }))
 )
 
-const isHome = computed(() => route.path === '/' || route.path === '/en')
+const normalizedPath = computed(() => route.path.replace(/^\/en(?=\/|$)/, '') || '/')
+
+const hasDarkHero = computed(() => {
+  const p = normalizedPath.value
+  return (
+    p === '/' ||
+    p === '/about' ||
+    p === '/news' ||
+    p === '/contact' ||
+    p === '/products' ||
+    p.startsWith('/brands/')
+  )
+})
 </script>
 
 <template>
-  <header class="hdr" :class="{ 'hdr--scrolled': scrolled || !isHome }">
-    <div v-if="site.announcement" class="announce">
-      <div class="container announce__inner">
-        <span class="tiny upper">{{ site.announcement }}</span>
-      </div>
-    </div>
+  <header class="ophdr" :class="{ 'ophdr--solid': scrolled || !hasDarkHero || mobileOpen || searchOpen }">
+    <div class="ophdr__inner">
+      <!-- Mobile Burger -->
+      <button
+        type="button"
+        class="ophdr__burger"
+        :aria-expanded="mobileOpen"
+        aria-label="Menu"
+        @click="mobileOpen = !mobileOpen"
+      >
+        <span /><span /><span />
+      </button>
 
-    <div class="hdr__inner">
-      <div class="hdr__left">
-        <button class="hdr__burger" :aria-expanded="mobileOpen" aria-label="Menu" @click="mobileOpen = !mobileOpen">
-          <span /><span /><span />
-        </button>
+      <!-- Authentic Olym Pianus Crown-Shield + Script Logo -->
+      <NuxtLink :to="localePath('/')" class="ophdr__logo">
+        <OpCrest size="sm" :sublabel="(site.name || 'OPWATCH').toUpperCase()" />
+      </NuxtLink>
 
-        <NuxtLink :to="localePath('/')" class="brand" @click="mobileOpen = false">
-          <span class="brand__crest" aria-hidden="true">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3">
-              <circle cx="12" cy="12" r="9.5" />
-              <path d="M12 6.5v5.5l3.5 2" />
-              <path d="M9 2.5h6" />
-            </svg>
-          </span>
-          <span class="brand__text">
-            <span class="brand__word">{{ site.name || 'OPWATCH' }}</span>
-            <span class="brand__sub">OFFICIAL BOUTIQUE</span>
-          </span>
+      <!-- Exact olympianus.com Primary Navigation -->
+      <nav class="ophdr__nav" aria-label="Primary">
+        <NuxtLink :to="localePath('/')" class="opnav__link" :class="{ 'is-active': normalizedPath === '/' }">
+          {{ locale === 'en' ? 'HOME' : t('nav.home') }}
         </NuxtLink>
-      </div>
 
-      <nav class="hdr__nav" aria-label="Primary">
-        <NuxtLink :to="localePath('/')" class="navlink">{{ t('nav.home') }}</NuxtLink>
+        <NuxtLink :to="localePath('/about')" class="opnav__link" :class="{ 'is-active': normalizedPath === '/about' }">
+          {{ t('nav.aboutUs') }}
+        </NuxtLink>
 
-        <!-- Collections Mega Dropdown -->
-        <div class="navgroup" @mouseenter="onCollectionsEnter" @mouseleave="onCollectionsLeave">
-          <NuxtLink :to="localePath('/products')" class="navlink">
-            {{ t('nav.collections') }}
-            <span class="navcaret">▾</span>
+        <div class="opnav__group" @mouseenter="onCollectionsEnter" @mouseleave="onCollectionsLeave">
+          <NuxtLink
+            :to="localePath('/products')"
+            class="opnav__link"
+            :class="{ 'is-active': normalizedPath.startsWith('/products') || normalizedPath.startsWith('/brands') }"
+          >
+            {{ locale === 'en' ? 'COLLECTIONS' : t('nav.collections') }}
+            <span class="opnav__caret">▾</span>
           </NuxtLink>
-          <div v-if="collectionsOpen" class="mega" @mouseenter="onCollectionsEnter">
-            <div class="mega__cols">
+
+          <div v-if="collectionsOpen" class="opmega" @mouseenter="onCollectionsEnter">
+            <div class="opmega__cols">
               <div>
-                <p class="mega__label tiny upper">{{ t('nav.collections') }}</p>
-                <div class="mega__grid">
+                <p class="opmega__head">COLLECTIONS</p>
+                <div class="opmega__grid">
                   <NuxtLink
-                    v-for="c in categoryLinks"
-                    :key="c.slug"
-                    :to="localePath({ path: '/products', query: { category: c.slug } })"
-                    class="mega__item"
+                    v-for="c in opCollections"
+                    :key="c.key"
+                    :to="c.to"
+                    class="opmega__item"
                     @click="collectionsOpen = false"
                   >
-                    <span class="mega__img"><img :src="c.image" :alt="c.name" loading="lazy" /></span>
-                    <span class="mega__name">{{ c.name }}</span>
+                    <span class="opmega__thumb">
+                      <img :src="c.img" :alt="c.en" loading="lazy" />
+                    </span>
+                    <span class="opmega__label">{{ locale === 'en' ? c.en : c.th }}</span>
                   </NuxtLink>
                 </div>
               </div>
-              <div v-if="brandLinks.length" class="mega__brands">
-                <p class="mega__label tiny upper">{{ t('nav.brands') }}</p>
+
+              <div v-if="brandLinks.length" class="opmega__houses">
+                <p class="opmega__head">{{ locale === 'en' ? 'WATCH HOUSES' : t('nav.brands') }}</p>
                 <NuxtLink
                   v-for="b in brandLinks"
                   :key="b.slug"
                   :to="localePath('/brands/' + b.slug)"
-                  class="mega__brandlink"
+                  class="opmega__house"
                   @click="collectionsOpen = false"
                 >
-                  <span class="roman" style="font-size: 12px">{{ b.name }}</span>
-                  <span class="tiny faint">{{ b.movement }}</span>
+                  <span class="opmega__housename">{{ b.name }}</span>
+                  <span class="opmega__housemeta">{{ b.movement }}</span>
+                </NuxtLink>
+                <NuxtLink :to="localePath('/products')" class="opmega__all" @click="collectionsOpen = false">
+                  {{ t('common.viewAll') }} →
                 </NuxtLink>
               </div>
             </div>
-            <div class="mega__foot">
-              <NuxtLink :to="localePath('/products')" class="mega__all" @click="collectionsOpen = false">
-                {{ t('common.viewAll') }} →
-              </NuxtLink>
-            </div>
           </div>
         </div>
 
-        <!-- Brands Dropdown -->
-        <div v-if="brandLinks.length" class="navgroup" @mouseenter="onBrandsEnter" @mouseleave="onBrandsLeave">
-          <button type="button" class="navlink navlink--btn">
-            {{ t('nav.brands') }}
-            <span class="navcaret">▾</span>
-          </button>
-          <div v-if="brandsOpen" class="dropdown" @mouseenter="onBrandsEnter">
-            <NuxtLink
-              v-for="b in brandLinks"
-              :key="b.slug"
-              :to="localePath('/brands/' + b.slug)"
-              class="dropdown__item"
-              @click="brandsOpen = false"
-            >
-              <span class="dropdown__title">{{ b.name }}</span>
-              <span class="tiny faint">{{ b.movement }}</span>
-            </NuxtLink>
-          </div>
-        </div>
+        <NuxtLink :to="localePath('/news')" class="opnav__link" :class="{ 'is-active': normalizedPath.startsWith('/news') }">
+          {{ locale === 'en' ? 'NEWS' : t('nav.news') }}
+        </NuxtLink>
 
-        <NuxtLink v-for="item in navItems" :key="item.key" :to="item.to" class="navlink">{{ item.label }}</NuxtLink>
+        <NuxtLink :to="localePath('/contact')" class="opnav__link" :class="{ 'is-active': normalizedPath === '/contact' }">
+          {{ locale === 'en' ? 'CONTACT US' : t('nav.contactUs') }}
+        </NuxtLink>
       </nav>
 
-      <div class="hdr__right">
-        <button class="iconbtn" :aria-label="t('common.search')" @click="searchOpen = !searchOpen">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-            <circle cx="11" cy="11" r="7" /><path d="m20 20-3.2-3.2" />
+      <!-- E-Commerce Utility Icons -->
+      <div class="ophdr__tools">
+        <button type="button" class="optool" :aria-label="t('common.search')" @click="searchOpen = !searchOpen">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="11" cy="11" r="7" /><path d="m20 20-3.4-3.4" />
           </svg>
         </button>
 
-        <NuxtLink v-if="isAdmin" :to="localePath('/office')" class="iconbtn iconbtn--office" :title="t('nav.office')">
+        <NuxtLink v-if="isAdmin" :to="localePath('/office')" class="optool optool--office">
           OFFICE
         </NuxtLink>
 
-        <NuxtLink v-if="isAuthenticated" :to="localePath('/account')" class="iconbtn iconbtn--text" :aria-label="t('nav.account')">
-          {{ t('nav.account') }}
-        </NuxtLink>
-        <NuxtLink v-else :to="localePath('/account/login')" class="iconbtn iconbtn--text" :aria-label="t('nav.login')">
-          {{ t('nav.login') }}
+        <NuxtLink
+          :to="localePath(isAuthenticated ? '/account' : '/account/login')"
+          class="optool optool--account"
+          :aria-label="isAuthenticated ? t('nav.account') : t('nav.login')"
+          :title="isAuthenticated ? t('nav.account') : t('nav.login')"
+        >
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="12" cy="8" r="3.8" />
+            <path d="M4.5 20a7.5 7.5 0 0 1 15 0" />
+          </svg>
         </NuxtLink>
 
-        <button type="button" class="iconbtn cartbtn" :aria-label="t('nav.cart')" @click="cart.drawerOpen.value = true">
+        <button
+          type="button"
+          class="optool optool--cart"
+          :aria-label="t('nav.cart')"
+          @click="cart.drawerOpen.value = true"
+        >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
             <path d="M6 7h12l1 13H5L6 7Z" />
             <path d="M9 7V5a3 3 0 0 1 6 0v2" />
           </svg>
-          <span v-if="cart.count.value > 0" class="cartbtn__count">{{ cart.count.value }}</span>
+          <span v-if="cart.count.value > 0" class="optool__badge">{{ cart.count.value }}</span>
         </button>
 
         <LocaleSwitch />
       </div>
     </div>
 
-    <!-- Search Bar -->
-    <div v-if="searchOpen" class="searchbar">
-      <div class="container searchbar__inner">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-          <circle cx="11" cy="11" r="7" /><path d="m20 20-3.2-3.2" />
+    <!-- Sleek Dark Search Drawer -->
+    <div v-if="searchOpen" class="opsearch">
+      <div class="container opsearch__inner">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="11" cy="11" r="7" /><path d="m20 20-3.4-3.4" />
         </svg>
         <input
           v-model="query"
-          class="searchbar__input"
+          class="opsearch__input"
           type="search"
           :placeholder="t('products.searchPlaceholder')"
           @keyup.enter="submitSearch"
         />
-        <button class="btn btn--sm btn--gold" @click="submitSearch">{{ t('common.search') }}</button>
+        <button type="button" class="btn btn--sm btn--gold" @click="submitSearch">{{ t('common.search') }}</button>
+        <button type="button" class="opsearch__close" aria-label="Close" @click="searchOpen = false">✕</button>
       </div>
     </div>
 
-    <!-- Mobile Drawer -->
-    <div v-if="mobileOpen" class="mobile-menu">
-      <div class="mobile-menu__inner">
-        <NuxtLink :to="localePath('/')" class="mmlink" @click="mobileOpen = false">{{ t('nav.home') }}</NuxtLink>
-        <NuxtLink :to="localePath('/products')" class="mmlink" @click="mobileOpen = false">{{ t('nav.collections') }}</NuxtLink>
+    <!-- Mobile Dark Navigation Drawer -->
+    <div v-if="mobileOpen" class="opmobile">
+      <div class="opmobile__inner">
+        <NuxtLink :to="localePath('/')" class="opmobile__link">{{ locale === 'en' ? 'HOME' : t('nav.home') }}</NuxtLink>
+        <NuxtLink :to="localePath('/about')" class="opmobile__link">{{ t('nav.aboutUs') }}</NuxtLink>
+        <NuxtLink :to="localePath('/products')" class="opmobile__link">{{ locale === 'en' ? 'COLLECTIONS' : t('nav.collections') }}</NuxtLink>
 
-        <div class="mmsub">{{ t('nav.brands') }}</div>
-        <div class="mmsublinks">
-          <NuxtLink
-            v-for="b in brandLinks"
-            :key="b.slug"
-            :to="localePath('/brands/' + b.slug)"
-            class="mmlink mmlink--sub"
-            @click="mobileOpen = false"
-          >
+        <div class="opmobile__sub">
+          <NuxtLink v-for="c in opCollections" :key="c.key" :to="c.to" class="opmobile__sublink">
+            {{ locale === 'en' ? c.en : c.th }}
+          </NuxtLink>
+        </div>
+
+        <div v-if="brandLinks.length" class="opmobile__sub">
+          <NuxtLink v-for="b in brandLinks" :key="b.slug" :to="localePath('/brands/' + b.slug)" class="opmobile__sublink">
             {{ b.name }} — {{ b.movement }}
           </NuxtLink>
         </div>
 
-        <div class="mmsub">{{ t('products.categories') }}</div>
-        <div class="mmsublinks">
-          <NuxtLink
-            v-for="c in categoryLinks"
-            :key="c.slug"
-            :to="localePath({ path: '/products', query: { category: c.slug } })"
-            class="mmlink mmlink--sub"
-            @click="mobileOpen = false"
-          >{{ c.name }}</NuxtLink>
-        </div>
-
-        <NuxtLink v-for="item in navItems" :key="item.key" :to="item.to" class="mmlink" @click="mobileOpen = false">{{ item.label }}</NuxtLink>
-        <NuxtLink :to="localePath('/cart')" class="mmlink" @click="mobileOpen = false">{{ t('nav.cart') }} ({{ cart.count.value }})</NuxtLink>
-
-        <div class="mmsub">{{ t('nav.account') }}</div>
-        <NuxtLink v-if="isAuthenticated" :to="localePath('/account')" class="mmlink mmlink--sub" @click="mobileOpen = false">{{ t('nav.account') }}</NuxtLink>
-        <NuxtLink v-else :to="localePath('/account/login')" class="mmlink mmlink--sub" @click="mobileOpen = false">{{ t('nav.login') }}</NuxtLink>
-        <NuxtLink v-if="isAdmin" :to="localePath('/office')" class="mmlink mmlink--sub" @click="mobileOpen = false">{{ t('nav.office') }} (/office)</NuxtLink>
+        <NuxtLink :to="localePath('/news')" class="opmobile__link">{{ locale === 'en' ? 'NEWS' : t('nav.news') }}</NuxtLink>
+        <NuxtLink :to="localePath('/contact')" class="opmobile__link">{{ locale === 'en' ? 'CONTACT US' : t('nav.contactUs') }}</NuxtLink>
+        <NuxtLink :to="localePath('/cart')" class="opmobile__link">{{ t('nav.cart') }} ({{ cart.count.value }})</NuxtLink>
+        <NuxtLink :to="localePath(isAuthenticated ? '/account' : '/account/login')" class="opmobile__link">
+          {{ isAuthenticated ? t('nav.account') : t('nav.login') }}
+        </NuxtLink>
+        <NuxtLink v-if="isAdmin" :to="localePath('/office')" class="opmobile__link" style="color: var(--gold)">
+          {{ t('nav.office') }} (/office)
+        </NuxtLink>
       </div>
     </div>
   </header>
+
+  <!-- Spacer for pages without a dark hero banner -->
+  <div v-if="!hasDarkHero" class="ophdr-spacer" />
 </template>
 
 <style scoped>
-.hdr {
-  position: sticky;
+.ophdr {
+  position: fixed;
   top: 0;
-  z-index: 60;
-  background: rgba(255, 255, 255, 0.94);
-  backdrop-filter: saturate(180%) blur(14px);
-  border-bottom: 1px solid var(--line);
-  transition: background 0.25s var(--ease), box-shadow 0.25s var(--ease);
+  left: 0;
+  right: 0;
+  z-index: 80;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.72) 0%, rgba(0, 0, 0, 0.25) 68%, rgba(0, 0, 0, 0) 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  transition: background 0.35s var(--ease), border-color 0.35s var(--ease), backdrop-filter 0.35s var(--ease);
 }
-.hdr--scrolled {
-  background: rgba(255, 255, 255, 0.98);
-  box-shadow: 0 4px 24px rgba(20, 19, 17, 0.05);
+.ophdr--solid {
+  background: rgba(8, 8, 8, 0.95);
+  backdrop-filter: saturate(160%) blur(14px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
 }
-.announce {
-  background: #121110;
-  color: #e8dfd0;
-  text-align: center;
-  padding: 7px 0;
-  font-size: 11px;
-  letter-spacing: 0.16em;
+.ophdr-spacer {
+  height: var(--header-h);
+  background: #080808;
 }
-.hdr__inner {
-  max-width: var(--container);
+
+.ophdr__inner {
+  max-width: 1380px;
   margin-inline: auto;
-  padding-inline: 28px;
+  padding-inline: 36px;
   height: var(--header-h);
   display: flex;
   align-items: center;
-  gap: 24px;
-}
-.hdr__left { display: flex; align-items: center; gap: 16px; }
-.hdr__burger { display: none; }
-
-.brand { display: flex; align-items: center; gap: 11px; }
-.brand__crest {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  border: 1px solid var(--gold);
-  color: var(--gold);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-.brand__text { display: flex; flex-direction: column; line-height: 1.05; }
-.brand__word {
-  font-family: var(--font-roman);
-  font-size: 19px;
-  font-weight: 600;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--ink);
-}
-.brand__sub {
-  font-size: 8.5px;
-  letter-spacing: 0.26em;
-  color: var(--gold);
-  margin-top: 2px;
+  gap: 28px;
 }
 
-.hdr__nav { display: flex; align-items: center; gap: 28px; margin-inline: auto; }
-.navgroup { position: relative; }
-.navlink {
-  font-size: 11.5px;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  font-weight: 500;
-  color: var(--ink-soft);
-  transition: color 0.2s;
-  padding: 8px 0;
-  display: inline-flex;
-  align-items: center;
+.ophdr__burger {
+  display: none;
+  flex-direction: column;
   gap: 5px;
   background: transparent;
   border: 0;
+  padding: 6px;
 }
-.navcaret { font-size: 9px; opacity: 0.6; }
-.navlink:hover, .navlink.router-link-active { color: var(--gold); }
+.ophdr__burger span {
+  display: block;
+  width: 20px;
+  height: 1.4px;
+  background: #ffffff;
+}
 
-.mega {
-  position: absolute;
-  top: calc(100% + 4px);
-  left: -40px;
-  min-width: 620px;
-  background: var(--paper);
-  border: 1px solid var(--line);
-  box-shadow: var(--shadow-lg);
-  padding: 26px 28px 20px;
+.ophdr__logo {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
 }
-.mega__cols { display: grid; grid-template-columns: 1.55fr 1fr; gap: 28px; }
-.mega__label { color: var(--gold); margin-bottom: 14px; }
-.mega__grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-.mega__item { display: flex; align-items: center; gap: 12px; padding: 7px 8px; border-radius: var(--radius); transition: background 0.2s; }
-.mega__item:hover { background: var(--ivory); }
-.mega__img { width: 42px; height: 42px; border-radius: 50%; overflow: hidden; background: var(--sand); flex: none; border: 1px solid var(--line); }
-.mega__img img { width: 100%; height: 100%; object-fit: cover; }
-.mega__name { font-size: 13px; letter-spacing: 0.03em; }
-.mega__brands { border-left: 1px solid var(--line); padding-left: 24px; display: flex; flex-direction: column; gap: 10px; }
-.mega__brandlink {
+
+.ophdr__nav {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 8px 10px;
-  border-radius: var(--radius);
-  transition: background 0.2s;
+  align-items: center;
+  gap: 34px;
+  margin-left: auto;
+  margin-right: 18px;
 }
-.mega__brandlink:hover { background: var(--ivory); color: var(--gold); }
-.mega__foot { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); }
-.mega__all { font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold); }
 
-.dropdown {
+.opnav__group {
+  position: relative;
+}
+
+.opnav__link {
+  font-family: var(--font-geo);
+  font-size: 11.5px;
+  font-weight: 400;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.84);
+  padding: 10px 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  position: relative;
+  transition: color 0.22s;
+}
+.opnav__link::after {
+  content: '';
   position: absolute;
-  top: calc(100% + 4px);
   left: 0;
-  min-width: 230px;
-  background: var(--paper);
-  border: 1px solid var(--line);
-  box-shadow: var(--shadow-lg);
-  padding: 12px;
+  right: 0;
+  bottom: 3px;
+  height: 1px;
+  background: var(--gold);
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 0.28s var(--ease);
+}
+.opnav__link:hover,
+.opnav__link.is-active {
+  color: #ffffff;
+}
+.opnav__link:hover::after,
+.opnav__link.is-active::after {
+  transform: scaleX(1);
+}
+.opnav__caret {
+  font-size: 9px;
+  opacity: 0.65;
+}
+
+/* Dark Collections Mega Menu */
+.opmega {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: -140px;
+  width: 640px;
+  background: #0d0d0d;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.65);
+  padding: 28px 30px;
+}
+.opmega__cols {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: 28px;
+}
+.opmega__head {
+  font-family: var(--font-geo);
+  font-size: 10px;
+  letter-spacing: 0.28em;
+  color: var(--gold);
+  margin-bottom: 16px;
+}
+.opmega__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+.opmega__item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+  transition: background 0.2s;
+}
+.opmega__item:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+.opmega__thumb {
+  width: 44px;
+  height: 44px;
+  background: #ffffff;
+  padding: 4px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.opmega__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.opmega__label {
+  font-size: 12.5px;
+  color: #eaeaea;
+  letter-spacing: 0.05em;
+}
+.opmega__houses {
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  padding-left: 24px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 10px;
 }
-.dropdown__item {
+.opmega__house {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  padding: 9px 12px;
-  border-radius: var(--radius);
-  transition: background 0.2s;
+  padding: 7px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
-.dropdown__item:hover { background: var(--ivory); }
-.dropdown__title { font-family: var(--font-roman); font-size: 12.5px; letter-spacing: 0.12em; text-transform: uppercase; }
+.opmega__house:hover .opmega__housename {
+  color: var(--gold);
+}
+.opmega__housename {
+  font-family: var(--font-geo);
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #ffffff;
+}
+.opmega__housemeta {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+}
+.opmega__all {
+  margin-top: auto;
+  padding-top: 8px;
+  font-size: 10.5px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
 
-.hdr__right { display: flex; align-items: center; gap: 6px; margin-left: auto; }
-.iconbtn {
+/* Right Utility Tools */
+.ophdr__tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.optool {
+  width: 36px;
+  height: 36px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 38px;
-  height: 38px;
-  border: 0;
   background: transparent;
-  color: var(--ink-soft);
-  border-radius: 999px;
+  border: 0;
+  color: rgba(255, 255, 255, 0.85);
   position: relative;
-  transition: background 0.2s, color 0.2s;
-  font-size: 12px;
+  transition: color 0.2s;
 }
-.iconbtn:hover { background: var(--sand); color: var(--ink); }
-.iconbtn--text { font-size: 11.5px; letter-spacing: 0.15em; text-transform: uppercase; min-width: auto; padding-inline: 10px; }
-.iconbtn--office {
-  font-size: 10px;
-  letter-spacing: 0.16em;
-  font-weight: 600;
+.optool:hover {
   color: var(--gold);
-  border: 1px solid var(--gold-tint);
-  background: var(--gold-tint);
-  padding-inline: 10px;
-  height: 28px;
 }
-.cartbtn__count {
+.optool--office {
+  width: auto;
+  height: 26px;
+  padding-inline: 10px;
+  font-family: var(--font-geo);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  color: var(--gold);
+  border: 1px solid rgba(197, 164, 109, 0.55);
+}
+.optool__badge {
   position: absolute;
   top: 2px;
-  right: 2px;
-  min-width: 17px;
-  height: 17px;
+  right: 1px;
+  min-width: 16px;
+  height: 16px;
   padding: 0 4px;
   border-radius: 999px;
   background: var(--gold);
-  color: #fff;
-  font-size: 10px;
-  line-height: 17px;
+  color: #080808;
+  font-family: var(--font-geo);
+  font-size: 9.5px;
+  font-weight: 700;
+  line-height: 16px;
   text-align: center;
-  font-weight: 600;
 }
 
-.searchbar { border-top: 1px solid var(--line); background: var(--paper); }
-.searchbar__inner { display: flex; align-items: center; gap: 12px; padding-block: 14px; color: var(--ink-muted); }
-.searchbar__input { border: 0; outline: 0; background: transparent; font-size: 15px; flex: 1; color: var(--ink); }
-
-.mobile-menu { display: none; }
-.mmlink { display: block; padding: 13px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
-.mmlink--sub { padding-left: 14px; font-size: 13px; color: var(--ink-muted); }
-.mmsub { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); margin-top: 16px; margin-bottom: 4px; }
-.mmsublinks { display: flex; flex-direction: column; }
-
-@media (max-width: 1080px) {
-  .hdr__nav { gap: 20px; }
-  .mega { min-width: 500px; }
+/* Search Overlay */
+.opsearch {
+  background: #0c0c0c;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
 }
-@media (max-width: 940px) {
-  .hdr__nav { display: none; }
-  .hdr__burger {
-    display: inline-flex;
-    flex-direction: column;
-    gap: 4px;
-    align-items: center;
-    justify-content: center;
-    width: 38px;
-    height: 38px;
-    border: 0;
-    background: transparent;
-  }
-  .hdr__burger span { display: block; width: 18px; height: 1.4px; background: var(--ink); }
-  .hdr__right { margin-left: auto; }
-  .iconbtn--text, .iconbtn--office { display: none; }
-  .mobile-menu {
-    display: block;
-    position: fixed;
-    inset: var(--header-h) 0 auto 0;
-    background: var(--paper);
-    border-bottom: 1px solid var(--line);
-    box-shadow: var(--shadow-lg);
-    z-index: 59;
-    max-height: calc(100vh - var(--header-h));
-    overflow-y: auto;
-  }
-  .mobile-menu__inner { padding: 18px 22px 32px; }
+.opsearch__inner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-block: 16px;
+  color: rgba(255, 255, 255, 0.65);
+}
+.opsearch__input {
+  flex: 1;
+  background: transparent;
+  border: 0;
+  outline: 0;
+  color: #ffffff;
+  font-family: var(--font-sans);
+  font-size: 15px;
+}
+.opsearch__input::placeholder {
+  color: rgba(255, 255, 255, 0.42);
+}
+.opsearch__close {
+  background: transparent;
+  border: 0;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 16px;
+  padding: 6px;
+}
+
+/* Mobile Menu */
+.opmobile {
+  background: #0a0a0a;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  max-height: calc(100vh - var(--header-h));
+  overflow-y: auto;
+}
+.opmobile__inner {
+  padding: 18px 24px 36px;
+  display: flex;
+  flex-direction: column;
+}
+.opmobile__link {
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  font-family: var(--font-geo);
+  font-size: 12.5px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #ffffff;
+}
+.opmobile__sub {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 0 8px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.opmobile__sublink {
+  padding: 8px 0;
+  font-size: 12.5px;
+  color: rgba(255, 255, 255, 0.68);
+}
+
+@media (max-width: 1120px) {
+  .ophdr__inner { padding-inline: 22px; gap: 18px; }
+  .ophdr__nav { gap: 22px; }
+  .opmega { left: -200px; width: 560px; }
+}
+@media (max-width: 960px) {
+  .ophdr__nav { display: none; }
+  .ophdr__burger { display: inline-flex; }
+  .ophdr__tools { margin-left: auto; }
+  .optool--office { display: none; }
 }
 </style>

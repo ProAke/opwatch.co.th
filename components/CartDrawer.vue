@@ -136,8 +136,8 @@ const remainingForFreeShipping = computed(() => {
 .dempty { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; color: var(--ink-muted); }
 
 .dline { display: grid; grid-template-columns: 74px 1fr auto; gap: 14px; padding: 16px 0; border-bottom: 1px solid var(--line); align-items: start; }
-.dline__img { width: 74px; height: 74px; background: var(--sand); border-radius: var(--radius); overflow: hidden; }
-.dline__img img { width: 100%; height: 100%; object-fit: cover; }
+.dline__img { width: 74px; height: 74px; background: #ffffff; border: 1px solid var(--line); padding: 4px; overflow: hidden; }
+.dline__img img { width: 100%; height: 100%; object-fit: contain; }
 .dline__main { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .dline__name { font-family: var(--font-display); font-size: 15px; line-height: 1.3; }
 .dline__name:hover { color: var(--gold); }

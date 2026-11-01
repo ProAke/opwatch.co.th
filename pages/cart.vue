@@ -88,8 +88,8 @@ useHead({ title: `${t('cart.title')} — ${site.value.name}` })
 .cartitems__end { text-align: right; }
 
 .cline { display: grid; grid-template-columns: 96px 2.2fr 1fr 1fr 40px; gap: 18px; align-items: center; padding: 20px 0; border-bottom: 1px solid var(--line); }
-.cline__img { width: 96px; height: 96px; background: var(--sand); border-radius: var(--radius); overflow: hidden; }
-.cline__img img { width: 100%; height: 100%; object-fit: cover; }
+.cline__img { width: 96px; height: 96px; background: #ffffff; border: 1px solid var(--line); padding: 6px; overflow: hidden; }
+.cline__img img { width: 100%; height: 100%; object-fit: contain; }
 .cline__info { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .cline__name { font-family: var(--font-display); font-size: 17px; }
 .cline__name:hover { color: var(--gold); }

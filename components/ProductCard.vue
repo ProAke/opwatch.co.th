@@ -16,8 +16,10 @@ const name = computed(() =>
 const primaryImage = computed(() => {
   const images = props.product.images
   if (Array.isArray(images) && images.length) return images[0]
-  return typeof images === 'string' && images ? images : '/images/hero-watch.jpg'
+  return typeof images === 'string' && images ? images : '/images/op/watch-990-083-blue.png'
 })
+
+const isCutoutPrimary = computed(() => primaryImage.value.endsWith('.png') || primaryImage.value.includes('cutout'))
 
 const hoverImage = computed(() => {
   const images = props.product.images
@@ -65,168 +67,197 @@ function add() {
 </script>
 
 <template>
-  <article class="pcard">
-    <NuxtLink :to="localePath({ path: '/products/' + product.slug })" class="pcard__media">
+  <article class="opcard">
+    <NuxtLink :to="localePath({ path: '/products/' + product.slug })" class="opcard__stage">
       <img
-        class="pcard__img pcard__img--primary"
+        class="opcard__img opcard__img--primary"
+        :class="{ 'is-cutout': isCutoutPrimary }"
         :src="primaryImage"
         :alt="name"
         :loading="priority ? 'eager' : 'lazy'"
       />
       <img
         v-if="hoverImage"
-        class="pcard__img pcard__img--hover"
+        class="opcard__img opcard__img--hover"
         :src="hoverImage"
         :alt="name"
         loading="lazy"
       />
-      <div class="pcard__badges">
-        <span v-if="isNew" class="pcard__tag">NEW</span>
-        <span v-if="discountPct > 0" class="pcard__sale">-{{ discountPct }}%</span>
+      <div class="opcard__flags">
+        <span v-if="isNew" class="opcard__flag">NEW</span>
+        <span v-if="discountPct > 0" class="opcard__flag opcard__flag--sale">-{{ discountPct }}%</span>
       </div>
     </NuxtLink>
 
-    <div class="pcard__body">
-      <div class="pcard__meta tiny upper">
-        <span class="pcard__brand">{{ brandLabel }}</span>
-        <span v-if="product.sku" class="pcard__sku">{{ product.sku }}</span>
-      </div>
+    <div class="opcard__meta">
+      <h6 class="opcard__sku">
+        <NuxtLink :to="localePath({ path: '/products/' + product.slug })">
+          {{ product.sku || name }}
+        </NuxtLink>
+      </h6>
 
-      <NuxtLink :to="localePath({ path: '/products/' + product.slug })" class="pcard__name">
-        {{ name }}
+      <NuxtLink :to="localePath({ path: '/products/' + product.slug })" class="opcard__title">
+        <span class="opcard__brand">{{ brandLabel }}</span>
+        <span class="opcard__sep">·</span>
+        <span>{{ name }}</span>
       </NuxtLink>
 
-      <div class="pcard__price">
+      <div class="opcard__price">
         <span class="price">{{ formatPrice(product.price, site.currencySymbol, locale === 'en' ? 'en-US' : 'th-TH') }}</span>
         <span v-if="comparePrice > 0" class="price-compare">
           {{ formatPrice(comparePrice, site.currencySymbol, locale === 'en' ? 'en-US' : 'th-TH') }}
         </span>
       </div>
 
-      <button type="button" class="pcard__add" :disabled="Number(product.stock || 0) <= 0" @click="add">
-        <span v-if="Number(product.stock || 0) <= 0" class="tiny upper">{{ t('common.outOfStock') }}</span>
-        <span v-else class="tiny upper">+ {{ t('common.addToCart') }}</span>
+      <button type="button" class="opcard__btn" :disabled="Number(product.stock || 0) <= 0" @click="add">
+        <span v-if="Number(product.stock || 0) <= 0">{{ t('common.outOfStock') }}</span>
+        <span v-else>+ {{ t('common.addToCart') }}</span>
       </button>
     </div>
   </article>
 </template>
 
 <style scoped>
-.pcard {
+/* Authentic olympianus.com Borderless White Studio Cutout Card */
+.opcard {
   display: flex;
   flex-direction: column;
-  background: var(--paper);
-  border: 1px solid var(--line);
-  transition: border-color 0.35s var(--ease), transform 0.35s var(--ease), box-shadow 0.35s var(--ease);
+  background: #ffffff;
+  text-align: center;
 }
-.pcard:hover {
-  border-color: var(--gold-soft);
-  transform: translateY(-4px);
-  box-shadow: var(--shadow);
-}
-.pcard__media {
+
+.opcard__stage {
   position: relative;
   display: block;
-  aspect-ratio: 4 / 4.6;
+  aspect-ratio: 1 / 1.06;
+  background: #ffffff;
   overflow: hidden;
-  background: #f5f2ec;
 }
-.pcard__img {
+
+.opcard__img {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: opacity 0.55s var(--ease), transform 0.75s var(--ease);
+  transition: opacity 0.6s var(--ease), transform 0.75s var(--ease);
 }
-.pcard__img--hover { opacity: 0; }
-.pcard:hover .pcard__img--hover { opacity: 1; transform: scale(1.04); }
-.pcard:hover .pcard__img--primary { transform: scale(1.04); }
+.opcard__img.is-cutout {
+  object-fit: contain;
+  padding: 16px;
+}
+.opcard__img--hover {
+  opacity: 0;
+  object-fit: cover;
+  padding: 0;
+}
+.opcard:hover .opcard__img--hover {
+  opacity: 1;
+  transform: scale(1.04);
+}
+.opcard:hover .opcard__img--primary {
+  transform: scale(1.03);
+}
 
-.pcard__badges {
+.opcard__flags {
   position: absolute;
-  top: 12px;
-  left: 12px;
-  right: 12px;
+  top: 10px;
+  left: 10px;
+  right: 10px;
   display: flex;
   justify-content: space-between;
   pointer-events: none;
   z-index: 2;
 }
-.pcard__tag {
-  background: rgba(255, 255, 255, 0.94);
-  color: var(--gold);
+.opcard__flag {
+  font-family: var(--font-geo);
   font-size: 9px;
   font-weight: 600;
-  letter-spacing: 0.18em;
-  padding: 4px 9px;
-  border: 1px solid var(--gold-tint);
+  letter-spacing: 0.2em;
+  padding: 3px 8px;
+  background: #0a0a0a;
+  color: #ffffff;
 }
-.pcard__sale {
+.opcard__flag--sale {
   margin-left: auto;
-  background: #141311;
-  color: #f7f4ee;
-  font-size: 9.5px;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  padding: 4px 9px;
+  background: var(--gold);
+  color: #080808;
 }
 
-.pcard__body {
-  padding: 18px 18px 16px;
+.opcard__meta {
+  padding: 16px 10px 8px;
   display: flex;
   flex-direction: column;
-  gap: 7px;
-  flex: 1;
-  text-align: center;
-}
-.pcard__meta {
-  display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 8px;
-  color: var(--ink-faint);
-  font-size: 10px;
+  gap: 5px;
+  flex: 1;
 }
-.pcard__brand { color: var(--gold); font-weight: 600; }
-.pcard__sku::before { content: '· '; }
 
-.pcard__name {
-  font-family: var(--font-display);
-  font-size: 18px;
+.opcard__sku {
+  font-family: var(--font-geo);
+  font-size: 13px;
   font-weight: 500;
-  line-height: 1.3;
-  color: var(--ink);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #111111;
+  margin: 0;
+}
+.opcard__sku a:hover {
+  color: var(--gold);
+}
+
+.opcard__title {
+  font-size: 13px;
+  color: var(--ink-muted);
+  line-height: 1.45;
   transition: color 0.2s;
 }
-.pcard__name:hover { color: var(--gold); }
+.opcard__title:hover {
+  color: #0a0a0a;
+}
+.opcard__brand {
+  color: var(--gold);
+  font-weight: 500;
+  text-transform: uppercase;
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+}
+.opcard__sep {
+  margin-inline: 5px;
+  opacity: 0.45;
+}
 
-.pcard__price {
+.opcard__price {
   display: flex;
   align-items: baseline;
   justify-content: center;
-  gap: 9px;
+  gap: 8px;
   margin-top: 2px;
 }
-.pcard__add {
-  margin-top: auto;
-  padding: 11px 12px;
-  border: 1px solid var(--line);
+
+.opcard__btn {
+  margin-top: 10px;
+  padding: 9px 20px;
+  border: 1px solid #e0e0e0;
   background: transparent;
-  color: var(--ink);
-  font-size: 10.5px;
-  letter-spacing: 0.18em;
+  color: #111111;
+  font-family: var(--font-geo);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
-  transition: all 0.22s var(--ease);
+  transition: background 0.25s var(--ease), color 0.25s var(--ease), border-color 0.25s var(--ease);
 }
-.pcard__add:hover:not(:disabled) {
-  background: #141311;
-  border-color: #141311;
-  color: #f7f4ee;
+.opcard:hover .opcard__btn:not(:disabled) {
+  border-color: #0f0f0f;
 }
-.pcard__add:disabled {
-  color: var(--ink-faint);
+.opcard__btn:hover:not(:disabled) {
+  background: #0f0f0f;
+  border-color: #0f0f0f;
+  color: #ffffff;
+}
+.opcard__btn:disabled {
+  opacity: 0.45;
   cursor: not-allowed;
-  background: var(--ivory);
 }
 </style>

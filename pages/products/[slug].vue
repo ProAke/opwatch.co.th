@@ -159,7 +159,11 @@ useHead(() => ({ title: `${name.value} — ${site.value.name}` }))
         <!-- Studio Gallery -->
         <div class="gallery">
           <div class="gallery__main">
-            <img :src="images[activeImage]" :alt="name" />
+            <img
+              :src="images[activeImage]"
+              :alt="name"
+              :class="{ 'is-cutout': images[activeImage]?.endsWith('.png') || images[activeImage]?.includes('cutout') }"
+            />
           </div>
           <div v-if="images.length > 1" class="gallery__thumbs">
             <button
@@ -347,11 +351,12 @@ useHead(() => ({ title: `${name.value} — ${site.value.name}` }))
 .pdetail { padding-block: 52px; background: var(--paper); border-bottom: 1px solid var(--line); }
 .pdetail__grid { display: grid; grid-template-columns: 1.05fr 1fr; gap: 60px; align-items: start; }
 
-.gallery__main { aspect-ratio: 4 / 4.4; overflow: hidden; background: #f5f2ec; border: 1px solid var(--line); }
+.gallery__main { aspect-ratio: 1 / 1.05; overflow: hidden; background: #ffffff; border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; }
 .gallery__main img { width: 100%; height: 100%; object-fit: cover; }
+.gallery__main img.is-cutout { object-fit: contain; padding: 28px; }
 .gallery__thumbs { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
-.gthumb { width: 76px; height: 76px; border: 1px solid var(--line-strong); background: var(--paper); padding: 0; overflow: hidden; }
-.gthumb img { width: 100%; height: 100%; object-fit: cover; }
+.gthumb { width: 76px; height: 76px; border: 1px solid var(--line-strong); background: #ffffff; padding: 4px; overflow: hidden; }
+.gthumb img { width: 100%; height: 100%; object-fit: contain; }
 .gthumb.is-active { border-color: var(--gold); border-width: 2px; }
 
 .pinfo { display: flex; flex-direction: column; gap: 15px; }

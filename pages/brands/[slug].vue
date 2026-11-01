@@ -111,22 +111,22 @@ useHead(() => ({
 <style scoped>
 .bhero {
   position: relative;
-  min-height: 440px;
+  min-height: 480px;
   display: flex;
   align-items: center;
-  background: #121110;
-  color: #f7f4ee;
+  background: #080808;
+  color: #ffffff;
   overflow: hidden;
 }
 .bhero__bg { position: absolute; inset: 0; }
-.bhero__bg img { width: 100%; height: 100%; object-fit: cover; opacity: 0.42; }
+.bhero__bg img { width: 100%; height: 100%; object-fit: cover; opacity: 0.46; }
 .bhero__bg::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, rgba(14, 13, 12, 0.92) 0%, rgba(14, 13, 12, 0.58) 60%, rgba(14, 13, 12, 0.3) 100%);
+  background: linear-gradient(90deg, rgba(8, 8, 8, 0.92) 0%, rgba(8, 8, 8, 0.58) 60%, rgba(8, 8, 8, 0.3) 100%);
 }
-.bhero__inner { position: relative; z-index: 2; padding-block: 72px; max-width: 720px; }
+.bhero__inner { position: relative; z-index: 2; padding-top: calc(var(--header-h) + 56px); padding-bottom: 68px; max-width: 720px; }
 .bhero__title {
   font-family: var(--font-roman);
   font-size: clamp(2.4rem, 5vw, 4rem);

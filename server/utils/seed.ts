@@ -33,7 +33,7 @@ export interface SeedCategory {
   icon: string
   bannerImage: string
   sortOrder: number
-  parentSlug?: string
+  parentSlug?: string | null
 }
 
 export interface SeedProduct {
@@ -49,6 +49,7 @@ export interface SeedProduct {
   currency: string
   images: string[]
   shortDescription: string
+  shortDescriptionEn?: string
   description: string
   descriptionEn: string
   descriptionTh: string
@@ -76,8 +77,19 @@ export interface SeedCampaign {
   active: boolean
 }
 
-/** Watch face photography used as placeholder imagery for the seeded catalogue. */
-const FACES = ['/images/p1.jpg', '/images/p2.jpg', '/images/p3.jpg', '/images/p4.jpg', '/images/p5.jpg', '/images/p6.jpg']
+/** Authentic Olym Pianus / Opwatch studio cutout + dark obsidian stone hover pairs */
+const STUDIO_PAIRS: [string, string, string][] = [
+  ['/images/op/watch-990-083-blue.png', '/images/op/portrait-8934msk.jpg', '/images/op/lifestyle-men.jpg'],
+  ['/images/op/watch-899831-green.png', '/images/op/square-diver-glow.jpg', '/images/op/banner-899832ags.jpg'],
+  ['/images/op/watch-130-06-white.png', '/images/op/hero-gold-stones.jpg', '/images/op/lifestyle-lady.jpg'],
+  ['/images/op/watch-990-45-lady.png', '/images/op/lifestyle-lady.jpg', '/images/op/square-gold-stones.jpg'],
+  ['/images/op/watch-899833-black.png', '/images/op/portrait-diver.jpg', '/images/op/lifestyle-sport.jpg'],
+  ['/images/op/watch-990-083-white.png', '/images/op/portrait-99141agnsk.jpg', '/images/op/openheart-stones.jpg'],
+  ['/images/op/watch-130-06-black.png', '/images/op/portrait-82671m.jpg', '/images/op/hero-ceramic-dark.jpg'],
+  ['/images/op/watch-990-163-black.png', '/images/op/portrait-8909amk.jpg', '/images/op/lifestyle-men.jpg'],
+  ['/images/op/watch-82672-lady.png', '/images/op/hero-ceramic-dark.jpg', '/images/op/portrait-82671m.jpg'],
+  ['/images/op/cutout-130-gold.jpg', '/images/op/square-gold-stones.jpg', '/images/op/hero-gold-stones.jpg']
+]
 
 export const defaultBrands = (): SeedBrand[] => [
   {
@@ -93,12 +105,12 @@ export const defaultBrands = (): SeedBrand[] => [
     tagline: 'เวลาที่คู่ควร',
     taglineEn: 'Time, beautifully kept',
     story:
-      'Opwatch คือนาฬิกาที่ออกแบบในประเทศไทย โดยใช้เครื่องจับเวลาจากญี่ปุ่น ผสานงานฝีมือชั้นสูงกับดีไซน์ร่วมสมัย ราคาเป็นกลาง เหมาะสำหรับคนรุ่นใหม่ที่ต้องการนาฬิกาดีๆ ในราคาที่เอื้อมถึง',
+      'Opwatch ผสานแรงบันดาลใจจากจิตวิญญาณโอลิมปิกเข้ากับเครื่องจักรกลและควอตซ์คุณภาพสูงจากประเทศญี่ปุ่น กระจกแซฟไฟร์ป้องกันรอยขีดข่วน และงานขัดแต่งตัวเรือนสุดประณีตในราคาที่เข้าถึงได้จริง',
     storyEn:
-      'Opwatch is designed in Thailand around Japanese movements, pairing refined craftsmanship with contemporary design. Honest pricing for a first real watch.',
-    accentColor: '#b98a44',
-    logo: '/images/c-men.jpg',
-    heroImage: '/images/hero-watch.jpg',
+      'Opwatch fuses Olympic-inspired design heritage with dependable Japanese movements, scratch-resistant sapphire crystal, and refined surgical-steel finishing.',
+    accentColor: '#c5a46d',
+    logo: '/images/op/watch-990-083-blue.png',
+    heroImage: '/images/op/hero-gold-stones.jpg',
     sortOrder: 1,
     active: true
   },
@@ -115,12 +127,12 @@ export const defaultBrands = (): SeedBrand[] => [
     tagline: 'ความสง่างามเหนือกาลเวลา',
     taglineEn: 'Elegance beyond time',
     story:
-      'Olympinus เป็นแบรนด์นาฬิกาสวิสที่สะท้อนความสง่างามเหนือกาลเวลา ด้วยความเที่ยงตรงและงานฝีมืออันประณีต พิถีพิถันในทุกขั้นตอนการผลิต ตั้งแต่ตัวเรือนไปจนถึงเครื่องจับเวลา',
+      'Olympinus สะท้อนมรดกแห่งศาสตร์เรือนเวลาสวิส ภายใต้คำขวัญ Faster, Higher, Stronger พิถีพิถันในทุกขั้นตอนตั้งแต่กระจกแซฟไฟร์ไปจนถึงกลไกความเที่ยงตรงสูง',
     storyEn:
-      'A Swiss watchmaker built on precision and patience. Olympinus timepieces carry the craft of the Swiss Jura from case to movement.',
-    accentColor: '#2f5d50',
-    logo: '/images/c-men.jpg',
-    heroImage: '/images/p3.jpg',
+      'Rooted in Swiss watchmaking tradition and inspired by the Olympic motto "Faster, Higher, Stronger", Olympinus unites precision engineering with timeless prestige.',
+    accentColor: '#c5a46d',
+    logo: '/images/op/watch-990-083-white.png',
+    heroImage: '/images/op/banner-899832ags.jpg',
     sortOrder: 2,
     active: true
   },
@@ -134,15 +146,15 @@ export const defaultBrands = (): SeedBrand[] => [
     movement: 'เครื่องสวิส',
     movementEn: 'Swiss movement',
     positioning: 'premium',
-    tagline: '百年瑞士奢華腕錶',
-    taglineEn: 'A century of Swiss luxury',
+    tagline: 'ตำนานเรือนเวลาหรูสวิสตั้งแต่ปี 1903',
+    taglineEn: 'A century of Swiss luxury since 1903',
     story:
-      'Ogival ก่อตั้งในปี 1903 ณ สวิตเซอร์แลนด์ ด้วยสัญลักษณ์ปลากระโดด สู่นาฬิกาลักชัวรีที่สืบทอดความงามแห่งกาลเวลา การันตีด้วยงานจิวเวลรี่และเพชรที่รังสรรค์ด้วยมือ',
+      'Ogival ก่อตั้งในปี 1903 ณ ประเทศสวิตเซอร์แลนด์ ภายใต้สัญลักษณ์ปลากระโดดแห่งความโชคดี รังสรรค์นาฬิกาลักชัวรีประดับเพชรและกลไกชั้นสูงด้วยงานฝีมือระดับมาสเตอร์',
     storyEn:
-      'Founded in Switzerland in 1903 under the symbol of a leaping fish, Ogival is a century of luxury watchmaking — hand-set jewellery, diamonds and mechanical artistry.',
-    accentColor: '#6b4a8a',
-    logo: '/images/c-ladies.jpg',
-    heroImage: '/images/p5.jpg',
+      'Founded in La Chaux-de-Fonds, Switzerland in 1903 under the emblem of the lucky leaping fish, Ogival crafts haute-horlogerie diamond and mechanical timepieces.',
+    accentColor: '#c5a46d',
+    logo: '/images/op/watch-82672-lady.png',
+    heroImage: '/images/op/hero-ceramic-dark.jpg',
     sortOrder: 3,
     active: true
   }
@@ -157,38 +169,66 @@ export const defaultCategories = (): SeedCategory[] => [
     description: 'แหล่งรวมนาฬิกาและเครื่องประดับลักชัวรีจากแบรนด์ดัง',
     descriptionEn: 'A destination for luxury watches and fine jewellery.',
     descriptionTh: 'แหล่งรวมนาฬิกาและเครื่องประดับลักชัวรีจากแบรนด์ดัง',
-    image: '/images/c-men.jpg',
-    icon: '/images/c-men.jpg',
-    bannerImage: '/images/hero-watch.jpg',
+    image: '/images/op/watch-990-083-blue.png',
+    icon: '/images/op/watch-990-083-blue.png',
+    bannerImage: '/images/op/hero-gold-stones.jpg',
     sortOrder: 1,
     parentSlug: null
   },
   {
     slug: 'men-watches',
     name: 'นาฬิกาผู้ชาย',
-    nameEn: "Men's Watches",
+    nameEn: 'Men Watch',
     nameTh: 'นาฬิกาผู้ชาย',
-    description: 'นาฬิกาสำหรับสุภาพบุรุษ',
-    descriptionEn: 'Timepieces for men.',
-    descriptionTh: 'นาฬิกาสำหรับสุภาพบุรุษ',
-    image: '/images/p1.jpg',
-    icon: '/images/p1.jpg',
-    bannerImage: '/images/c-men.jpg',
+    description: 'เรือนเวลาสำหรับสุภาพบุรุษ ดีไซน์ภูมิฐานและทรงพลัง',
+    descriptionEn: 'Mechanical & quartz timepieces crafted for discerning gentlemen.',
+    descriptionTh: 'เรือนเวลาสำหรับสุภาพบุรุษ ดีไซน์ภูมิฐานและทรงพลัง',
+    image: '/images/op/watch-990-083-blue.png',
+    icon: '/images/op/watch-990-083-blue.png',
+    bannerImage: '/images/op/lifestyle-men.jpg',
     sortOrder: 1,
     parentSlug: 'watches-jewelry'
   },
   {
     slug: 'women-watches',
     name: 'นาฬิกาผู้หญิง',
-    nameEn: "Women's Watches",
+    nameEn: 'Ladies Watch',
     nameTh: 'นาฬิกาผู้หญิง',
-    description: 'นาฬิกาสำหรับสุภาพสตรี',
-    descriptionEn: 'Timepieces for women.',
-    descriptionTh: 'นาฬิกาสำหรับสุภาพสตรี',
-    image: '/images/p2.jpg',
-    icon: '/images/p2.jpg',
-    bannerImage: '/images/c-ladies.jpg',
+    description: 'ความงดงามอ่อนช้อยบนข้อมือสุภาพสตรี',
+    descriptionEn: 'Refined proportions, mother-of-pearl dials, and radiant detailing.',
+    descriptionTh: 'ความงดงามอ่อนช้อยบนข้อมือสุภาพสตรี',
+    image: '/images/op/watch-990-45-lady.png',
+    icon: '/images/op/watch-990-45-lady.png',
+    bannerImage: '/images/op/lifestyle-lady.jpg',
     sortOrder: 2,
+    parentSlug: 'watches-jewelry'
+  },
+  {
+    slug: 'sport-watches',
+    name: 'นาฬิกาสปอร์ต',
+    nameEn: 'Sport Watch',
+    nameTh: 'นาฬิกาสปอร์ต',
+    description: 'สปอร์ตสมรรถนะสูง พรายน้ำสว่างคมชัด กันน้ำลึก',
+    descriptionEn: 'Super-luminous indices, rotating bezels, and rugged water resistance.',
+    descriptionTh: 'สปอร์ตสมรรถนะสูง พรายน้ำสว่างคมชัด กันน้ำลึก',
+    image: '/images/op/watch-899831-green.png',
+    icon: '/images/op/watch-899831-green.png',
+    bannerImage: '/images/op/lifestyle-sport.jpg',
+    sortOrder: 3,
+    parentSlug: 'watches-jewelry'
+  },
+  {
+    slug: 'classic-watches',
+    name: 'นาฬิกาคลาสสิก',
+    nameEn: 'Classic Watch',
+    nameTh: 'นาฬิกาคลาสสิก',
+    description: 'คลาสสิกเหนือกาลเวลา สง่างามในทุกโอกาสสำคัญ',
+    descriptionEn: 'Timeless dress silhouettes and open-heart mechanical artistry.',
+    descriptionTh: 'คลาสสิกเหนือกาลเวลา สง่างามในทุกโอกาสสำคัญ',
+    image: '/images/op/watch-990-083-white.png',
+    icon: '/images/op/watch-990-083-white.png',
+    bannerImage: '/images/op/hero-gold-stones.jpg',
+    sortOrder: 4,
     parentSlug: 'watches-jewelry'
   },
   {
@@ -196,68 +236,40 @@ export const defaultCategories = (): SeedCategory[] => [
     name: 'นาฬิกาเด็ก',
     nameEn: "Kid's Watches",
     nameTh: 'นาฬิกาเด็ก',
-    description: 'นาฬิกาสำหรับเด็ก',
-    descriptionEn: 'Timepieces for kids.',
-    descriptionTh: 'นาฬิกาสำหรับเด็ก',
-    image: '/images/p4.jpg',
-    icon: '/images/p4.jpg',
-    bannerImage: '/images/p4.jpg',
-    sortOrder: 3,
-    parentSlug: 'watches-jewelry'
-  },
-  {
-    slug: 'sport-watches',
-    name: 'นาฬิกาสปอร์ต',
-    nameEn: 'Sport Watches',
-    nameTh: 'นาฬิกาสปอร์ต',
-    description: 'นาฬิกาสปอร์ตทนทาน',
-    descriptionEn: 'Rugged sport timepieces.',
-    descriptionTh: 'นาฬิกาสปอร์ตทนทาน',
-    image: '/images/p6.jpg',
-    icon: '/images/p6.jpg',
-    bannerImage: '/images/c-sport.jpg',
-    sortOrder: 4,
-    parentSlug: 'watches-jewelry'
-  },
-  {
-    slug: 'classic-watches',
-    name: 'นาฬิกาคลาสสิก',
-    nameEn: 'Classic Watches',
-    nameTh: 'นาฬิกาคลาสสิก',
-    description: 'นาฬิกาคลาสสิกเหนือกาลเวลา',
-    descriptionEn: 'Timeless classic timepieces.',
-    descriptionTh: 'นาฬิกาคลาสสิกเหนือกาลเวลา',
-    image: '/images/p3.jpg',
-    icon: '/images/p3.jpg',
-    bannerImage: '/images/c-men.jpg',
+    description: 'นาฬิกาขนาดกะทัดรัด น้ำหนักเบา สวมใส่สบาย',
+    descriptionEn: 'Compact lightweight timepieces for young wrists.',
+    descriptionTh: 'นาฬิกาขนาดกะทัดรัด น้ำหนักเบา สวมใส่สบาย',
+    image: '/images/op/watch-130-06-white.png',
+    icon: '/images/op/watch-130-06-white.png',
+    bannerImage: '/images/op/hero-gold-stones.jpg',
     sortOrder: 5,
     parentSlug: 'watches-jewelry'
   },
   {
     slug: 'men-jewelry',
     name: 'จิวเวลรี่ผู้ชาย',
-    nameEn: "Men's Jewelry",
+    nameEn: "Men's Jewelry Watch",
     nameTh: 'จิวเวลรี่ผู้ชาย',
-    description: 'เครื่องประดับสำหรับสุภาพบุรุษ',
-    descriptionEn: 'Jewellery for men.',
-    descriptionTh: 'เครื่องประดับสำหรับสุภาพบุรุษ',
-    image: '/images/p5.jpg',
-    icon: '/images/p5.jpg',
-    bannerImage: '/images/p5.jpg',
+    description: 'เรือนเวลาประดับเพชรแท้ระดับมาสเตอร์พีซสำหรับสุภาพบุรุษ',
+    descriptionEn: 'Diamond-set luxury timepieces for men.',
+    descriptionTh: 'เรือนเวลาประดับเพชรแท้ระดับมาสเตอร์พีซสำหรับสุภาพบุรุษ',
+    image: '/images/op/watch-990-163-black.png',
+    icon: '/images/op/watch-990-163-black.png',
+    bannerImage: '/images/op/hero-ceramic-dark.jpg',
     sortOrder: 6,
     parentSlug: 'watches-jewelry'
   },
   {
     slug: 'women-jewelry',
     name: 'จิวเวลรี่ผู้หญิง',
-    nameEn: "Women's Jewelry",
+    nameEn: "Women's Jewelry Watch",
     nameTh: 'จิวเวลรี่ผู้หญิง',
-    description: 'เครื่องประดับสำหรับสุภาพสตรี',
-    descriptionEn: 'Jewellery for women.',
-    descriptionTh: 'เครื่องประดับสำหรับสุภาพสตรี',
-    image: '/images/p2.jpg',
-    icon: '/images/p2.jpg',
-    bannerImage: '/images/c-ladies.jpg',
+    description: 'เรือนเวลาประดับเพชรและเซรามิกหรูสำหรับสุภาพสตรี',
+    descriptionEn: 'Diamond and ceramic jewellery watches for women.',
+    descriptionTh: 'เรือนเวลาประดับเพชรและเซรามิกหรูสำหรับสุภาพสตรี',
+    image: '/images/op/watch-82672-lady.png',
+    icon: '/images/op/watch-82672-lady.png',
+    bannerImage: '/images/op/hero-ceramic-dark.jpg',
     sortOrder: 7,
     parentSlug: 'watches-jewelry'
   }
@@ -276,177 +288,189 @@ export const defaultProducts = (): SeedProduct[] => {
     stock: number,
     badges: string[],
     sortOrder: number,
+    pairIdx: number,
     shortDescription: string,
     shortDescriptionEn: string,
     descriptionTh: string,
     descriptionEn: string,
     specs: Record<string, string>
-  ): SeedProduct => ({
-    sku, name, nameEn, nameTh, slug: sku.toLowerCase(), categorySlug, brandSlug,
-    price, originalPrice, currency: 'THB',
-    images: [
-      FACES[sortOrder % FACES.length],
-      FACES[(sortOrder + 2) % FACES.length],
-      categorySlug === 'women-watches' || categorySlug === 'women-jewelry'
-        ? '/images/c-ladies.jpg'
-        : categorySlug === 'sport-watches'
-          ? '/images/c-sport.jpg'
-          : '/images/hero-watch.jpg'
-    ],
-    shortDescription, shortDescriptionEn: shortDescriptionEn,
-    description: descriptionEn, descriptionEn: descriptionEn, descriptionTh: descriptionTh,
-    specs, stock, status: 'active', badges, featured: badges.includes('NEW'), sortOrder
-  })
+  ): SeedProduct => {
+    const pair = STUDIO_PAIRS[pairIdx % STUDIO_PAIRS.length]
+    return {
+      sku,
+      name,
+      nameEn,
+      nameTh,
+      slug: sku.toLowerCase(),
+      categorySlug,
+      brandSlug,
+      price,
+      originalPrice,
+      currency: 'THB',
+      images: [pair[0], pair[1], pair[2]],
+      shortDescription,
+      shortDescriptionEn,
+      description: descriptionEn,
+      descriptionEn,
+      descriptionTh,
+      specs,
+      stock,
+      status: 'active',
+      badges,
+      featured: badges.includes('NEW') || sortOrder <= 6,
+      sortOrder
+    }
+  }
 
   return [
     // ── Opwatch · Japanese movement · entry–mid ──────────────────────────
-    mk('OW-M1001', 'Lumen Automatic 40', 'Lumen Automatic 40', 'ลูเมน ออโตเมติก 40',
-      'men-watches', 'opwatch', 18900, 22900, 24, ['SALE'], 1,
-      'ออโตเมติก 40 มม. หน้าปัดลูเมน', 'Automatic 40mm, luminous dial',
-      'นาฬิกาออโตเมติกขนาด 40 มม. หน้าปัดส่องแสงในที่มืด ตัวเรือนสตีล สายสเตลลิส',
-      'An automatic 40mm timepiece with a luminous dial and brushed steel case.',
-      { 'ตัวเรือน': 'สตีล 40 มม.', 'เครื่อง': 'ออโตเมติกญี่ปุ่น', 'กระจก': 'Crystal', 'กันน้ำ': '50 ม.' }),
-    mk('OW-M1002', 'Meridian Chronograph', 'Meridian Chronograph', 'เมอริเดียน โครโนกราฟ',
-      'men-watches', 'opwatch', 24500, null, 18, ['NEW'], 2,
-      'โครโนกราฟ 3 ตา กันน้ำ 100 ม.', 'Tri-compax chronograph, 100m',
-      'โครโนกราฟ 3 ตา กันน้ำ 100 เมตร สายสเตลลิส',
-      'A tri-compax chronograph rated to 100 metres.',
-      { 'ตัวเรือน': 'สตีล 42 มม.', 'เครื่อง': 'quartz ญี่ปุ่น', 'กระจก': 'Crystal', 'กันน้ำ': '100 ม.' }),
-    mk('OW-L2001', 'Petite Rose 28', 'Petite Rose 28', 'เปติต โรส 28',
-      'women-watches', 'opwatch', 16400, 19900, 30, ['SALE'], 3,
-      '28 มม. โรสโกลด์ สายเรซิ่น', '28mm rose gold, resin strap',
-      'นาฬิกาสตรี 28 มม. โรสโกลด์ สายเรซิ่น',
-      'A 28mm rose-gold dress watch on a resin strap.',
-      { 'ตัวเรือน': 'โรสโกลด์ 28 มม.', 'เครื่อง': 'quartz ญี่ปุ่น', 'กระจก': 'Crystal', 'กันน้ำ': '30 ม.' }),
-    mk('OW-L2002', 'Essence Minimal 30', 'Essence Minimal 30', 'เอสเซนซ์ มินิมอล 30',
-      'women-watches', 'opwatch', 12900, null, 26, [], 4,
-      '30 มม. มินิมอล หน้าปัดขาว', '30mm minimal, white dial',
-      'นาฬิกาสตรีมินิมอล 30 มม. หน้าปัดขาว',
-      'A minimalist 30mm white-dial watch.',
-      { 'ตัวเรือน': 'สตีล 30 มม.', 'เครื่อง': 'quartz ญี่ปุ่น', 'กระจก': 'Crystal', 'กันน้ำ': '30 ม.' }),
-    mk('OW-S3001', 'Abyss Diver 40', 'Abyss Diver 40', 'แอบบิส ไดเวอร์ 40',
-      'sport-watches', 'opwatch', 21500, 25900, 15, ['SALE'], 5,
-      'ไดเวอร์ 200 ม. สายสเตลลิส', 'Diver to 200m, steel bracelet',
-      'นาฬิกาไดเวอร์กันน้ำ 200 เมตร',
-      'A dive watch rated to 200 metres.',
-      { 'ตัวเรือน': 'สตีล 40 มม.', 'เครื่อง': 'automatic ญี่ปุ่น', 'กระจก': 'Crystal', 'กันน้ำ': '200 ม.' }),
-    mk('OW-C4001', 'Heritage Dress 38', 'Heritage Dress 38', 'เฮริเทจ เดรส 38',
-      'classic-watches', 'opwatch', 23900, 27900, 20, ['SALE'], 6,
-      'เดรส 38 มม. สายหนัง', 'Dress 38mm, leather strap',
-      'นาฬิกาเดรสคลาสสิก 38 มม. สายหนัง',
-      'A classic dress watch on leather, 38mm.',
-      { 'ตัวเรือน': 'ทองเหลือง 38 มม.', 'เครื่อง': 'automatic ญี่ปุ่น', 'กระจก': 'Crystal', 'กันน้ำ': '50 ม.' }),
-    mk('OW-K1001', 'Little Star 26', 'Little Star 26', 'ลิตเติล สตาร์ 26',
-      'kids-watches', 'opwatch', 6900, 8900, 40, ['SALE'], 7,
-      '26 มม. สำหรับเด็ก กันน้ำ', '26mm kids, water resistant',
-      'นาฬิกาเด็ก 26 มม. กันน้ำ',
-      'A 26mm water-resistant watch for kids.',
-      { 'ตัวเรือน': 'เรซิ่น 26 มม.', 'เครื่อง': 'quartz ญี่ปุ่น', 'กันน้ำ': '30 ม.' }),
+    mk('OW-M1001', 'Lumen Automatic 40', 'Lumen Open-Heart Automatic 40', 'ลูเมน โอเพ่นฮาร์ท ออโตเมติก 40',
+      'men-watches', 'opwatch', 18900, 22900, 24, ['NEW', 'SALE'], 1, 0,
+      'ออโตเมติกญี่ปุ่น 40 มม. หน้าปัดน้ำเงิน Open-Heart กระจกแซฟไฟร์', 'Japanese automatic 40mm, blue guilloché open-heart dial, sapphire crystal',
+      'เรือนเวลาออโตเมติกขนาด 40 มม. โชว์กลไก Open-Heart บนหน้าปัดสีน้ำเงินแกะลายกิโยเช่ ตัวเรือนสเตนเลสสตีลทูโทน กระจกแซฟไฟร์แท้กันรอย',
+      'A 40mm open-heart automatic timepiece featuring a deep royal-blue guilloché dial, sapphire crystal, and two-tone surgical steel bracelet.',
+      { 'Case Size': '40 mm Surgical Steel', 'Movement': 'Japanese Automatic (24h Subdial)', 'Crystal': 'Sapphire Crystal', 'Water Resistance': '5 ATM (50m)' }),
+    mk('OW-M1002', 'Meridian Chronograph', 'Meridian Automatic Black 41', 'เมอริเดียน ออโตเมติก แบล็ค 41',
+      'men-watches', 'opwatch', 24500, null, 18, ['NEW'], 2, 7,
+      'ออโตเมติกหน้าปัดดำ 41 มม. กันน้ำ 100 ม. กระจกแซฟไฟร์', 'Black dial automatic 41mm, sapphire crystal, 100m water resistance',
+      'นาฬิกาสุภาพบุรุษหน้าปัดสีดำเข้มคมชัด ขนาด 41 มม. ขอบตัวเรือนสเตนเลสสตีลปัดเงาสลับด้าน กันน้ำลึก 100 เมตร',
+      'Commanding 41mm black-dial automatic timepiece crafted in brushed and polished stainless steel with 100m water resistance.',
+      { 'Case Size': '41 mm Stainless Steel', 'Movement': 'Japanese Automatic', 'Crystal': 'Sapphire Crystal', 'Water Resistance': '10 ATM (100m)' }),
+    mk('OW-L2001', 'Petite Rose 28', 'Petite Gold Quartz 28 (130-06LK)', 'เปติต โกลด์ ควอตซ์ 28',
+      'women-watches', 'opwatch', 16400, 19900, 30, ['NEW', 'SALE'], 3, 2,
+      '28 มม. ตัวเรือนทอง สายหนังแท้ กระจกแซฟไฟร์', '28mm gold-tone slim case, genuine leather strap, sapphire crystal',
+      'นาฬิกาสุภาพสตรีดีไซน์บางเฉียบ 28 มม. หน้าปัดขาวมินิมอลเข็มทอง จับคู่สายหนังแท้สีดำคลาสสิก',
+      'Ultra-slim 28mm gold-tone dress watch with crisp white dial, slender baton indices, and genuine black calfskin strap.',
+      { 'Case Size': '28 mm Slim Gold PVD', 'Movement': 'Japanese Precision Quartz', 'Crystal': 'Sapphire Crystal', 'Water Resistance': '3 ATM (30m)' }),
+    mk('OW-L2002', 'Essence Minimal 30', 'Essence Diamond Bezel 30', 'เอสเซนซ์ ไดมอนด์ 30',
+      'women-watches', 'opwatch', 12900, null, 26, [], 4, 3,
+      '30 มม. ขอบประดับคริสตัล หน้าปัดขาวมุก', '30mm crystal-set bezel, luminous white dial',
+      'นาฬิกาสตรีขนาด 30 มม. ขอบตัวเรือนประดับคริสตัลเจียระไนสะท้อนแสงงดงาม สวมใส่สบายทุกวัน',
+      'Graceful 30mm timepiece framed by a radiant crystal-set bezel and paired with a supple leather strap.',
+      { 'Case Size': '30 mm Two-Tone Steel', 'Movement': 'Japanese Quartz', 'Crystal': 'Sapphire Crystal', 'Water Resistance': '3 ATM (30m)' }),
+    mk('OW-S3001', 'Abyss Diver 40', 'Super Luminous Diver 40 (899832AGS)', 'ซูเปอร์ ลูมินัส ไดเวอร์ 40',
+      'sport-watches', 'opwatch', 21500, 25900, 15, ['NEW', 'SALE'], 5, 1,
+      'สปอร์ตไดเวอร์ 40 มม. พรายน้ำ Super Luminous สว่างพิเศษ', 'Super Luminous 40mm sports automatic diver, sapphire crystal',
+      'นาฬิกาสปอร์ตไดเวอร์รุ่นไอคอนิก 40 มม. โดดเด่นด้วยพรายน้ำสีเขียวมรกตสว่างคมชัดในที่มืด ขอบเซรามิกหมุนได้ทิศทางเดียว และกระจกแซฟไฟร์เลนส์ขยายวันที่',
+      'Iconic 40mm sports mechanical diver engineered with intense emerald Super-LumiNova markers, unidirectional bezel, and sapphire cyclops crystal.',
+      { 'Case Size': '40 mm Brushed 316L Steel', 'Movement': 'Automatic Mechanical', 'Crystal': 'Sapphire with Cyclops', 'Water Resistance': '10 ATM (100m)' }),
+    mk('OW-C4001', 'Heritage Dress 38', 'Heritage Open-Heart Gold 39 (99141)', 'เฮริเทจ โอเพ่นฮาร์ท โกลด์ 39',
+      'classic-watches', 'opwatch', 23900, 27900, 20, ['NEW', 'SALE'], 6, 5,
+      'คลาสสิก Open-Heart 39 มม. หน้าปัดขาวเข็มดาบทอง', 'Classic 39mm white open-heart dial, two-tone jubilee bracelet',
+      'นาฬิกาเดรสคลาสสิก 39 มม. เผยจังหวะการทำงานของจักรกลที่ตำแหน่ง 9 นาฬิกา หน้าปัดขาวสะอาดตาตัดกับมาร์กเกอร์สีทอง',
+      'Timeless 39mm dress automatic showcasing a 9 o’clock open-heart escapement window and dauphine gold hands.',
+      { 'Case Size': '39 mm Two-Tone Steel', 'Movement': 'Japanese Automatic Open-Heart', 'Crystal': 'Sapphire Crystal', 'Water Resistance': '5 ATM (50m)' }),
+    mk('OW-K1001', 'Little Star 26', 'Classic Slim Noir 26 (130-06B)', 'คลาสสิก สลิม นัวร์ 26',
+      'kids-watches', 'opwatch', 6900, 8900, 40, ['SALE'], 7, 6,
+      '26 มม. ขนาดกะทัดรัด น้ำหนักเบา หน้าปัดดำทอง', 'Compact 26mm slim black-and-gold quartz watch',
+      'นาฬิกาขนาดกะทัดรัด 26 มม. น้ำหนักเบาเป็นพิเศษ ตัวเรือนบางสวมใส่ง่ายสำหรับข้อมือเล็ก',
+      'Featherlight 26mm ultra-thin quartz timepiece in jet black and warm gold.',
+      { 'Case Size': '26 mm Ultra-Slim', 'Movement': 'Japanese Quartz', 'Crystal': 'Sapphire Crystal', 'Water Resistance': '3 ATM (30m)' }),
 
     // ── Olympinus · Swiss movement · mid–high ───────────────────────────
-    mk('OL-M2001', 'Meridian Automatic 40', 'Meridian Automatic 40', 'เมอริเดียน ออโตเมติก 40',
-      'men-watches', 'olympianus', 58900, null, 12, ['NEW'], 8,
-      'ออโตเมติกสวิส 40 มม. สตีล', 'Swiss automatic, 40mm steel',
-      'นาฬิกาออโตเมติกสวิส 40 มม. ตัวเรือนสตีล',
-      'A Swiss automatic, 40mm, in brushed steel.',
-      { 'ตัวเรือน': 'สตีล 40 มม.', 'เครื่อง': 'Swiss automatic', 'กระจก': 'Sapphire', 'กันน้ำ': '100 ม.' }),
-    mk('OL-M2002', 'Aurora Chronograph 42', 'Aurora Chronograph 42', 'ออโรรา โครโนกราฟ 42',
-      'men-watches', 'olympianus', 72500, 89000, 9, ['SALE'], 9,
-      'โครโนกราฟสวิส 42 มม.', 'Swiss chronograph, 42mm',
-      'โครโนกราฟสวิส 42 มม. สายสเตลลิส',
-      'A Swiss chronograph, 42mm.',
-      { 'ตัวเรือน': 'สตีล 42 มม.', 'เครื่อง': 'Swiss chronograph', 'กระจก': 'Sapphire', 'กันน้ำ': '100 ม.' }),
-    mk('OL-L3001', 'Liora Pearl 28', 'Liora Pearl 28', 'ลิโอร่า เพิร์ล 28',
-      'women-watches', 'olympianus', 45900, null, 14, [], 10,
-      '28 มม. สายเพิร์ล', '28mm, pearl strap',
-      'นาฬิกาสตรี 28 มม. สายเพิร์ล',
-      'A 28mm watch on a pearl strap.',
-      { 'ตัวเรือน': 'โรสโกลด์ 28 มม.', 'เครื่อง': 'Swiss quartz', 'กระจก': 'Sapphire', 'กันน้ำ': '30 ม.' }),
-    mk('OL-L3002', 'Selene Minimal 30', 'Selene Minimal 30', 'เซลีน มินิมอล 30',
-      'women-watches', 'olympianus', 39000, 46000, 16, ['SALE'], 11,
-      '30 มม. มินิมอล', '30mm minimal',
-      'นาฬิกาสตรีมินิมอล 30 มม.',
-      'A minimalist 30mm watch.',
-      { 'ตัวเรือน': 'สตีล 30 มม.', 'เครื่อง': 'Swiss quartz', 'กระจก': 'Sapphire', 'กันน้ำ': '30 ม.' }),
-    mk('OL-S4001', 'Vertex Diver 41', 'Vertex Diver 41', 'เวอร์ติซ์ ไดเวอร์ 41',
-      'sport-watches', 'olympianus', 68000, 82000, 8, ['SALE'], 12,
-      'ไดเวอร์สวิส 300 ม.', 'Swiss diver, 300m',
-      'นาฬิกาไดเวอร์สวิสกันน้ำ 300 เมตร',
-      'A Swiss diver rated to 300 metres.',
-      { 'ตัวเรือน': 'สตีล 41 มม.', 'เครื่อง': 'Swiss automatic', 'กระจก': 'Sapphire', 'กันน้ำ': '300 ม.' }),
-    mk('OL-C5001', 'Heritage Gold 38', 'Heritage Gold 38', 'เฮริเทจ โกลด์ 38',
-      'classic-watches', 'olympianus', 95000, null, 6, ['NEW'], 13,
-      'เดรสทอง 38 มม. สายหนัง', 'Gold dress, 38mm leather',
-      'นาฬิกาเดรสทองคำ 38 มม. สายหนัง',
-      'A gold dress watch, 38mm, on leather.',
-      { 'ตัวเรือน': 'ทอง 38 มม.', 'เครื่อง': 'Swiss automatic', 'กระจก': 'Sapphire', 'กันน้ำ': '50 ม.' }),
+    mk('OL-M2001', 'Meridian Automatic 40', 'Olympinus Sovereign Gold 39 (130-07MK)', 'โอลิมปินัส ซอฟเวอเรน โกลด์ 39',
+      'men-watches', 'olympianus', 58900, null, 12, ['NEW'], 8, 9,
+      'สวิสคลาสสิก 39 มม. ตัวเรือนทอง สายหนังจระเข้สีดำ', 'Swiss movement 39mm gold case, white dial, black leather strap',
+      'เรือนเวลาสวิสระดับเรือธง 130-07MK ตัวเรือนสีทองขัดเงาคู่หน้าปัดขาวบริสุทธิ์ เข็มและหลักชั่วโมงเรียวบาง สง่างามเหนือกาลเวลา',
+      'Signature 130-07MK flagship dress timepiece combining Swiss precision, a mirror-polished gold case, and pure white dial.',
+      { 'Case Size': '39 mm Gold PVD Steel', 'Movement': 'Swiss Precision Movement', 'Crystal': 'Domed Sapphire', 'Water Resistance': '5 ATM (50m)' }),
+    mk('OL-M2002', 'Aurora Chronograph 42', 'Olympinus Sport Chrono Stealth 42 (899833)', 'โอลิมปินัส สปอร์ต โครโน 42',
+      'men-watches', 'olympianus', 72500, 89000, 9, ['SALE'], 9, 4,
+      'สปอร์ตสวิส 42 มม. ขอบดำทอง สายยางสมรรถนะสูง', 'Swiss sport 42mm rose-gold & matte black bezel, FKM strap',
+      'สปอร์ตเรือนเวลาขนาด 42 มม. ผสานตัวเรือนโทนสีทองเข้ากับขอบดำด้านและสายยางคุณภาพสูง ทนทานทุกกิจกรรม',
+      'Bold 42mm sport timepiece pairing a warm gold case with a matte-black tachymetric bezel and integrated black strap.',
+      { 'Case Size': '42 mm Gold & Matte Black', 'Movement': 'Swiss Automatic Chronograph', 'Crystal': 'Anti-Reflective Sapphire', 'Water Resistance': '10 ATM (100m)' }),
+    mk('OL-L3001', 'Liora Pearl 28', 'Olympinus Ceramic Midnight 30 (82672LK)', 'โอลิมปินัส เซรามิก มิดไนท์ 30',
+      'women-watches', 'olympianus', 45900, null, 14, ['NEW'], 10, 8,
+      'เซรามิกสีดำเงา 30 มม. ประดับเพชรบนหน้าปัด', '30mm high-gloss black ceramic bracelet, diamond hour markers',
+      'ความหรูหราระดับมิดไนท์ด้วยสายและตัวเรือนไฮเทคเซรามิกสีดำเงางาม ตัดกับกรอบสีทองและมาร์กเกอร์ประดับคริสตัลเพชร',
+      'High-gloss black ceramic jewellery timepiece accented with warm gold links and sparkling diamond-cut indices.',
+      { 'Case Size': '30 mm High-Tech Ceramic', 'Movement': 'Swiss Quartz', 'Crystal': 'Sapphire Crystal', 'Water Resistance': '5 ATM (50m)' }),
+    mk('OL-L3002', 'Selene Minimal 30', 'Olympinus Selene Pearl 30', 'โอลิมปินัส เซลีน เพิร์ล 30',
+      'women-watches', 'olympianus', 39000, 46000, 16, ['SALE'], 11, 2,
+      'สวิสควอตซ์ 30 มม. มินิมอลหน้าปัดขาวบริสุทธิ์', 'Swiss quartz 30mm minimalist dress timepiece',
+      'เรือนเวลาสวิสสำหรับสุภาพสตรีที่ชื่นชอบความเรียบหรู ตัวเรือนบางพิเศษสวมใส่แนบข้อมือ',
+      'Minimalist 30mm Swiss quartz dress watch crafted for effortless everyday elegance.',
+      { 'Case Size': '30 mm Polished Steel', 'Movement': 'Swiss Quartz', 'Crystal': 'Sapphire Crystal', 'Water Resistance': '3 ATM (30m)' }),
+    mk('OL-S4001', 'Vertex Diver 41', 'Olympinus Emerald Diver 41 (899831G)', 'โอลิมปินัส เอมเมอรัลด์ ไดเวอร์ 41',
+      'sport-watches', 'olympianus', 68000, 82000, 8, ['SALE'], 12, 1,
+      'ไดเวอร์สวิส 41 มม. ขอบเขียวมรกต กันน้ำ 300 ม.', 'Swiss 41mm emerald-bezel automatic diver, 300m',
+      'นาฬิกาดำน้ำกลไกสวิสขนาด 41 มม. โดดเด่นด้วยหน้าปัดและขอบเซรามิกสีเขียวมรกต กันน้ำลึก 300 เมตร',
+      'Professional 41mm Swiss automatic diver featuring a sunburst emerald dial and ceramic bezel rated to 300m.',
+      { 'Case Size': '41 mm 316L Steel', 'Movement': 'Swiss Automatic', 'Crystal': 'Sapphire with AR Coating', 'Water Resistance': '30 ATM (300m)' }),
+    mk('OL-C5001', 'Heritage Gold 38', 'Olympinus Heritage Open-Heart 38', 'โอลิมปินัส เฮริเทจ โอเพ่นฮาร์ท 38',
+      'classic-watches', 'olympianus', 95000, null, 6, ['NEW'], 13, 5,
+      'สวิสออโตเมติก Open-Heart 38 มม. ทองคำ 18K PVD', 'Swiss automatic open-heart 38mm, sapphire exhibition back',
+      'ผลงานระดับเรือนเอกจาก Olympinus ผสานความเที่ยงตรงของกลไกสวิสเข้ากับช่องหน้าต่างโชว์จักรกลสมดุลอย่างวิจิตร',
+      'Masterpiece 38mm Swiss automatic dress watch with exhibition balance wheel and sapphire caseback.',
+      { 'Case Size': '38 mm 18K Gold PVD', 'Movement': 'Swiss Automatic', 'Crystal': 'Dual Sapphire', 'Water Resistance': '5 ATM (50m)' }),
 
     // ── Ogival · Swiss luxury · high-end ────────────────────────────────
-    mk('OG-M6001', 'Meteor Tourbillon 40', 'Meteor Tourbillon 40', 'เมทีเออร์ ทัวร์บิロン 40',
-      'men-watches', 'ogival', 388000, null, 4, ['NEW'], 14,
-      'ทัวร์บิロン สวิส 40 มม.', 'Swiss tourbillon, 40mm',
-      'นาฬิกาทัวร์บิロンสวิส 40 มม. ตัวเรือนทอง',
-      'A Swiss tourbillon in a 40mm gold case.',
-      { 'ตัวเรือน': 'ทอง 40 มม.', 'เครื่อง': 'Swiss tourbillon', 'กระจก': 'Sapphire', 'กันน้ำ': '30 ม.' }),
-    mk('OG-M6002', 'Aurora Diamond 41', 'Aurora Diamond 41', 'ออโรรา ไดมอนด์ 41',
-      'men-jewelry', 'ogival', 458000, null, 3, ['NEW'], 15,
-      'โครโนกราฟเพชร 41 มม.', 'Diamond chronograph, 41mm',
-      'นาฬิกาโครโนกราฟประดับเพชร 41 มม.',
-      'A diamond-set chronograph, 41mm.',
-      { 'ตัวเรือน': 'ทองขาว 41 มม.', 'เครื่อง': 'Swiss chronograph', 'เพชร': '1.2 กะรัต', 'กันน้ำ': '50 ม.' }),
-    mk('OG-L7001', 'Liora Jewel 28', 'Liora Jewel 28', 'ลิโอร่า จูเอล 28',
-      'women-jewelry', 'ogival', 268000, 315000, 7, ['SALE'], 16,
-      'จิวเวลรี่เพชร 28 มม.', 'Diamond jewellery watch, 28mm',
-      'นาฬิกาจิวเวลรี่ประดับเพชร 28 มม.',
-      'A diamond jewellery watch, 28mm.',
-      { 'ตัวเรือน': 'ทอง 28 มม.', 'เครื่อง': 'Swiss quartz', 'เพชร': '2.0 กะรัต', 'กันน้ำ': '30 ม.' }),
-    mk('OG-L7002', 'Selene Pearl 30', 'Selene Pearl 30', 'เซลีน เพิร์ล 30',
-      'women-jewelry', 'ogival', 198000, null, 9, [], 17,
-      'จิวเวลรี่เพิร์ล 30 มม.', 'Pearl jewellery watch, 30mm',
-      'นาฬิกาจิวเวลรี่มุก 30 มม.',
-      'A pearl jewellery watch, 30mm.',
-      { 'ตัวเรือน': 'ทอง 30 มม.', 'เครื่อง': 'Swiss quartz', 'มุก': 'น้ำจืด', 'กันน้ำ': '30 ม.' }),
-    mk('OG-S8001', 'Vertex Grand 41', 'Vertex Grand 41', 'เวอร์ติซ์ แกรนด์ 41',
-      'sport-watches', 'ogival', 328000, null, 5, [], 18,
-      'แกรนด์ โครโน 41 มม.', 'Grand chrono, 41mm',
-      'นาฬิกาแกรนด์โครโนกราฟ 41 มม.',
-      'A grand chronograph, 41mm.',
-      { 'ตัวเรือน': 'สตีล 41 มม.', 'เครื่อง': 'Swiss grand chronograph', 'กระจก': 'Sapphire', 'กันน้ำ': '100 ม.' }),
-    mk('OG-K9001', 'Little Star 26', 'Little Star 26', 'ลิตเติล สตาร์ 26',
-      'kids-watches', 'ogival', 98000, null, 10, ['NEW'], 19,
-      'จิวเวลรี่เด็ก 26 มม.', 'Kids jewellery watch, 26mm',
-      'นาฬิกาจิวเวลรี่สำหรับเด็ก 26 มม.',
-      'A jewellery watch for kids, 26mm.',
-      { 'ตัวเรือน': 'ทอง 26 มม.', 'เครื่อง': 'Swiss quartz', 'กันน้ำ': '30 ม.' })
+    mk('OG-M6001', 'Meteor Tourbillon 40', 'Ogival Imperial Open-Heart 40', 'โอจิวาล อิมพีเรียล ออโตเมติก 40',
+      'men-watches', 'ogival', 388000, null, 4, ['NEW'], 14, 0,
+      'สวิสลักชัวรี 40 มม. กลไกชั้นสูง ขัดแต่งด้วยมือ', 'Swiss haute horlogerie 40mm hand-finished mechanical watch',
+      'สุดยอดเรือนเวลาลักชัวรีจาก Ogival 1903 รังสรรค์กลไกสวิสขัดแต่งลวดลายด้วยมือทุกชิ้นส่วน พร้อมกระจกแซฟไฟร์ทรงโดม',
+      'Haute-horlogerie 40mm Swiss timepiece from Ogival 1903 featuring hand-decorated bridges and blued steel screws.',
+      { 'Case Size': '40 mm 18K Gold & Steel', 'Movement': 'Swiss Haute Horlogerie Automatic', 'Crystal': 'Domed Anti-Reflective Sapphire', 'Water Resistance': '5 ATM (50m)' }),
+    mk('OG-M6002', 'Aurora Diamond 41', 'Ogival Diamond Noir 41', 'โอจิวาล ไดมอนด์ นัวร์ 41',
+      'men-jewelry', 'ogival', 458000, null, 3, ['NEW'], 15, 7,
+      'จิวเวลรี่สวิส 41 มม. ประดับเพชรแท้พร้อมใบรับรอง', 'Swiss diamond-set 41mm luxury timepiece with certificate',
+      'เรือนเวลาจิวเวลรี่สำหรับสุภาพบุรุษ ประดับเพชรแท้คัดเกรดน้ำงามรอบตัวเรือน มาพร้อมใบรับรองความแท้จากสวิตเซอร์แลนด์',
+      'Prestigious 41mm Swiss luxury watch set with certified brilliant-cut diamonds.',
+      { 'Case Size': '41 mm White Gold Finish', 'Movement': 'Swiss Automatic', 'Gemstones': 'Certified Natural Diamonds', 'Water Resistance': '5 ATM (50m)' }),
+    mk('OG-L7001', 'Liora Jewel 28', 'Ogival Midnight Diamond Ceramic 28', 'โอจิวาล มิดไนท์ ไดมอนด์ เซรามิก 28',
+      'women-jewelry', 'ogival', 268000, 315000, 7, ['SALE'], 16, 8,
+      'จิวเวลรี่เพชร 28 มม. เซรามิกดำตัดทอง 18K', '28mm black ceramic & 18K gold diamond jewellery watch',
+      'ศิลปะแห่งจิวเวลรี่สวิสบนข้อมือสุภาพสตรี ผสานเซรามิกสีดำเงาล้ำสมัยเข้ากับเพชรแท้และทองคำอย่างลงตัว',
+      'Exquisite 28mm Swiss jewellery timepiece uniting mirror-black ceramic, gold accents, and brilliant-cut diamonds.',
+      { 'Case Size': '28 mm Ceramic & 18K Gold', 'Movement': 'Swiss Precision Quartz', 'Gemstones': 'Natural Diamonds', 'Water Resistance': '3 ATM (30m)' }),
+    mk('OG-L7002', 'Selene Pearl 30', 'Ogival Mother-of-Pearl Diamond 30', 'โอจิวาล มุกประดับเพชร 30',
+      'women-jewelry', 'ogival', 198000, null, 9, [], 17, 3,
+      'หน้าปัดมุกธรรมชาติ 30 มม. ล้อมเพชรแท้', '30mm natural mother-of-pearl dial with diamond bezel',
+      'เปล่งประกายทุกการเคลื่อนไหวด้วยหน้าปัดเปลือกมุกธรรมชาติและขอบตัวเรือนฝังเพชรประณีต',
+      'Luminous mother-of-pearl dial encircled by hand-set diamonds in a 30mm Swiss case.',
+      { 'Case Size': '30 mm Two-Tone Gold', 'Movement': 'Swiss Quartz', 'Dial': 'Natural Mother-of-Pearl', 'Water Resistance': '3 ATM (30m)' }),
+    mk('OG-S8001', 'Vertex Grand 41', 'Ogival Grand Sport Gold 41', 'โอจิวาล แกรนด์ สปอร์ต โกลด์ 41',
+      'sport-watches', 'ogival', 328000, null, 5, [], 18, 4,
+      'แกรนด์สปอร์ตสวิส 41 มม. ตัวเรือนทองรมดำ', 'Swiss luxury sport 41mm rose-gold & obsidian case',
+      'ความสปอร์ตระดับไฮเอนด์จาก Ogival ตัวเรือนทองตัดขอบดำด้านพร้อมกลไกสวิสสำรองพลังงานยาวนาน',
+      'High-luxury 41mm sport automatic pairing warm gold architecture with a stealth matte bezel.',
+      { 'Case Size': '41 mm Rose Gold & Black', 'Movement': 'Swiss Automatic', 'Crystal': 'Sapphire Crystal', 'Water Resistance': '10 ATM (100m)' }),
+    mk('OG-K9001', 'Little Star 26', 'Ogival Petite Heritage 26', 'โอจิวาล เปติต เฮริเทจ 26',
+      'kids-watches', 'ogival', 98000, null, 10, ['NEW'], 19, 6,
+      'เรือนเวลาขนาด 26 มม. ทองคำคลาสสิกสำหรับของขวัญล้ำค่า', '26mm petite Swiss luxury keepsake watch',
+      'เรือนเวลาสวิสขนาด 26 มม. เหมาะสำหรับมอบเป็นของขวัญล้ำค่าแทนความทรงจำเหนือกาลเวลา',
+      'Petite 26mm Swiss luxury timepiece crafted as a generational keepsake gift.',
+      { 'Case Size': '26 mm Gold Finish', 'Movement': 'Swiss Quartz', 'Crystal': 'Sapphire Crystal', 'Water Resistance': '3 ATM (30m)' })
   ]
 }
 
 export const defaultCampaigns = (): SeedCampaign[] => [
   {
-    slug: 'anniversary',
-    title: '79TH ANNIVERSARY',
-    titleEn: '79TH ANNIVERSARY',
-    titleTh: '79 ปี Central',
-    subtitle: 'ช้อปเพลินกับดีลพิเศษส่งท้ายเดือน พร้อมคูปองลดเพิ่ม ฿500',
-    subtitleEn: 'End-of-month deals with an extra ฿500 coupon.',
-    subtitleTh: 'ช้อปเพลินกับดีลพิเศษส่งท้ายเดือน',
-    banner: '/images/hero-watch.jpg',
-    link: '/',
-    brandSlug: null,
+    slug: 'olym-pianus-hero-1',
+    title: '130-07MK SOVEREIGN GOLD',
+    titleEn: '130-07MK SOVEREIGN GOLD',
+    titleTh: '130-07MK SOVEREIGN GOLD',
+    subtitle: 'Inspired by the ultimate glory of the Olympic spirit',
+    subtitleEn: 'Inspired by the ultimate glory of the Olympic spirit',
+    subtitleTh: 'แรงบันดาลใจจากเกียรติยศสูงสุดแห่งจิตวิญญาณโอลิมปิก',
+    banner: '/images/op/hero-gold-stones.jpg',
+    link: '/products/ol-m2001',
+    brandSlug: 'olympianus',
     type: 'hero',
     sortOrder: 1,
     active: true
   },
   {
     slug: 'opwatch-brand-day',
-    title: 'BRAND DAY: OPWATCH',
-    titleEn: 'BRAND DAY: OPWATCH',
-    titleTh: 'BRAND DAY: OPWATCH',
-    subtitle: 'เครื่องญี่ปุ่น ราคาเอื้อมถึง',
-    subtitleEn: 'Japanese movements, honest pricing.',
-    subtitleTh: 'เครื่องญี่ปุ่น ราคาเอื้อมถึง',
-    banner: '/images/p1.jpg',
-    link: '/opwatch',
+    title: 'OPWATCH · JAPANESE PRECISION',
+    titleEn: 'OPWATCH · JAPANESE PRECISION',
+    titleTh: 'OPWATCH · เครื่องญี่ปุ่นคุณภาพสูง',
+    subtitle: 'กระจกแซฟไฟร์แท้พร้อมดีไซน์ร่วมสมัย',
+    subtitleEn: 'Sapphire crystal & Japanese movements.',
+    subtitleTh: 'กระจกแซฟไฟร์แท้พร้อมดีไซน์ร่วมสมัย',
+    banner: '/images/op/lifestyle-men.jpg',
+    link: '/brands/opwatch',
     brandSlug: 'opwatch',
     type: 'brand-day',
     sortOrder: 1,
@@ -454,14 +478,14 @@ export const defaultCampaigns = (): SeedCampaign[] => [
   },
   {
     slug: 'olympianus-brand-day',
-    title: 'SUPER BRAND DAY: OLYMPINUS',
-    titleEn: 'SUPER BRAND DAY: OLYMPINUS',
-    titleTh: 'SUPER BRAND DAY: OLYMPINUS',
-    subtitle: 'เครื่องสวิส ความสง่างามเหนือกาลเวลา',
-    subtitleEn: 'Swiss craft, elegance beyond time.',
-    subtitleTh: 'เครื่องสวิส ความสง่างามเหนือกาลเวลา',
-    banner: '/images/p3.jpg',
-    link: '/olympianus',
+    title: 'OLYMPINUS · SWISS HERITAGE',
+    titleEn: 'OLYMPINUS · SWISS HERITAGE',
+    titleTh: 'OLYMPINUS · ความสง่างามเหนือกาลเวลา',
+    subtitle: 'Faster, Higher, Stronger',
+    subtitleEn: 'Faster, Higher, Stronger.',
+    subtitleTh: 'Faster, Higher, Stronger',
+    banner: '/images/op/banner-899832ags.jpg',
+    link: '/brands/olympianus',
     brandSlug: 'olympianus',
     type: 'brand-day',
     sortOrder: 2,
@@ -469,47 +493,17 @@ export const defaultCampaigns = (): SeedCampaign[] => [
   },
   {
     slug: 'ogival-brand-day',
-    title: 'BRAND DAY: OGIVAL',
-    titleEn: 'BRAND DAY: OGIVAL',
-    titleTh: 'BRAND DAY: OGIVAL',
-    subtitle: '百年瑞士奢華腕錶 1903',
+    title: 'OGIVAL 1903 · SWISS LUXURY',
+    titleEn: 'OGIVAL 1903 · SWISS LUXURY',
+    titleTh: 'OGIVAL 1903 · ตำนานสวิสลักชัวรี',
+    subtitle: 'A century of Swiss luxury since 1903',
     subtitleEn: 'A century of Swiss luxury since 1903.',
-    subtitleTh: '百年瑞士奢華腕錶 1903',
-    banner: '/images/p5.jpg',
-    link: '/ogival',
+    subtitleTh: 'ตำนานเรือนเวลาหรูสวิสกว่าศตวรรษ',
+    banner: '/images/op/hero-ceramic-dark.jpg',
+    link: '/brands/ogival',
     brandSlug: 'ogival',
     type: 'brand-day',
     sortOrder: 3,
-    active: true
-  },
-  {
-    slug: 'watches-spotlight',
-    title: 'TREND SPOTLIGHT',
-    titleEn: 'TREND SPOTLIGHT',
-    titleTh: 'TREND SPOTLIGHT',
-    subtitle: 'นาฬิกาและจิวเวลรี่จากแบรนด์ดัง',
-    subtitleEn: 'Watches and jewellery from leading brands.',
-    subtitleTh: 'นาฬิกาและจิวเวลรี่จากแบรนด์ดัง',
-    banner: '/images/c-men.jpg',
-    link: '/watches',
-    brandSlug: null,
-    type: 'category',
-    sortOrder: 4,
-    active: true
-  },
-  {
-    slug: 'luxury-gift',
-    title: 'LUXURY GIFT',
-    titleEn: 'LUXURY GIFT',
-    titleTh: 'LUXURY GIFT',
-    subtitle: 'ของขวัญลักชัวรีสำหรับโอกาสพิเศษ',
-    subtitleEn: 'Luxury gifts for special occasions.',
-    subtitleTh: 'ของขวัญลักชัวรีสำหรับโอกาสพิเศษ',
-    banner: '/images/c-ladies.jpg',
-    link: '/ogival',
-    brandSlug: 'ogival',
-    type: 'event',
-    sortOrder: 5,
     active: true
   }
 ]
@@ -520,7 +514,7 @@ export async function seedStore(
 ): Promise<void> {
   const { defaultBrands, defaultCategories, defaultProducts, defaultCampaigns } = await import('./seed')
   if (opts.reset && store.driver === 'json') {
-    (store as any).reset?.()
+    ;(store as any).reset?.()
   }
 
   const brands = defaultBrands()
@@ -528,7 +522,6 @@ export async function seedStore(
   const products = defaultProducts()
   const campaigns = defaultCampaigns()
 
-  // Brands
   const existingBrands = await store.all('brands')
   const brandMap = new Map<string, number>()
   if (existingBrands.length === 0) {
@@ -548,7 +541,6 @@ export async function seedStore(
     for (const b of existingBrands) brandMap.set(b.slug as string, Number(b.id))
   }
 
-  // Categories (parents first so parentId can resolve)
   const existingCats = await store.all('categories')
   const catMap = new Map<string, number>()
   const ordered = [...categories].sort((a, b) => (a.parentSlug ? 1 : 0) - (b.parentSlug ? 1 : 0))
@@ -567,7 +559,6 @@ export async function seedStore(
     for (const c of existingCats) catMap.set(c.slug as string, Number(c.id))
   }
 
-  // Products
   const existingProducts = await store.all('products')
   if (existingProducts.length === 0) {
     for (const p of products) {
@@ -585,7 +576,6 @@ export async function seedStore(
     }
   }
 
-  // Campaigns
   const existingCampaigns = await store.all('campaigns')
   if (existingCampaigns.length === 0) {
     for (const c of campaigns) {
