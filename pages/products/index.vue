@@ -110,10 +110,17 @@ useHead(() => ({
 
 <template>
   <div>
-    <!-- Olympianus-style Dark Editorial Collection Header -->
+    <!-- Olympianus-style Dark Studio Collection Hero -->
     <section class="ph">
+      <div class="ph__bg">
+        <img
+          :src="activeBrandObj?.heroImage || activeCategoryObj?.bannerImage || '/images/op/hero-gold-stones.jpg'"
+          :alt="pageHeading"
+        />
+      </div>
+      <div class="ph__scrim" />
       <div class="container ph__inner">
-        <p class="eyebrow" style="color: var(--gold-soft)">{{ t('nav.collections') }}</p>
+        <p class="eyebrow">{{ t('nav.collections') }}</p>
         <h1 class="page-title ph__title">{{ pageHeading }}</h1>
         <p class="ph__sub">{{ pageSubtitle }}</p>
       </div>
@@ -223,13 +230,24 @@ useHead(() => ({
 
 <style scoped>
 .ph {
-  background: #141311;
-  color: #f7f4ee;
-  padding-block: 64px 52px;
-  border-bottom: 1px solid rgba(176, 141, 87, 0.25);
+  position: relative;
+  background: #080808;
+  color: #ffffff;
+  padding-top: calc(var(--header-h) + 64px);
+  padding-bottom: 68px;
+  overflow: hidden;
+  text-align: center;
 }
-.ph__title { color: #f7f4ee; margin-top: 10px; }
-.ph__sub { color: #beb6a7; margin-top: 10px; max-width: 560px; }
+.ph__bg { position: absolute; inset: 0; }
+.ph__bg img { width: 100%; height: 100%; object-fit: cover; opacity: 0.42; }
+.ph__scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.45) 55%, rgba(0,0,0,0.88) 100%);
+}
+.ph__inner { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; }
+.ph__title { color: #ffffff; margin-top: 12px; }
+.ph__sub { color: rgba(255,255,255,0.72); margin-top: 12px; max-width: 600px; font-weight: 300; }
 
 .cats { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 36px; }
 .cats__btn {

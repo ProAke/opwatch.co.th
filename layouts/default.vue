@@ -1,11 +1,5 @@
 <script setup lang="ts">
-const { t, locale } = useI18n()
-const localePath = useLocalePath()
-
-const navItems = computed(() => [
-  { key: 'about', label: t('nav.aboutUs'), to: localePath('/about') },
-  { key: 'contact', label: t('nav.contactUs'), to: localePath('/contact') }
-])
+const { locale } = useI18n()
 
 watch(
   () => locale.value,
@@ -20,7 +14,7 @@ watch(
 
 <template>
   <div id="top" class="shell">
-    <AppHeader :nav-items="navItems" />
+    <AppHeader />
 
     <main>
       <slot />
