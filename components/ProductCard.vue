@@ -1,263 +1,239 @@
 <script setup lang="ts">
 const props = defineProps<{
   product: Record<string, any>
-  priority?: boolean
 }>()
 
-const { t, locale } = useI18n()
+const { locale, t } = useI18n()
 const localePath = useLocalePath()
-const { site } = useSite()
 const cart = useCart()
+const { site } = useSite()
 
-const name = computed(() =>
-  locale.value === 'en' ? props.product.nameEn || props.product.name : props.product.nameTh || props.product.name
+const fmt = (v: number) =>
+  formatPrice(Number(v || 0), site.value.currencySymbol, locale.value === 'en' ? 'en-US' : 'th-TH')
+
+const title = computed(() =>
+  locale.value === 'en' && props.product.nameEn ? props.product.nameEn : props.product.nameTh || props.product.nameEn || props.product.name
 )
 
-const primaryImage = computed(() => {
-  const images = props.product.images
-  if (Array.isArray(images) && images.length) return images[0]
-  return typeof images === 'string' && images ? images : '/images/op/watch-990-083-blue.png'
+const primaryImg = computed(() => {
+  const imgs = Array.isArray(props.product.images) ? props.product.images : []
+  return props.product.image || imgs[0] || '/images/op/watch-990-083-blue.png'
 })
 
-const isCutoutPrimary = computed(() => primaryImage.value.endsWith('.png') || primaryImage.value.includes('cutout'))
-
-const hoverImage = computed(() => {
-  const images = props.product.images
-  if (Array.isArray(images) && images.length > 1) return images[1]
-  return null
+const hoverImg = computed(() => {
+  const imgs = Array.isArray(props.product.images) ? props.product.images : []
+  if (props.product.hoverImage) return props.product.hoverImage
+  return imgs[1] || ''
 })
 
-const brandLabel = computed(() => {
-  const b = props.product.brand
-  if (b && typeof b === 'object') {
-    return locale.value === 'en' ? b.nameEn || b.name : b.nameTh || b.name
-  }
-  return props.product.brandName || b || 'Opwatch'
-})
+const compareAt = computed(() => Number(props.product.originalPrice ?? props.product.priceCompare ?? props.product.comparePrice ?? 0))
 
-const comparePrice = computed(() => {
-  const orig = Number(props.product.originalPrice ?? props.product.priceCompare ?? 0)
-  return orig > Number(props.product.price || 0) ? orig : 0
-})
-
-const discountPct = computed(() => {
-  if (!comparePrice.value) return 0
-  return Math.round(((comparePrice.value - Number(props.product.price || 0)) / comparePrice.value) * 100)
-})
-
-const isNew = computed(() => {
-  const badges = Array.isArray(props.product.badges) ? props.product.badges : []
-  return props.product.featured || badges.includes('NEW')
-})
-
-function add() {
-  if (Number(props.product.stock || 0) <= 0) return
-  cart.add({
-    productId: Number(props.product.id),
-    slug: props.product.slug,
-    name: props.product.name,
-    nameEn: props.product.nameEn || props.product.name,
-    nameTh: props.product.nameTh || props.product.name,
-    price: Number(props.product.price || 0),
-    image: primaryImage.value,
-    maxStock: Number(props.product.stock || 0),
-    sku: props.product.sku
-  })
+function addToBag(e: Event) {
+  e.preventDefault()
+  e.stopPropagation()
+  cart.add(
+    {
+      productId: Number(props.product.id),
+      slug: props.product.slug,
+      name: props.product.name || title.value,
+      nameEn: props.product.nameEn || title.value,
+      nameTh: props.product.nameTh || title.value,
+      price: Number(props.product.price || 0),
+      image: primaryImg.value,
+      maxStock: Number(props.product.stock ?? 99),
+      sku: props.product.sku
+    },
+    1
+  )
 }
 </script>
 
 <template>
-  <article class="opcard">
-    <NuxtLink :to="localePath({ path: '/products/' + product.slug })" class="opcard__stage">
-      <img
-        class="opcard__img opcard__img--primary"
-        :class="{ 'is-cutout': isCutoutPrimary }"
-        :src="primaryImage"
-        :alt="name"
-        :loading="priority ? 'eager' : 'lazy'"
-      />
-      <img
-        v-if="hoverImage"
-        class="opcard__img opcard__img--hover"
-        :src="hoverImage"
-        :alt="name"
-        loading="lazy"
-      />
-      <div class="opcard__flags">
-        <span v-if="isNew" class="opcard__flag">NEW</span>
-        <span v-if="discountPct > 0" class="opcard__flag opcard__flag--sale">-{{ discountPct }}%</span>
-      </div>
-    </NuxtLink>
+  <article class="op-card">
+    <NuxtLink :to="localePath(`/products/${product.slug}`)" class="op-card__link">
+      <!-- Pure White Studio Cutout Stage with Cross-Fade Hover -->
+      <div class="op-card__stage" :class="{ 'has-hover': Boolean(hoverImg) }">
+        <img
+          :src="primaryImg"
+          :alt="title"
+          class="op-card__img op-card__img--front"
+          loading="lazy"
+        />
+        <img
+          v-if="hoverImg"
+          :src="hoverImg"
+          :alt="title"
+          class="op-card__img op-card__img--back"
+          loading="lazy"
+        />
 
-    <div class="opcard__meta">
-      <h6 class="opcard__sku">
-        <NuxtLink :to="localePath({ path: '/products/' + product.slug })">
-          {{ product.sku || name }}
-        </NuxtLink>
-      </h6>
-
-      <NuxtLink :to="localePath({ path: '/products/' + product.slug })" class="opcard__title">
-        <span class="opcard__brand">{{ brandLabel }}</span>
-        <span class="opcard__sep">·</span>
-        <span>{{ name }}</span>
-      </NuxtLink>
-
-      <div class="opcard__price">
-        <span class="price">{{ formatPrice(product.price, site.currencySymbol, locale === 'en' ? 'en-US' : 'th-TH') }}</span>
-        <span v-if="comparePrice > 0" class="price-compare">
-          {{ formatPrice(comparePrice, site.currencySymbol, locale === 'en' ? 'en-US' : 'th-TH') }}
+        <span v-if="product.brandName || product.brandSlug" class="op-card__brand">
+          {{ product.brandName || product.brandSlug }}
         </span>
       </div>
 
-      <button type="button" class="opcard__btn" :disabled="Number(product.stock || 0) <= 0" @click="add">
-        <span v-if="Number(product.stock || 0) <= 0">{{ t('common.outOfStock') }}</span>
-        <span v-else>+ {{ t('common.addToCart') }}</span>
-      </button>
-    </div>
+      <!-- Luxury Serif Caption + E-Commerce Price & Quick Add -->
+      <div class="op-card__body">
+        <p v-if="product.sku" class="op-card__sku">{{ product.sku }}</p>
+        <h3 class="op-card__title">{{ title }}</h3>
+
+        <div class="op-card__price-row">
+          <span class="price">{{ fmt(product.price) }}</span>
+          <span v-if="compareAt > Number(product.price || 0)" class="price-compare">
+            {{ fmt(compareAt) }}
+          </span>
+        </div>
+
+        <button
+          type="button"
+          class="op-card__add"
+          :disabled="product.stock !== undefined && Number(product.stock) <= 0"
+          @click="addToBag"
+        >
+          {{
+            product.stock !== undefined && Number(product.stock) <= 0
+              ? t('common.outOfStock')
+              : `+ ${t('common.addToCart')}`
+          }}
+        </button>
+      </div>
+    </NuxtLink>
   </article>
 </template>
 
 <style scoped>
-/* Authentic olympianus.com Borderless White Studio Cutout Card */
-.opcard {
+.op-card {
+  background: #ffffff;
+  border: 1px solid var(--sand);
+  transition: transform 0.45s var(--ease), border-color 0.35s var(--ease), box-shadow 0.4s var(--ease);
+}
+.op-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--line-strong);
+  box-shadow: 0 18px 44px rgba(25, 26, 53, 0.08);
+}
+.op-card__link {
   display: flex;
   flex-direction: column;
-  background: #ffffff;
+  align-items: center;
   text-align: center;
+  padding: 20px 18px 26px;
 }
 
-.opcard__stage {
+.op-card__stage {
   position: relative;
-  display: block;
-  aspect-ratio: 1 / 1.06;
+  width: 100%;
+  aspect-ratio: 3 / 4;
   background: #ffffff;
   overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.opcard__img {
+.op-card__img {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  transition: opacity 0.6s var(--ease), transform 0.75s var(--ease);
-}
-.opcard__img.is-cutout {
   object-fit: contain;
-  padding: 16px;
+  padding: 12px;
+  transition: opacity 0.55s var(--ease), transform 0.7s var(--ease);
 }
-.opcard__img--hover {
+.op-card__img--back {
   opacity: 0;
   object-fit: cover;
   padding: 0;
 }
-.opcard:hover .opcard__img--hover {
+.op-card:hover .op-card__stage.has-hover .op-card__img--front {
+  opacity: 0;
+  transform: scale(1.03);
+}
+.op-card:hover .op-card__stage.has-hover .op-card__img--back {
   opacity: 1;
   transform: scale(1.04);
 }
-.opcard:hover .opcard__img--primary {
-  transform: scale(1.03);
+.op-card:hover .op-card__stage:not(.has-hover) .op-card__img--front {
+  transform: scale(1.05);
 }
 
-.opcard__flags {
+.op-card__brand {
   position: absolute;
   top: 10px;
   left: 10px;
-  right: 10px;
-  display: flex;
-  justify-content: space-between;
-  pointer-events: none;
   z-index: 2;
-}
-.opcard__flag {
-  font-family: var(--font-geo);
+  font-family: var(--font-roman);
   font-size: 9px;
   font-weight: 600;
-  letter-spacing: 0.2em;
-  padding: 3px 8px;
-  background: #0a0a0a;
-  color: #ffffff;
-}
-.opcard__flag--sale {
-  margin-left: auto;
-  background: var(--gold);
-  color: #080808;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  background: rgba(255, 255, 255, 0.94);
+  color: var(--sapphire);
+  border: 1px solid var(--sand);
 }
 
-.opcard__meta {
-  padding: 16px 10px 8px;
+.op-card__body {
+  margin-top: 18px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 5px;
-  flex: 1;
+  gap: 7px;
+  width: 100%;
+  padding-inline: 6px;
 }
-
-.opcard__sku {
-  font-family: var(--font-geo);
-  font-size: 13px;
-  font-weight: 500;
-  letter-spacing: 0.14em;
+.op-card__sku {
+  font-family: var(--font-roman);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  color: var(--sapphire);
   text-transform: uppercase;
-  color: #111111;
-  margin: 0;
 }
-.opcard__sku a:hover {
-  color: var(--gold);
-}
-
-.opcard__title {
-  font-size: 13px;
-  color: var(--ink-muted);
-  line-height: 1.45;
+.op-card__title {
+  font-family: var(--font-display);
+  font-size: 19.5px;
+  font-weight: 500;
+  color: var(--ink);
+  letter-spacing: 0.03em;
+  line-height: 1.38;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
   transition: color 0.2s;
 }
-.opcard__title:hover {
-  color: #0a0a0a;
+.op-card:hover .op-card__title {
+  color: var(--sapphire);
 }
-.opcard__brand {
-  color: var(--gold);
-  font-weight: 500;
-  text-transform: uppercase;
-  font-size: 10.5px;
-  letter-spacing: 0.14em;
-}
-.opcard__sep {
-  margin-inline: 5px;
-  opacity: 0.45;
-}
-
-.opcard__price {
-  display: flex;
+.op-card__price-row {
+  display: inline-flex;
   align-items: baseline;
-  justify-content: center;
   gap: 8px;
   margin-top: 2px;
 }
-
-.opcard__btn {
+.op-card__add {
   margin-top: 10px;
-  padding: 9px 20px;
-  border: 1px solid #e0e0e0;
-  background: transparent;
-  color: #111111;
-  font-family: var(--font-geo);
+  padding: 8px 22px;
+  font-family: var(--font-roman);
   font-size: 10px;
-  font-weight: 500;
+  font-weight: 600;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  transition: background 0.25s var(--ease), color 0.25s var(--ease), border-color 0.25s var(--ease);
+  background: transparent;
+  color: var(--ink-soft);
+  border: 1px solid var(--line-strong);
+  opacity: 0.88;
+  transition: opacity 0.25s, background 0.25s, color 0.25s, border-color 0.25s;
 }
-.opcard:hover .opcard__btn:not(:disabled) {
-  border-color: #0f0f0f;
+.op-card:hover .op-card__add {
+  opacity: 1;
+  border-color: var(--sapphire);
+  color: var(--sapphire);
 }
-.opcard__btn:hover:not(:disabled) {
-  background: #0f0f0f;
-  border-color: #0f0f0f;
-  color: #ffffff;
-}
-.opcard__btn:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
+.op-card__add:hover {
+  background: var(--sapphire) !important;
+  border-color: var(--sapphire) !important;
+  color: #ffffff !important;
 }
 </style>

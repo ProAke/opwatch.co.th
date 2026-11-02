@@ -44,17 +44,11 @@ definePageMeta({ layout: false })
   <div class="officelogin">
     <div class="officelogin__inner">
       <div class="between" style="margin-bottom: 30px">
-        <div class="brandrow">
-          <span class="brandmark">OP</span>
-          <div>
-            <p class="serif officelogin__title">{{ site.name || 'Opwatch' }}</p>
-            <p class="tiny upper" style="color: var(--gold)">BACK OFFICE · /office</p>
-          </div>
-        </div>
-        <LocaleSwitch />
+        <OpCrest size="sm" theme="light" sublabel="BACK OFFICE · /office" />
+        <LocaleSwitch :light-surface="true" />
       </div>
 
-      <h1 class="page-title" style="font-size: 1.9rem">{{ t('admin.pleaseLogin') }}</h1>
+      <h1 class="page-title" style="font-size: 1.75rem">{{ t('admin.pleaseLogin') }}</h1>
       <p class="muted" style="margin: 8px 0 28px">{{ t('auth.loginSubtitle') }}</p>
 
       <form @submit.prevent="submit">
@@ -68,7 +62,7 @@ definePageMeta({ layout: false })
           <input v-model="form.password" type="password" class="input" :class="{ 'input--error': errors.password }" autocomplete="current-password" />
           <span v-if="errors.password" class="field-error">{{ errors.password }}</span>
         </div>
-        <button class="btn btn--gold btn--block" type="submit" :disabled="submitting">
+        <button class="btn btn--block" type="submit" :disabled="submitting">
           {{ submitting ? t('common.loading') : t('admin.loginToOffice') }}
         </button>
       </form>
@@ -82,9 +76,20 @@ definePageMeta({ layout: false })
 </template>
 
 <style scoped>
-.officelogin { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #121110; padding: 40px 24px; }
-.officelogin__inner { width: 100%; max-width: 420px; background: var(--paper); border-radius: var(--radius-lg); padding: 42px 38px; border: 1px solid rgba(176,141,87,0.25); box-shadow: var(--shadow-lg); }
-.brandrow { display: flex; align-items: center; gap: 12px; }
-.brandmark { font-family: var(--font-roman, var(--font-display)); font-size: 16px; font-weight: 600; color: var(--gold); border: 1px solid var(--gold); border-radius: 50%; width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; }
-.officelogin__title { font-size: 22px; font-weight: 600; letter-spacing: 0.08em; }
+.officelogin {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(145deg, var(--ink) 0%, var(--sapphire-deep) 100%);
+  padding: 40px 24px;
+}
+.officelogin__inner {
+  width: 100%;
+  max-width: 440px;
+  background: var(--paper);
+  padding: 42px 38px;
+  border-top: 3px solid var(--sapphire);
+  box-shadow: var(--shadow-lg);
+}
 </style>

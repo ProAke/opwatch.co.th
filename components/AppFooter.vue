@@ -1,30 +1,17 @@
 <script setup lang="ts">
-const { t, locale } = useI18n()
+const { locale } = useI18n()
 const localePath = useLocalePath()
-const { site, brands } = useSite()
-const year = new Date().getFullYear()
 
-// Exact 7 Regional Distributors in exact olympianus.com order
+/* Exact 7 regional distributors listed in the official olympianus.com footer */
 const distributors = [
-  { country: 'BANGLADESH', partner: 'Kallol Group Of Companies' },
-  { country: 'CAMBODIA', partner: 'Europe Swiss Watch' },
-  { country: 'LAOS', partner: 'XG Watches Co., Ltd.' },
-  { country: 'MYANMAR', partner: 'Cherry Oo Service Center' },
-  { country: 'TAIWAN', partner: 'Bamboo Shadow Co., Ltd.' },
-  { country: 'THAILAND', partner: 'Inter Times Co., Ltd. · Opwatch Official' },
-  { country: 'VIET NAM', partner: 'Truong Hoan Co., Ltd.' }
+  { region: 'SINGAPORE, MALAYSIA', company: 'Top Win Enterprise Co., Ltd.', highlight: false },
+  { region: 'VIETNAM', company: 'Truong Hoan Co., Ltd.', highlight: false },
+  { region: 'THAILAND', company: 'Inter Times Co., Ltd.', highlight: true },
+  { region: 'CAMBODIA', company: 'LD Watch Enterprise', highlight: false },
+  { region: 'TAIWAN', company: 'Laipao Co., Ltd.', highlight: false },
+  { region: 'HONG KONG', company: 'Fullwing International Development Ltd.', highlight: false },
+  { region: 'MIDDLE EAST', company: 'Top Win Watch Trading LLC', highlight: false }
 ]
-
-const showTopBtn = ref(false)
-
-onMounted(() => {
-  const onScroll = () => {
-    showTopBtn.value = window.scrollY > 360
-  }
-  onScroll()
-  window.addEventListener('scroll', onScroll, { passive: true })
-  onUnmounted(() => window.removeEventListener('scroll', onScroll))
-})
 
 function scrollToTop() {
   if (import.meta.client) {
@@ -34,218 +21,280 @@ function scrollToTop() {
 </script>
 
 <template>
-  <footer class="opftr">
-    <div class="container opftr__inner">
-      <!-- 1. Centered 7 Regional Distributors List (exact olympianus.com layout) -->
-      <ul class="opftr__dist">
-        <li v-for="d in distributors" :key="d.country" :class="{ 'is-th': d.country === 'THAILAND' }">
-          <span class="opftr__country">({{ d.country }})</span>
-          <span class="opftr__dash">–</span>
-          <span class="opftr__partner">{{ d.partner }}</span>
-        </li>
-      </ul>
+  <footer class="op-ftr">
+    <!-- Upper Main Footer: Exact olympianus.com #f0f0f0 Platinum Surface (footer_color) -->
+    <div class="op-ftr__main">
+      <div class="container op-ftr__inner">
+        <div class="op-ftr__distributors">
+          <p
+            v-for="d in distributors"
+            :key="d.region"
+            class="op-ftr__dist-line"
+            :class="{ 'is-th': d.highlight }"
+          >
+            <span class="op-ftr__region">({{ d.region }})</span>
+            <span class="op-ftr__dash">–</span>
+            <span class="op-ftr__company">{{ d.company }}</span>
+          </p>
+        </div>
 
-      <!-- 2. Centered [Contact Us] Button -->
-      <div class="opftr__cta">
-        <NuxtLink :to="localePath('/contact')" class="btn btn--ghost-light btn--sm">
-          {{ locale === 'en' ? 'Contact Us' : t('nav.contactUs') }}
-        </NuxtLink>
+        <div class="op-ftr__cta">
+          <NuxtLink :to="localePath('/contact')" class="op-ftr__contact-btn">
+            {{ locale === 'th' ? 'Contact Us · ติดต่อเรา' : 'Contact Us' }}
+          </NuxtLink>
+        </div>
+
+        <div class="op-ftr__social">
+          <a
+            href="https://line.me/R/ti/p/@olympianus"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="op-ftr__social-btn op-ftr__social-btn--line"
+            aria-label="Official LINE"
+          >
+            <span>LINE</span>
+          </a>
+          <a
+            href="https://www.facebook.com/OlymPianusThailand"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="op-ftr__social-btn op-ftr__social-btn--fb"
+            aria-label="Official Facebook"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M13.5 21v-8h2.7l.4-3.1h-3.1V7.9c0-.9.3-1.5 1.6-1.5h1.7V3.6c-.3 0-1.3-.1-2.5-.1-2.5 0-4.1 1.5-4.1 4.2v2.2H7.5V13h2.7v8h3.3Z" />
+            </svg>
+          </a>
+        </div>
+
+        <!-- Centered Royal Sapphire & Midnight Olym Pianus Typographic Crest -->
+        <div class="op-ftr__brand">
+          <NuxtLink :to="localePath('/')" aria-label="Olym Pianus">
+            <OpCrest size="lg" stacked theme="light" sublabel="OLYM PIANUS · OPWATCH · OGIVAL" />
+          </NuxtLink>
+        </div>
+
+        <!-- Clean E-Commerce Quick Links Row -->
+        <nav class="op-ftr__quick" aria-label="Boutique links">
+          <NuxtLink :to="localePath('/')">{{ locale === 'th' ? 'หน้าแรก' : 'Home' }}</NuxtLink>
+          <NuxtLink :to="localePath('/about')">About</NuxtLink>
+          <NuxtLink :to="localePath('/products')">Collections</NuxtLink>
+          <NuxtLink :to="localePath('/brands/opwatch')">Opwatch</NuxtLink>
+          <NuxtLink :to="localePath('/brands/olympinus')">Olympinus</NuxtLink>
+          <NuxtLink :to="localePath('/brands/ogival')">Ogival</NuxtLink>
+          <NuxtLink :to="localePath('/news')">News</NuxtLink>
+          <NuxtLink :to="localePath('/cart')">{{ locale === 'th' ? 'ตะกร้าสินค้า' : 'Cart' }}</NuxtLink>
+          <NuxtLink :to="localePath('/account')">{{ locale === 'th' ? 'บัญชีสมาชิก' : 'Account' }}</NuxtLink>
+          <NuxtLink :to="localePath('/office')">{{ locale === 'th' ? 'ระบบหลังบ้าน' : 'Back Office' }}</NuxtLink>
+        </nav>
       </div>
-
-      <!-- 3. Circular LINE & Facebook Icons (exact olympianus.com pair) -->
-      <div class="opftr__socials">
-        <a
-          href="https://line.me"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="opsoc opsoc--line"
-          aria-label="LINE Official"
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 3c-5.2 0-9.4 3.4-9.4 7.6 0 3.7 3.3 6.9 7.8 7.5.3.1.7.2.8.5.1.3.1.7 0 1l-.3 1.6c-.1.4-.4 1.6 1.4.9 1.8-.8 5.9-3.5 8-6 1.5-1.6 2.1-3.4 2.1-5.5C21.4 6.4 17.2 3 12 3z" />
-          </svg>
-        </a>
-        <a
-          href="https://www.facebook.com"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="opsoc opsoc--fb"
-          aria-label="Facebook"
-        >
-          <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M14 9h3V5.5h-3c-2.4 0-3.8 1.5-3.8 3.8V11H7.5v3.4h2.7V21h3.6v-6.6h2.9l.5-3.4h-3.4V9.6c0-.4.2-.6.6-.6z" />
-          </svg>
-        </a>
-      </div>
-
-      <!-- 4. Large Centered Crown-Shield OP + Olym Pianus Typographic Emblem -->
-      <div class="opftr__emblem">
-        <NuxtLink :to="localePath('/')">
-          <OpCrest size="lg" :stacked="true" :sublabel="`${(site.name || 'OPWATCH').toUpperCase()} OFFICIAL BOUTIQUE`" />
-        </NuxtLink>
-      </div>
-
-      <!-- 5. Clean Minimal Single-Line E-Commerce & Back-Office Navigation -->
-      <nav class="opftr__links" aria-label="Footer">
-        <NuxtLink :to="localePath('/')">{{ locale === 'en' ? 'Home' : t('nav.home') }}</NuxtLink>
-        <NuxtLink :to="localePath('/about')">{{ t('nav.aboutUs') }}</NuxtLink>
-        <NuxtLink :to="localePath('/products')">{{ locale === 'en' ? 'Collections' : t('nav.collections') }}</NuxtLink>
-        <NuxtLink v-for="b in brands" :key="b.slug" :to="localePath('/brands/' + b.slug)">
-          {{ locale === 'en' ? b.nameEn || b.name : b.nameTh || b.name }}
-        </NuxtLink>
-        <NuxtLink :to="localePath('/news')">{{ locale === 'en' ? 'News' : t('nav.news') }}</NuxtLink>
-        <NuxtLink :to="localePath('/cart')">{{ t('nav.cart') }}</NuxtLink>
-        <NuxtLink :to="localePath('/account')">{{ t('nav.account') }}</NuxtLink>
-        <NuxtLink :to="localePath('/office')">{{ t('nav.office') }}</NuxtLink>
-      </nav>
-
-      <!-- 6. Copyright Line -->
-      <p class="opftr__copy">
-        © Copyright {{ year }} - Olym Pianus · {{ site.name || 'Opwatch' }} ({{ site.phone }} · {{ site.email }})
-      </p>
     </div>
 
-    <!-- Floating Scroll-to-Top Square Button (#top on olympianus.com) -->
-    <button
-      v-show="showTopBtn"
-      type="button"
-      class="optop"
-      aria-label="Scroll to top"
-      title="Scroll to top"
-      @click="scrollToTop"
-    >
-      ↑
+    <!-- Bottom Copyright Socket Bar: Exact olympianus.com #1d2088 Royal Sapphire (socket_color) -->
+    <div class="op-ftr__socket">
+      <div class="container op-ftr__socket-row">
+        <p>© Copyright – Olym Pianus · Opwatch Official Boutique Thailand (Inter Times Co., Ltd.)</p>
+        <div class="op-ftr__socket-links">
+          <NuxtLink :to="localePath('/about')">Heritage</NuxtLink>
+          <NuxtLink :to="localePath('/products')">Boutique</NuxtLink>
+          <NuxtLink :to="localePath('/contact')">Service Center</NuxtLink>
+        </div>
+      </div>
+    </div>
+
+    <!-- Floating Scroll-to-Top Button -->
+    <button type="button" class="op-ftr__top" aria-label="Scroll to top" @click="scrollToTop">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <path d="m18 15-6-6-6 6" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
     </button>
   </footer>
 </template>
 
 <style scoped>
-.opftr {
-  background: #080808;
-  color: #bdbdbd;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  padding-block: 80px 44px;
-  text-align: center;
+.op-ftr {
   position: relative;
 }
-.opftr__inner {
-  max-width: 860px;
+
+/* Exact olympianus.com #footer (--enfold-footer-color-bg: #f0f0f0) */
+.op-ftr__main {
+  background: var(--platinum);
+  color: var(--ink-soft);
+  border-top: 1px solid var(--line-strong);
+}
+.op-ftr__inner {
+  padding-block: 76px 52px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  text-align: center;
 }
-
-.opftr__dist {
-  list-style: none;
-  padding: 0;
-  margin: 0 0 32px;
+.op-ftr__distributors {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  font-family: var(--font-geo);
-  font-size: 13px;
-  font-weight: 300;
-  letter-spacing: 0.08em;
-  color: rgba(255, 255, 255, 0.72);
+  gap: 9px;
+  max-width: 720px;
 }
-.opftr__dist li.is-th {
-  color: #ffffff;
+.op-ftr__dist-line {
+  font-family: var(--font-display);
+  font-size: 16.5px;
   font-weight: 500;
+  letter-spacing: 0.06em;
+  color: var(--ink-soft);
+  line-height: 1.65;
 }
-.opftr__country {
+.op-ftr__dist-line.is-th {
+  color: var(--sapphire);
+  font-weight: 600;
+}
+.op-ftr__region {
+  font-family: var(--font-roman);
+  font-size: 12.5px;
   letter-spacing: 0.14em;
+  color: var(--ink);
 }
-.opftr__dash {
-  margin-inline: 8px;
-  color: var(--gold);
+.op-ftr__dist-line.is-th .op-ftr__region {
+  color: var(--sapphire);
+}
+.op-ftr__dash {
+  margin-inline: 9px;
+  color: var(--sapphire-soft);
 }
 
-.opftr__cta {
-  margin-bottom: 28px;
+.op-ftr__cta {
+  margin-top: 32px;
 }
-
-.opftr__socials {
-  display: flex;
+.op-ftr__contact-btn {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 16px;
-  margin-bottom: 48px;
+  padding: 12px 38px;
+  background: var(--sapphire);
+  border: 1px solid var(--sapphire);
+  color: #ffffff;
+  font-family: var(--font-roman);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  transition: background 0.28s var(--ease), border-color 0.28s var(--ease), box-shadow 0.28s var(--ease);
 }
-.opsoc {
-  width: 42px;
-  height: 42px;
+.op-ftr__contact-btn:hover {
+  background: var(--sapphire-bright);
+  border-color: var(--sapphire-bright);
+  box-shadow: 0 8px 22px rgba(29, 32, 136, 0.22);
+}
+
+.op-ftr__social {
+  margin-top: 26px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.op-ftr__social-btn {
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   color: #ffffff;
-  transition: transform 0.25s var(--ease), opacity 0.25s;
+  transition: transform 0.25s var(--ease), box-shadow 0.25s;
 }
-.opsoc:hover {
+.op-ftr__social-btn:hover {
   transform: translateY(-2px);
-  opacity: 0.9;
+  box-shadow: 0 6px 16px rgba(25, 26, 53, 0.16);
 }
-.opsoc--line {
-  background: #06c755;
+.op-ftr__social-btn--line {
+  background: #06C755;
+  font-family: var(--font-sans);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
 }
-.opsoc--fb {
-  background: #1877f2;
+.op-ftr__social-btn--fb {
+  background: #1877F2;
 }
 
-.opftr__emblem {
-  margin-bottom: 40px;
+.op-ftr__brand {
+  margin-top: 44px;
 }
 
-.opftr__links {
+.op-ftr__quick {
+  margin-top: 38px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line-strong);
+  width: 100%;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 10px 24px;
-  padding-block: 22px;
-  width: 100%;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  font-family: var(--font-geo);
+  gap: 12px 26px;
+  font-family: var(--font-roman);
   font-size: 10.5px;
-  letter-spacing: 0.2em;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.op-ftr__quick a:hover {
+  color: var(--sapphire);
+}
+
+/* Exact olympianus.com #socket (--enfold-socket-color-bg: #1d2088) */
+.op-ftr__socket {
+  background: var(--sapphire);
+  border-top: 1px solid var(--sapphire-soft);
+  padding-block: 16px;
+  font-size: 11.5px;
+  letter-spacing: 0.08em;
+  color: #eeeeee;
+}
+.op-ftr__socket-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.op-ftr__socket-links {
+  display: flex;
+  gap: 22px;
+  font-family: var(--font-roman);
+  font-size: 10px;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
 }
-.opftr__links a {
-  color: rgba(255, 255, 255, 0.6);
+.op-ftr__socket-links a {
+  color: #ffffff;
   transition: color 0.2s;
 }
-.opftr__links a:hover {
-  color: var(--gold);
+.op-ftr__socket-links a:hover {
+  color: #a4b9ff;
 }
 
-.opftr__copy {
-  margin-top: 24px;
-  font-family: var(--font-geo);
-  font-size: 11px;
-  font-weight: 300;
-  letter-spacing: 0.12em;
-  color: rgba(255, 255, 255, 0.42);
-}
-
-.optop {
+.op-ftr__top {
   position: fixed;
-  right: 26px;
-  bottom: 26px;
-  z-index: 55;
-  width: 44px;
-  height: 44px;
-  background: rgba(14, 14, 14, 0.92);
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  color: #ffffff;
-  font-size: 16px;
+  right: 22px;
+  bottom: 22px;
+  z-index: 40;
+  width: 42px;
+  height: 42px;
+  background: #ffffff;
+  border: 1px solid var(--line-strong);
+  color: var(--sapphire);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.22s, border-color 0.22s, color 0.22s;
+  box-shadow: var(--shadow);
+  transition: background 0.25s, color 0.25s, border-color 0.25s;
 }
-.optop:hover {
-  background: var(--gold);
-  border-color: var(--gold);
-  color: #080808;
+.op-ftr__top:hover {
+  background: var(--sapphire);
+  border-color: var(--sapphire);
+  color: #ffffff;
+}
+
+@media (max-width: 640px) {
+  .op-ftr__socket-row { justify-content: center; text-align: center; }
 }
 </style>

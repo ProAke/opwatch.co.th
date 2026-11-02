@@ -3,18 +3,20 @@ withDefaults(
   defineProps<{
     size?: 'sm' | 'md' | 'lg'
     stacked?: boolean
+    theme?: 'light' | 'dark'
     sublabel?: string
   }>(),
   {
     size: 'md',
     stacked: false,
+    theme: 'dark',
     sublabel: 'OPWATCH OFFICIAL'
   }
 )
 </script>
 
 <template>
-  <span class="opcrest" :class="[`opcrest--${size}`, { 'opcrest--stacked': stacked }]">
+  <span class="opcrest" :class="[`opcrest--${size}`, `opcrest--${theme}`, { 'opcrest--stacked': stacked }]">
     <!-- Authentic Olym Pianus Crowned Heraldic Shield Emblem -->
     <svg
       class="opcrest__shield"
@@ -68,50 +70,61 @@ withDefaults(
 .opcrest {
   display: inline-flex;
   align-items: center;
-  gap: 12px;
-  color: inherit;
+  gap: 13px;
   user-select: none;
+  transition: color 0.3s var(--ease);
 }
 .opcrest--stacked {
   flex-direction: column;
   text-align: center;
-  gap: 10px;
+  gap: 11px;
 }
 .opcrest__shield {
-  color: var(--gold);
   flex-shrink: 0;
+  transition: color 0.3s var(--ease);
 }
-.opcrest--sm .opcrest__shield { width: 26px; height: 31px; }
-.opcrest--md .opcrest__shield { width: 32px; height: 38px; }
-.opcrest--lg .opcrest__shield { width: 54px; height: 64px; }
+
+/* Dark theme (over dark hero imagery) */
+.opcrest--dark .opcrest__shield { color: var(--champagne-soft); }
+.opcrest--dark .opcrest__script { color: #ffffff; }
+.opcrest--dark .opcrest__sub { color: rgba(255, 255, 255, 0.78); }
+
+/* Light theme (on #ffffff header, #f8f8f8 story, #f0f0f0 footer — exact olympianus.com Royal Sapphire & Midnight) */
+.opcrest--light .opcrest__shield { color: var(--sapphire); }
+.opcrest--light .opcrest__script { color: var(--ink); }
+.opcrest--light .opcrest__sub { color: var(--sapphire); }
+
+.opcrest--sm .opcrest__shield { width: 27px; height: 32px; }
+.opcrest--md .opcrest__shield { width: 34px; height: 40px; }
+.opcrest--lg .opcrest__shield { width: 58px; height: 68px; }
 
 .opcrest__words {
   display: flex;
   flex-direction: column;
-  line-height: 1.05;
+  line-height: 1.04;
 }
 .opcrest__script {
   font-family: var(--font-script);
-  color: #ffffff;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.025em;
   white-space: nowrap;
+  transition: color 0.3s var(--ease);
 }
-.opcrest--sm .opcrest__script { font-size: 24px; }
-.opcrest--md .opcrest__script { font-size: 29px; }
-.opcrest--lg .opcrest__script { font-size: 46px; }
+.opcrest--sm .opcrest__script { font-size: 26px; }
+.opcrest--md .opcrest__script { font-size: 32px; }
+.opcrest--lg .opcrest__script { font-size: 50px; }
 
 .opcrest__sub {
-  font-family: var(--font-geo);
+  font-family: var(--font-roman);
   font-size: 8.5px;
-  font-weight: 500;
+  font-weight: 600;
   letter-spacing: 0.34em;
   text-transform: uppercase;
-  color: var(--gold);
   margin-top: 2px;
+  transition: color 0.3s var(--ease);
 }
 .opcrest--lg .opcrest__sub {
   font-size: 10px;
   letter-spacing: 0.38em;
-  margin-top: 5px;
+  margin-top: 6px;
 }
 </style>

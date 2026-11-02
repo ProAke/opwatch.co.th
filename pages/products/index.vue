@@ -1,227 +1,183 @@
 <script setup lang="ts">
-const route = useRoute()
-const { t, locale } = useI18n()
+const { locale, t } = useI18n()
 const localePath = useLocalePath()
-const { site, categories, brands } = useSite()
+const route = useRoute()
+const router = useRouter()
+const reqFetch = useRequestFetch()
 
-const activeCategory = ref(route.query.category ? String(route.query.category) : '')
-const activeBrand = ref(route.query.brand ? String(route.query.brand) : '')
-const searchQuery = ref(route.query.q ? String(route.query.q) : '')
-const sort = ref(route.query.sort ? String(route.query.sort) : 'featured')
-const priceMax = ref(500000)
-
-const localeTag = computed(() => (locale.value === 'en' ? 'en-US' : 'th-TH'))
-
-const fetchQuery = computed(() => ({
-  sort: sort.value,
-  limit: 100,
-  ...(activeCategory.value ? { category: activeCategory.value } : {}),
-  ...(activeBrand.value ? { brand: activeBrand.value } : {}),
-  ...(searchQuery.value ? { q: searchQuery.value } : {})
-}))
-
-const { data, pending } = await useFetch<{ items: Record<string, any>[]; total: number }>('/api/products', {
-  query: fetchQuery,
-  watch: [fetchQuery],
-  default: () => ({ items: [], total: 0 })
-})
-
-const items = computed(() => data.value?.items || [])
+const selectedBrand = ref((route.query.brand as string) || '')
+const selectedCategory = ref((route.query.category as string) || '')
+const selectedSort = ref((route.query.sort as string) || 'featured')
+const searchInput = ref((route.query.q as string) || '')
 
 watch(
   () => route.query,
   (q) => {
-    activeCategory.value = q.category ? String(q.category) : ''
-    activeBrand.value = q.brand ? String(q.brand) : ''
-    searchQuery.value = q.q ? String(q.q) : ''
-    if (q.sort) sort.value = String(q.sort)
-  },
-  { deep: true }
+    selectedBrand.value = (q.brand as string) || ''
+    selectedCategory.value = (q.category as string) || ''
+    selectedSort.value = (q.sort as string) || 'featured'
+    searchInput.value = (q.q as string) || ''
+  }
 )
 
-function pushQuery(next: Record<string, string | undefined>) {
-  const merged: Record<string, string> = {}
-  const cat = next.category !== undefined ? next.category : activeCategory.value
-  const br = next.brand !== undefined ? next.brand : activeBrand.value
-  const qv = next.q !== undefined ? next.q : searchQuery.value
-  if (cat) merged.category = cat
-  if (br) merged.brand = br
-  if (qv) merged.q = qv
-  navigateTo(localePath({ path: '/products', query: merged }))
-}
-
-function selectCategory(slug: string) {
-  pushQuery({ category: slug })
-}
-
-function selectBrand(slug: string) {
-  pushQuery({ brand: slug })
-}
-
-function applySearch() {
-  pushQuery({ q: searchQuery.value.trim() })
-}
-
-function clearFilters() {
-  priceMax.value = 500000
-  sort.value = 'featured'
-  searchQuery.value = ''
-  navigateTo(localePath({ path: '/products', query: {} }))
-}
-
-const filteredItems = computed(() => items.value.filter((p) => Number(p.price || 0) <= Number(priceMax.value)))
-
-const activeCategoryObj = computed(() => categories.value.find((c) => c.slug === activeCategory.value))
-const activeBrandObj = computed(() => brands.value.find((b) => b.slug === activeBrand.value))
-
-const pageHeading = computed(() => {
-  if (activeBrandObj.value) {
-    return locale.value === 'en' ? activeBrandObj.value.nameEn || activeBrandObj.value.name : activeBrandObj.value.nameTh || activeBrandObj.value.name
-  }
-  if (activeCategoryObj.value) {
-    return locale.value === 'en' ? activeCategoryObj.value.nameEn || activeCategoryObj.value.name : activeCategoryObj.value.nameTh || activeCategoryObj.value.name
-  }
-  return t('products.title')
+const apiUrl = computed(() => {
+  const params = new URLSearchParams()
+  if (selectedBrand.value) params.set('brand', selectedBrand.value)
+  if (selectedCategory.value) params.set('category', selectedCategory.value)
+  if (selectedSort.value) params.set('sort', selectedSort.value)
+  if (searchInput.value.trim()) params.set('q', searchInput.value.trim())
+  params.set('limit', '60')
+  return `/api/products?${params.toString()}`
 })
 
-const pageSubtitle = computed(() => {
-  if (activeBrandObj.value) {
-    return locale.value === 'en'
-      ? `${activeBrandObj.value.movementEn || ''} — ${activeBrandObj.value.taglineEn || ''}`
-      : `${activeBrandObj.value.movement || ''} — ${activeBrandObj.value.tagline || ''}`
-  }
-  return t('products.subtitle')
-})
-
-const categoryTabs = computed(() => [
-  { slug: '', name: t('common.all') },
-  ...categories.value
-    .filter((c) => c.slug !== 'watches-jewelry')
-    .map((c) => ({
-      slug: c.slug,
-      name: locale.value === 'en' ? c.nameEn || c.name : c.nameTh || c.name
-    }))
+const [{ data: prodRes, pending }, { data: metaRes }] = await Promise.all([
+  useFetch<{ items?: any[]; products?: any[] }>(apiUrl, { watch: [apiUrl] }),
+  useAsyncData('op-catalog-meta', async () => {
+    const [b, c] = await Promise.all([
+      reqFetch<{ items?: any[]; brands?: any[] }>('/api/brands'),
+      reqFetch<{ items?: any[]; categories?: any[] }>('/api/categories')
+    ])
+    return {
+      brands: b?.items || b?.brands || [],
+      categories: c?.items || c?.categories || []
+    }
+  })
 ])
 
-useHead(() => ({
-  title: `${pageHeading.value} — ${site.value.name}`
-}))
+const products = computed(() => prodRes.value?.items || prodRes.value?.products || [])
+const brands = computed(() => metaRes.value?.brands || [])
+const categories = computed(() => metaRes.value?.categories || [])
+
+function applyFilter(patch: Record<string, string>) {
+  const next: Record<string, string> = {
+    ...(selectedBrand.value ? { brand: selectedBrand.value } : {}),
+    ...(selectedCategory.value ? { category: selectedCategory.value } : {}),
+    ...(selectedSort.value && selectedSort.value !== 'featured' ? { sort: selectedSort.value } : {}),
+    ...(searchInput.value.trim() ? { q: searchInput.value.trim() } : {}),
+    ...patch
+  }
+  Object.keys(next).forEach((k) => {
+    if (!next[k]) delete next[k]
+  })
+  router.push({ path: localePath('/products'), query: next })
+}
+
+function resetAll() {
+  searchInput.value = ''
+  router.push({ path: localePath('/products') })
+}
 </script>
 
 <template>
-  <div>
-    <!-- Olympianus-style Dark Studio Collection Hero -->
-    <section class="ph">
-      <div class="ph__bg">
-        <img
-          :src="activeBrandObj?.heroImage || activeCategoryObj?.bannerImage || '/images/op/hero-gold-stones.jpg'"
-          :alt="pageHeading"
-        />
-      </div>
-      <div class="ph__scrim" />
-      <div class="container ph__inner">
-        <p class="eyebrow">{{ t('nav.collections') }}</p>
-        <h1 class="page-title ph__title">{{ pageHeading }}</h1>
-        <p class="ph__sub">{{ pageSubtitle }}</p>
+  <div class="op-cat">
+    <!-- Collections Banner -->
+    <section class="op-cat__hero">
+      <img src="/images/op/lifestyle-men.jpg" alt="Olym Pianus Collections" class="op-cat__hero-img" />
+      <div class="op-cat__hero-scrim" />
+      <div class="container op-cat__hero-body">
+        <span class="op-cat__eyebrow">OLYM PIANUS · OPWATCH · OGIVAL</span>
+        <h1 class="page-title">Collections</h1>
+        <p>
+          {{
+            locale === 'th'
+              ? 'สำรวจคอลเลกชันเรือนเวลาแท้กระจกแซฟไฟร์จากทั้ง 3 แบรนด์ในเครือ พร้อมสั่งซื้อออนไลน์ได้ทันที'
+              : 'Explore authentic sapphire-crystal timepieces across our Men, Ladies, Sport, Classic & Limited series.'
+          }}
+        </p>
       </div>
     </section>
 
-    <section class="section section--tight">
-      <div class="container">
-        <!-- Category Pills -->
-        <div class="cats">
+    <!-- Sticky Boutique Filter Bar (#ffffff + #ebebf1 + Royal Sapphire #1d2088 active pill) -->
+    <section class="op-cat__toolbar">
+      <div class="container op-cat__toolbar-inner">
+        <!-- Brand Tabs -->
+        <div class="op-cat__pills">
           <button
-            v-for="c in categoryTabs"
-            :key="c.slug"
             type="button"
-            class="cats__btn"
-            :class="{ 'is-active': activeCategory === c.slug }"
-            @click="selectCategory(c.slug)"
+            class="op-cat__pill"
+            :class="{ 'is-active': !selectedBrand }"
+            @click="applyFilter({ brand: '' })"
           >
-            {{ c.name }}
+            {{ locale === 'th' ? 'ทุกแบรนด์' : 'All Houses' }}
+          </button>
+          <button
+            v-for="b in brands"
+            :key="b.slug"
+            type="button"
+            class="op-cat__pill"
+            :class="{ 'is-active': selectedBrand === b.slug }"
+            @click="applyFilter({ brand: b.slug })"
+          >
+            {{ locale === 'en' && b.nameEn ? b.nameEn : b.nameTh || b.nameEn || b.slug }}
           </button>
         </div>
 
-        <div class="shop">
-          <!-- Filter Sidebar -->
-          <aside class="shop__side">
-            <div class="filterbox">
-              <h3 class="filterbox__title tiny upper">{{ t('common.search') }}</h3>
-              <form class="row gap-8" @submit.prevent="applySearch">
-                <input v-model="searchQuery" class="input" :placeholder="t('products.searchPlaceholder')" />
-              </form>
-            </div>
+        <!-- Category + Sort + Search -->
+        <div class="op-cat__controls">
+          <select
+            class="select op-cat__select"
+            :value="selectedCategory"
+            @change="applyFilter({ category: ($event.target as HTMLSelectElement).value })"
+          >
+            <option value="">{{ t('common.all') }} ({{ locale === 'th' ? 'หมวดหมู่' : 'Categories' }})</option>
+            <option v-for="c in categories" :key="c.slug" :value="c.slug">
+              {{ c.parentId ? '— ' : '' }}{{ locale === 'en' && c.nameEn ? c.nameEn : c.nameTh || c.nameEn }}
+            </option>
+          </select>
 
-            <div v-if="brands.length" class="filterbox">
-              <h3 class="filterbox__title tiny upper">{{ t('products.brand') }}</h3>
-              <div class="brandlist">
-                <button
-                  type="button"
-                  class="brandopt"
-                  :class="{ 'is-active': activeBrand === '' }"
-                  @click="selectBrand('')"
-                >
-                  {{ t('products.allBrands') }}
-                </button>
-                <button
-                  v-for="b in brands"
-                  :key="b.slug"
-                  type="button"
-                  class="brandopt"
-                  :class="{ 'is-active': activeBrand === b.slug }"
-                  @click="selectBrand(b.slug)"
-                >
-                  <span>{{ locale === 'en' ? b.nameEn || b.name : b.nameTh || b.name }}</span>
-                  <small class="tiny faint">{{ locale === 'en' ? b.movementEn : b.movement }}</small>
-                </button>
-              </div>
-            </div>
+          <select
+            class="select op-cat__select"
+            :value="selectedSort"
+            @change="applyFilter({ sort: ($event.target as HTMLSelectElement).value })"
+          >
+            <option value="featured">{{ t('products.sortFeatured') }}</option>
+            <option value="newest">{{ t('products.sortNewest') }}</option>
+            <option value="price_asc">{{ t('products.sortPriceLow') }}</option>
+            <option value="price_desc">{{ t('products.sortPriceHigh') }}</option>
+          </select>
 
-            <div class="filterbox">
-              <h3 class="filterbox__title tiny upper">{{ t('products.sortBy') }}</h3>
-              <select v-model="sort" class="select">
-                <option value="featured">{{ t('products.sortFeatured') }}</option>
-                <option value="price_asc">{{ t('products.sortPriceLow') }}</option>
-                <option value="price_desc">{{ t('products.sortPriceHigh') }}</option>
-                <option value="discount_percentage_desc">{{ t('products.sortDiscount') }}</option>
-                <option value="newest">{{ t('products.sortNewest') }}</option>
-              </select>
-            </div>
+          <form class="op-cat__search" @submit.prevent="applyFilter({ q: searchInput })">
+            <input
+              v-model="searchInput"
+              type="search"
+              class="input op-cat__search-in"
+              :placeholder="locale === 'th' ? 'ค้นหารุ่น / รหัส...' : 'Search model / SKU...'"
+            />
+          </form>
+        </div>
+      </div>
+    </section>
 
-            <div class="filterbox">
-              <h3 class="filterbox__title tiny upper">{{ t('products.priceRange') }}</h3>
-              <input v-model.number="priceMax" type="range" class="range" min="5000" max="500000" step="5000" />
-              <div class="between small muted">
-                <span>฿5,000</span>
-                <span class="price">{{ formatPrice(priceMax, site.currencySymbol, localeTag) }}</span>
-              </div>
-            </div>
+    <!-- 3-Column Studio Cutout Gallery on #f8f8f8 (main_color) -->
+    <section class="section section--pearl">
+      <div class="container">
+        <div class="between wrap gap-12 op-cat__count">
+          <p class="tiny muted">
+            {{ products.length }} {{ locale === 'th' ? 'เรือนเวลาในคอลเลกชัน' : 'TIMEPIECES' }}
+          </p>
+          <button
+            v-if="selectedBrand || selectedCategory || searchInput"
+            type="button"
+            class="link-underline"
+            @click="resetAll"
+          >
+            {{ locale === 'th' ? 'ล้างตัวกรองทั้งหมด' : 'Clear Filters' }}
+          </button>
+        </div>
 
-            <button type="button" class="link-underline" style="align-self: flex-start" @click="clearFilters">
-              {{ t('common.cancel') }}
-            </button>
-          </aside>
+        <div v-if="pending" class="center py-60">
+          <span class="spinner" />
+        </div>
 
-          <!-- Product Grid -->
-          <div class="shop__main">
-            <div class="between shop__bar wrap gap-8">
-              <p class="tiny upper muted">{{ t('products.results', { count: filteredItems.length }) }}</p>
-              <p v-if="searchQuery" class="tiny upper muted">{{ t('common.search') }}: “{{ searchQuery }}”</p>
-            </div>
+        <div v-else-if="products.length" class="op-cat__grid">
+          <ProductCard v-for="p in products" :key="p.id || p.slug" :product="p" />
+        </div>
 
-            <div v-if="pending" class="grid grid--3">
-              <div v-for="i in 6" :key="i" class="skeleton" />
-            </div>
-
-            <div v-else-if="!filteredItems.length" class="empty">
-              <p class="serif empty__title">{{ t('products.empty') }}</p>
-              <button type="button" class="link-underline" @click="clearFilters">{{ t('common.viewAll') }}</button>
-            </div>
-
-            <div v-else class="grid grid--3">
-              <ProductCard v-for="p in filteredItems" :key="p.id" :product="p" />
-            </div>
-          </div>
+        <div v-else class="op-cat__empty">
+          <h3>{{ t('products.empty') }}</h3>
+          <button type="button" class="btn btn--ghost btn--sm" @click="resetAll">
+            {{ locale === 'th' ? 'แสดงเรือนเวลาทั้งหมด' : 'View All Watches' }}
+          </button>
         </div>
       </div>
     </section>
@@ -229,82 +185,135 @@ useHead(() => ({
 </template>
 
 <style scoped>
-.ph {
+.op-cat__hero {
   position: relative;
-  background: #080808;
-  color: #ffffff;
-  padding-top: calc(var(--header-h) + 64px);
-  padding-bottom: 68px;
-  overflow: hidden;
+  min-height: 48vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
+  background: var(--ink);
+  color: #ffffff;
+  padding-top: var(--header-h);
+  overflow: hidden;
 }
-.ph__bg { position: absolute; inset: 0; }
-.ph__bg img { width: 100%; height: 100%; object-fit: cover; opacity: 0.42; }
-.ph__scrim {
+.op-cat__hero-img {
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.45) 55%, rgba(0,0,0,0.88) 100%);
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.5;
 }
-.ph__inner { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; }
-.ph__title { color: #ffffff; margin-top: 12px; }
-.ph__sub { color: rgba(255,255,255,0.72); margin-top: 12px; max-width: 600px; font-weight: 300; }
+.op-cat__hero-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(20, 22, 54, 0.56) 0%, rgba(20, 22, 54, 0.85) 100%);
+}
+.op-cat__hero-body {
+  position: relative;
+  z-index: 2;
+  padding-block: 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+.op-cat__eyebrow {
+  font-family: var(--font-roman);
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  color: var(--champagne-soft);
+}
+.op-cat__hero-body h1 { color: #ffffff; }
+.op-cat__hero-body p {
+  max-width: 620px;
+  font-family: var(--font-display);
+  font-size: 18.5px;
+  color: rgba(255, 255, 255, 0.88);
+}
 
-.cats { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 36px; }
-.cats__btn {
+.op-cat__toolbar {
+  background: #ffffff;
+  border-bottom: 1px solid var(--line-strong);
+  padding-block: 16px;
+  position: sticky;
+  top: var(--header-h);
+  z-index: 25;
+}
+.op-cat__toolbar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.op-cat__pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.op-cat__pill {
+  padding: 9px 20px;
   border: 1px solid var(--line-strong);
-  background: var(--paper);
-  padding: 9px 18px;
-  font-size: 12px;
-  letter-spacing: 0.08em;
+  background: #ffffff;
+  font-family: var(--font-roman);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--ink-soft);
   transition: all 0.2s;
 }
-.cats__btn:hover { border-color: var(--ink); color: var(--ink); }
-.cats__btn.is-active { background: var(--ink); border-color: var(--ink); color: #f7f4ee; }
+.op-cat__pill:hover {
+  border-color: var(--sapphire);
+  color: var(--sapphire);
+}
+.op-cat__pill.is-active {
+  background: var(--sapphire);
+  border-color: var(--sapphire);
+  color: #ffffff;
+}
+.op-cat__controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.op-cat__select {
+  width: auto;
+  min-width: 168px;
+  padding-block: 9px;
+  font-size: 13.5px;
+}
+.op-cat__search-in {
+  width: 210px;
+  padding-block: 9px;
+  font-size: 13.5px;
+}
 
-.shop { display: grid; grid-template-columns: 256px 1fr; gap: 48px; }
-.shop__side { position: sticky; top: calc(var(--header-h) + 24px); align-self: start; display: flex; flex-direction: column; gap: 26px; }
-.filterbox { display: flex; flex-direction: column; gap: 10px; }
-.filterbox__title { color: var(--ink-muted); }
-.range { width: 100%; accent-color: var(--gold); }
-
-.brandlist { display: flex; flex-direction: column; gap: 6px; }
-.brandopt {
+.op-cat__count { margin-bottom: 30px; }
+.op-cat__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 28px;
+}
+.op-cat__empty {
+  padding: 72px 20px;
+  text-align: center;
+  background: #ffffff;
+  border: 1px solid var(--sand);
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 2px;
-  padding: 9px 12px;
-  border: 1px solid var(--line);
-  background: var(--paper);
-  font-size: 13px;
-  color: var(--ink-soft);
-  text-align: left;
-  transition: all 0.18s;
+  align-items: center;
+  gap: 16px;
 }
-.brandopt:hover { border-color: var(--gold); }
-.brandopt.is-active { border-color: var(--ink); background: var(--ink); color: #f7f4ee; }
-.brandopt.is-active small { color: var(--gold-soft); }
+.py-60 { padding-block: 60px; }
 
-.shop__bar { margin-bottom: 22px; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
-.grid--3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
-
-.skeleton {
-  aspect-ratio: 4 / 5;
-  background: linear-gradient(90deg, #f3efe7 25%, #faf8f4 37%, #f3efe7 63%);
-  background-size: 400% 100%;
-  animation: shimmer 1.4s infinite;
+@media (max-width: 960px) {
+  .op-cat__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
-@keyframes shimmer { 0% { background-position: 100% 0; } 100% { background-position: 0 0; } }
-
-.empty { text-align: center; padding: 80px 20px; }
-.empty__title { font-size: 22px; margin-bottom: 16px; color: var(--ink-soft); }
-
-@media (max-width: 1080px) { .grid--3 { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 860px) {
-  .shop { grid-template-columns: 1fr; gap: 30px; }
-  .shop__side { position: static; }
+@media (max-width: 580px) {
+  .op-cat__grid { grid-template-columns: 1fr; }
 }
-@media (max-width: 560px) { .grid--3 { grid-template-columns: 1fr; } }
 </style>

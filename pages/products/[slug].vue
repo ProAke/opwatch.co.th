@@ -1,404 +1,399 @@
 <script setup lang="ts">
-const route = useRoute()
-const { t, locale } = useI18n()
+const { locale, t } = useI18n()
 const localePath = useLocalePath()
-const { site } = useSite()
+const route = useRoute()
 const cart = useCart()
+const { site } = useSite()
+const reqFetch = useRequestFetch()
 
-const slug = computed(() => String(route.params.slug))
-const localeTag = computed(() => (locale.value === 'en' ? 'en-US' : 'th-TH'))
+const fmt = (v: number) =>
+  formatPrice(Number(v || 0), site.value.currencySymbol, locale.value === 'en' ? 'en-US' : 'th-TH')
 
-const { data, error, refresh } = await useFetch<{
-  product: Record<string, any>
-  related: Record<string, any>[]
-  brandProducts: Record<string, any>[]
-  reviews: Record<string, any>[]
-  category: Record<string, any> | null
-  brand: Record<string, any> | null
-}>(() => `/api/products/${slug.value}`, { key: 'product-' + slug.value })
+const slug = computed(() => String(route.params.slug || ''))
 
-const product = computed(() => data.value?.product)
-const reviews = computed(() => data.value?.reviews || [])
-const related = computed(() => data.value?.related || [])
-const category = computed(() => data.value?.category)
-const brand = computed(() => data.value?.brand)
+const { data: res, error } = await useAsyncData(
+  () => `op-product-${slug.value}`,
+  () => reqFetch<any>(`/api/products/${slug.value}`),
+  { watch: [slug] }
+)
 
-if (error.value || !product.value) {
-  setResponseStatus(404)
-}
-
-const activeImage = ref(0)
-const quantity = ref(1)
-const reviewForm = reactive({ customerName: '', rating: 5, comment: '' })
-const reviewSubmitted = ref(false)
-
-watch(slug, () => {
-  activeImage.value = 0
-  quantity.value = 1
-})
+const product = computed(() => res.value?.product || res.value)
+const related = computed(() => res.value?.related || [])
 
 const images = computed(() => {
-  const p = product.value
-  if (!p) return []
-  const arr = Array.isArray(p.images) ? p.images : []
-  return arr.length ? arr : ['/images/hero-watch.jpg']
+  const p = product.value || {}
+  const list = Array.isArray(p.images) ? p.images : []
+  if (list.length) return list
+  if (p.image) return p.hoverImage ? [p.image, p.hoverImage] : [p.image]
+  return ['/images/op/watch-990-083-blue.png']
 })
+const activeImg = ref(0)
+watch(slug, () => { activeImg.value = 0 })
 
-const name = computed(() => {
-  const p = product.value
-  if (!p) return ''
-  return locale.value === 'en' ? p.nameEn || p.name : p.nameTh || p.name
-})
+const qty = ref(1)
 
-const brandLabel = computed(() => {
-  const b = brand.value
-  if (b) return locale.value === 'en' ? b.nameEn || b.name : b.nameTh || b.name
-  return product.value?.brand || 'Opwatch'
+const title = computed(() => {
+  if (!product.value) return ''
+  return locale.value === 'en' && product.value.nameEn
+    ? product.value.nameEn
+    : product.value.nameTh || product.value.nameEn
 })
 
 const description = computed(() => {
-  const p = product.value
-  if (!p) return ''
-  if (locale.value === 'en') return p.descriptionEn || p.description || p.descriptionTh || ''
-  return p.descriptionTh || p.description || p.descriptionEn || ''
+  if (!product.value) return ''
+  return locale.value === 'en' && product.value.descriptionEn
+    ? product.value.descriptionEn
+    : product.value.descriptionTh || product.value.descriptionEn
 })
 
-const shortDescription = computed(() => {
-  const p = product.value
-  if (!p) return ''
-  return locale.value === 'en' ? p.shortDescriptionEn || p.shortDescription || p.nameEn : p.shortDescription || p.nameTh
+/* Exact olympianus.com 2-Column Specification Table */
+const specRows = computed(() => {
+  const p = product.value || {}
+  const specs = p.specs && typeof p.specs === 'object' ? p.specs : {}
+  const rows: Array<{ label: string; value: string }> = [
+    { label: 'Brand', value: p.brandName || p.brandSlug || 'Olym Pianus' },
+    { label: 'Model / Reference', value: p.sku || p.slug || '—' },
+    { label: 'Movement', value: specs.movement || p.movement || 'Automatic / Precision Caliber' },
+    { label: 'Crystal', value: specs.crystal || 'Sapphire Crystal' },
+    { label: 'Case Material', value: specs.caseMaterial || '316L Surgical Stainless Steel' },
+    { label: 'Case Diameter', value: specs.caseSize || specs.diameter || '40 mm' },
+    { label: 'Water Resistance', value: specs.waterResistance || '5 ATM / 10 ATM' },
+    { label: 'Warranty', value: specs.warranty || (locale.value === 'th' ? 'รับประกันศูนย์ไทย 2 ปีเต็ม' : '2-Year Official Warranty') }
+  ]
+  return rows
 })
 
-const comparePrice = computed(() => {
-  const p = product.value
-  if (!p) return 0
-  const orig = Number(p.originalPrice ?? p.priceCompare ?? 0)
-  return orig > Number(p.price || 0) ? orig : 0
-})
+const compareAt = computed(() => Number(product.value?.originalPrice ?? product.value?.priceCompare ?? product.value?.comparePrice ?? 0))
 
-const fmt = (v: number | string | null) => formatPrice(v, site.value.currencySymbol, localeTag.value)
-
-function addToCart(goCheckout = false) {
+function addItemToCart() {
   if (!product.value) return
-  const p = product.value
   cart.add(
     {
-      productId: Number(p.id),
-      slug: p.slug,
-      name: p.name,
-      nameEn: p.nameEn || p.name,
-      nameTh: p.nameTh || p.name,
-      price: Number(p.price || 0),
+      productId: Number(product.value.id),
+      slug: product.value.slug,
+      name: product.value.name || title.value,
+      nameEn: product.value.nameEn || title.value,
+      nameTh: product.value.nameTh || title.value,
+      price: Number(product.value.price || 0),
       image: images.value[0],
-      maxStock: Number(p.stock || 0),
-      sku: p.sku
+      maxStock: Number(product.value.stock ?? 99),
+      sku: product.value.sku
     },
-    quantity.value
+    qty.value
   )
-  if (goCheckout) {
-    cart.drawerOpen.value = false
-    navigateTo(localePath('/checkout'))
-  }
 }
 
-async function submitReview() {
-  if (!reviewForm.comment.trim() || !product.value) return
-  try {
-    await $fetch('/api/reviews', {
-      method: 'POST',
-      body: {
-        productId: Number(product.value.id),
-        customerName: reviewForm.customerName,
-        rating: Number(reviewForm.rating),
-        comment: reviewForm.comment
-      }
-    })
-    reviewForm.comment = ''
-    reviewForm.customerName = ''
-    reviewSubmitted.value = true
-    await refresh()
-  } catch {
-    /* ignore */
-  }
-}
-
-useHead(() => ({ title: `${name.value} — ${site.value.name}` }))
+useHead(() => ({
+  title: title.value ? `${title.value} — Olym Pianus · Opwatch` : 'Timepiece — Opwatch'
+}))
 </script>
 
 <template>
-  <div v-if="error || !product">
-    <section class="section">
-      <div class="container center">
-        <p class="eyebrow" style="justify-content: center">{{ t('errors.notFound') }}</p>
-        <h1 class="page-title" style="margin: 16px 0 14px">{{ t('errors.notFound') }}</h1>
-        <p class="muted" style="max-width: 420px; margin: 0 auto 26px">{{ t('errors.notFoundBody') }}</p>
-        <NuxtLink :to="localePath('/products')" class="btn">{{ t('products.backToCollections') }}</NuxtLink>
-      </div>
-    </section>
-  </div>
-
-  <div v-else>
-    <!-- Breadcrumb Bar -->
-    <div class="crumbbar">
-      <div class="container crumbbar__inner tiny upper">
-        <NuxtLink :to="localePath('/')">{{ t('nav.home') }}</NuxtLink>
-        <span>/</span>
-        <NuxtLink :to="localePath('/products')">{{ t('nav.collections') }}</NuxtLink>
-        <template v-if="brand">
-          <span>/</span>
-          <NuxtLink :to="localePath('/brands/' + brand.slug)">{{ brandLabel }}</NuxtLink>
-        </template>
-        <span>/</span>
-        <span class="crumbbar__cur">{{ product.sku || name }}</span>
-      </div>
+  <div class="op-detail">
+    <div v-if="error || !product" class="container section center">
+      <h2>{{ locale === 'th' ? 'ไม่พบข้อมูลเรือนเวลาที่ค้นหา' : 'Timepiece Not Found' }}</h2>
+      <p class="muted" style="margin-block: 12px 24px">
+        {{ locale === 'th' ? 'กรุณาเลือกชมคอลเลกชันอื่นในบูติกของเรา' : 'Please explore our full boutique catalogue.' }}
+      </p>
+      <NuxtLink :to="localePath('/products')" class="btn">Collections</NuxtLink>
     </div>
 
-    <!-- Main Gallery & Purchase Block -->
-    <section class="pdetail">
-      <div class="container pdetail__grid">
-        <!-- Studio Gallery -->
-        <div class="gallery">
-          <div class="gallery__main">
-            <img
-              :src="images[activeImage]"
-              :alt="name"
-              :class="{ 'is-cutout': images[activeImage]?.endsWith('.png') || images[activeImage]?.includes('cutout') }"
-            />
-          </div>
-          <div v-if="images.length > 1" class="gallery__thumbs">
-            <button
-              v-for="(img, i) in images"
-              :key="i"
-              type="button"
-              class="gthumb"
-              :class="{ 'is-active': i === activeImage }"
-              @click="activeImage = i"
-            >
-              <img :src="img" :alt="name" loading="lazy" />
-            </button>
-          </div>
-        </div>
-
-        <!-- Horological Details & E-Commerce Actions -->
-        <div class="pinfo">
-          <div class="row gap-12 wrap">
-            <NuxtLink
-              v-if="brand"
-              :to="localePath('/brands/' + brand.slug)"
-              class="roman pinfo__brand"
-            >
-              {{ brandLabel }}
-            </NuxtLink>
-            <NuxtLink
-              v-if="category"
-              :to="localePath({ path: '/products', query: { category: category.slug } })"
-              class="tiny upper muted"
-            >
-              · {{ locale === 'en' ? category.nameEn || category.name : category.nameTh || category.name }}
-            </NuxtLink>
-          </div>
-
-          <h1 class="pinfo__name">{{ name }}</h1>
-          <p class="pinfo__sku tiny upper faint">Model / {{ t('products.sku') }}: <strong>{{ product.sku }}</strong></p>
-
-          <div class="pinfo__price">
-            <span class="price price--lg">{{ fmt(product.price) }}</span>
-            <span v-if="comparePrice > 0" class="price-compare">
-              {{ fmt(comparePrice) }}
-            </span>
-            <span v-if="comparePrice > 0" class="badge badge--gold">
-              -{{ Math.round(((comparePrice - Number(product.price)) / comparePrice) * 100) }}%
-            </span>
-          </div>
-
-          <p class="pinfo__short">{{ shortDescription }}</p>
-
-          <div class="pinfo__stock">
-            <span class="badge" :class="Number(product.stock) <= 0 ? 'badge--danger' : Number(product.stock) <= 10 ? 'badge--gold' : 'badge--new'">
-              {{ Number(product.stock) <= 0 ? t('common.outOfStock') : Number(product.stock) <= 10 ? t('products.lowStock') : t('common.inStock') }}
-            </span>
-            <span class="small muted">{{ product.stock }} {{ t('common.quantity') }}</span>
-          </div>
-
-          <!-- Purchase Controls -->
-          <div class="pinfo__buy">
-            <div class="qty qty--lg">
-              <button type="button" aria-label="−" @click="quantity = Math.max(1, quantity - 1)">−</button>
-              <span>{{ quantity }}</span>
-              <button type="button" aria-label="+" :disabled="quantity >= Number(product.stock || 0)" @click="quantity = Math.min(Number(product.stock || 0), quantity + 1)">+</button>
-            </div>
-            <button type="button" class="btn btn--gold grow" :disabled="Number(product.stock || 0) <= 0" @click="addToCart(false)">
-              + {{ t('common.addToCart') }}
-            </button>
-          </div>
-
-          <button
-            type="button"
-            class="btn btn--ghost btn--block"
-            :disabled="Number(product.stock || 0) <= 0"
-            @click="addToCart(true)"
-          >
-            {{ t('products.buyNow') }}
-          </button>
-
-          <ul class="pinfo__list">
-            <li><span class="tiny upper faint">{{ t('home.authentic') }}</span><span>Official Warranty &amp; Certificate</span></li>
-            <li><span class="tiny upper faint">{{ t('orderStatus.processing') }}</span><span>{{ t('home.service') }}</span></li>
-            <li><span class="tiny upper faint">{{ t('checkout.shippingAddress') }}</span><span>{{ t('cart.freeShippingNote', { amount: formatPrice(site.freeShippingThreshold || 5000, site.currencySymbol, localeTag) }) }}</span></li>
-          </ul>
+    <template v-else>
+      <!-- Breadcrumb Bar (exact olympianus.com #ebebf1 alternate_color strip) -->
+      <div class="op-detail__crumb">
+        <div class="container op-detail__crumb-row">
+          <NuxtLink :to="localePath('/')">Home</NuxtLink>
+          <span>/</span>
+          <NuxtLink :to="localePath('/products')">Collections</NuxtLink>
+          <span>/</span>
+          <strong>{{ product.sku || title }}</strong>
         </div>
       </div>
-    </section>
 
-    <!-- Olympianus-style Specification Table & Narrative -->
-    <section class="section section--tight specsec">
-      <div class="container detail2">
-        <div class="detail2__col">
-          <p class="eyebrow">{{ t('products.description') }}</p>
-          <h2 class="serif" style="font-size: 28px; margin-top: 10px">{{ name }}</h2>
-          <div class="detail2__desc">{{ description }}</div>
+      <!-- Portfolio Showcase: Pure White Studio Cutout + Luxury Serif Info -->
+      <section class="section">
+        <div class="container op-detail__main">
+          <!-- Left: Studio Watch Gallery -->
+          <div class="op-detail__gallery">
+            <div class="op-detail__stage">
+              <img :src="images[activeImg]" :alt="title" class="op-detail__main-img" />
+            </div>
+
+            <div v-if="images.length > 1" class="op-detail__thumbs">
+              <button
+                v-for="(img, idx) in images"
+                :key="img + idx"
+                type="button"
+                class="op-detail__thumb"
+                :class="{ 'is-active': idx === activeImg }"
+                @click="activeImg = idx"
+              >
+                <img :src="img" :alt="`${title} view ${idx + 1}`" />
+              </button>
+            </div>
+          </div>
+
+          <!-- Right: Model Code + Luxury Serif Name + Price + Add to Cart -->
+          <div class="op-detail__info">
+            <span class="eyebrow">{{ product.brandName || product.brandSlug || 'OLYM PIANUS' }}</span>
+            <p v-if="product.sku" class="op-detail__sku">{{ product.sku }}</p>
+            <h1 class="op-detail__title">{{ title }}</h1>
+
+            <div class="op-detail__price-box">
+              <span class="price price--lg">{{ fmt(product.price) }}</span>
+              <span
+                v-if="compareAt > Number(product.price || 0)"
+                class="price-compare"
+              >
+                {{ fmt(compareAt) }}
+              </span>
+            </div>
+
+            <p v-if="description" class="op-detail__desc">{{ description }}</p>
+
+            <!-- Quantity & Purchase -->
+            <div class="op-detail__buy">
+              <div class="op-detail__qty">
+                <button type="button" aria-label="Decrease" @click="qty = Math.max(1, qty - 1)">−</button>
+                <span>{{ qty }}</span>
+                <button type="button" aria-label="Increase" @click="qty++">+</button>
+              </div>
+
+              <button
+                type="button"
+                class="btn grow"
+                :disabled="product.stock !== undefined && Number(product.stock) <= 0"
+                @click="addItemToCart"
+              >
+                {{
+                  product.stock !== undefined && Number(product.stock) <= 0
+                    ? t('common.outOfStock')
+                    : t('common.addToCart')
+                }}
+              </button>
+            </div>
+
+            <!-- Boutique Assurances -->
+            <ul class="op-detail__trust">
+              <li>✓ {{ locale === 'th' ? 'ของแท้ 100% จากตัวแทนจำหน่ายทางการ Inter Times Co., Ltd.' : '100% Authentic from Official Distributor Inter Times Co., Ltd.' }}</li>
+              <li>✓ {{ locale === 'th' ? 'กระจกแซฟไฟร์แท้กันรอยขีดข่วน พร้อมกล่องและใบรับประกันศูนย์' : 'Scratch-Resistant Sapphire Crystal & Full Presentation Box' }}</li>
+              <li>✓ {{ locale === 'th' ? 'จัดส่งด่วนพร้อมประกันภัยสินค้าทั่วประเทศไทย' : 'Complimentary Insured Express Delivery Nationwide' }}</li>
+            </ul>
+          </div>
         </div>
+      </section>
 
-        <div class="detail2__col">
-          <p class="eyebrow">SPECIFICATION</p>
-          <h2 class="serif" style="font-size: 28px; margin-top: 10px">{{ t('products.specifications') }}</h2>
-          <table class="spectable">
+      <!-- Exact olympianus.com Portfolio 2-Column Specification Table on #f8f8f8 -->
+      <section class="section section--pearl">
+        <div class="container op-detail__spec-wrap">
+          <div class="op-sec-head">
+            <h2 class="op-sec-title">Specification</h2>
+          </div>
+
+          <table class="op-detail__spec-table">
             <tbody>
-              <tr>
-                <th>Model</th>
-                <td>{{ product.sku }}</td>
-              </tr>
-              <tr>
-                <th>{{ t('products.brand') }}</th>
-                <td>{{ brandLabel }}</td>
-              </tr>
-              <tr v-for="(value, key) in (product.specs || {})" :key="key">
-                <th>{{ key }}</th>
-                <td>{{ value }}</td>
+              <tr v-for="row in specRows" :key="row.label">
+                <th>{{ row.label }}</th>
+                <td>{{ row.value }}</td>
               </tr>
             </tbody>
           </table>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <!-- Reviews -->
-    <section class="section section--tight">
-      <div class="container">
-        <div class="between reviewhead">
-          <div>
-            <p class="eyebrow">{{ t('products.reviews') }}</p>
-            <h2 class="page-title" style="font-size: 2rem">{{ t('products.reviews') }}</h2>
+      <!-- Related Watches -->
+      <section v-if="related.length" class="section">
+        <div class="container">
+          <div class="op-sec-head">
+            <h2 class="op-sec-title">RECOMMEND</h2>
           </div>
-          <span class="badge">{{ reviews.length }} {{ t('products.reviews') }}</span>
-        </div>
-
-        <div class="reviewlist">
-          <div v-for="r in reviews" :key="r.id" class="review">
-            <div class="review__top">
-              <span class="stars">{{ '★'.repeat(Number(r.rating || 5)) }}</span>
-              <span class="tiny upper muted">{{ formatDate(r.createdAt, localeTag) }}</span>
-            </div>
-            <p class="review__name">{{ r.customerName }}</p>
-            <p class="review__comment">{{ r.comment }}</p>
+          <div class="op-detail__related">
+            <ProductCard v-for="r in related.slice(0, 3)" :key="r.id || r.slug" :product="r" />
           </div>
-          <p v-if="!reviews.length" class="muted">{{ t('products.noReviews') }}</p>
         </div>
-
-        <form class="reviewform" @submit.prevent="submitReview">
-          <p class="eyebrow">{{ t('products.writeReview') }}</p>
-          <div class="reviewform__grid">
-            <input v-model="reviewForm.customerName" class="input" :placeholder="t('auth.name')" style="max-width: 260px" />
-            <div class="row gap-8">
-              <span class="small muted">{{ t('products.reviews') }}</span>
-              <select v-model.number="reviewForm.rating" class="select" style="width: 120px">
-                <option v-for="n in 5" :key="n" :value="n">{{ '★'.repeat(n) }}{{ '☆'.repeat(5 - n) }}</option>
-              </select>
-            </div>
-          </div>
-          <textarea v-model="reviewForm.comment" class="textarea" :placeholder="t('products.writeReview')" />
-          <div>
-            <button class="btn btn--sm" type="submit" :disabled="!reviewForm.comment.trim()">{{ t('common.save') }}</button>
-            <span v-if="reviewSubmitted" class="small" style="color: var(--success); margin-left: 14px">{{ t('account.profileSaved') }}</span>
-          </div>
-        </form>
-      </div>
-    </section>
-
-    <!-- Related Models + BACK link (Olympianus style) -->
-    <section v-if="related.length" class="section section--tight" style="border-top: 1px solid var(--line)">
-      <div class="container">
-        <div class="op-sec-head" style="margin-bottom: 36px">
-          <h2 class="op-sec-title" style="font-size: 1.5rem">RELATED</h2>
-        </div>
-        <div class="grid--4">
-          <ProductCard v-for="p in related" :key="p.id" :product="p" />
-        </div>
-        <div class="center" style="margin-top: 44px">
-          <NuxtLink :to="localePath('/products')" class="btn btn--ghost">← BACK</NuxtLink>
-        </div>
-      </div>
-    </section>
+      </section>
+    </template>
   </div>
 </template>
 
 <style scoped>
-.crumbbar { background: var(--ivory); border-bottom: 1px solid var(--line); padding-block: 13px; }
-.crumbbar__inner { display: flex; align-items: center; gap: 8px; color: var(--ink-muted); flex-wrap: wrap; }
-.crumbbar__inner a:hover { color: var(--gold); }
-.crumbbar__cur { color: var(--ink); font-weight: 600; }
-
-.pdetail { padding-block: 52px; background: var(--paper); border-bottom: 1px solid var(--line); }
-.pdetail__grid { display: grid; grid-template-columns: 1.05fr 1fr; gap: 60px; align-items: start; }
-
-.gallery__main { aspect-ratio: 1 / 1.05; overflow: hidden; background: #ffffff; border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; }
-.gallery__main img { width: 100%; height: 100%; object-fit: cover; }
-.gallery__main img.is-cutout { object-fit: contain; padding: 28px; }
-.gallery__thumbs { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
-.gthumb { width: 76px; height: 76px; border: 1px solid var(--line-strong); background: #ffffff; padding: 4px; overflow: hidden; }
-.gthumb img { width: 100%; height: 100%; object-fit: contain; }
-.gthumb.is-active { border-color: var(--gold); border-width: 2px; }
-
-.pinfo { display: flex; flex-direction: column; gap: 15px; }
-.pinfo__brand { color: var(--gold); font-size: 13px; font-weight: 600; }
-.pinfo__name { font-size: clamp(2rem, 3.8vw, 2.9rem); line-height: 1.12; }
-.pinfo__sku { margin-top: -6px; }
-.pinfo__price { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; margin-top: 4px; }
-.pinfo__short { color: var(--ink-soft); line-height: 1.75; padding-block: 4px; }
-.pinfo__stock { display: flex; align-items: center; gap: 12px; }
-.pinfo__buy { display: flex; gap: 12px; margin-top: 6px; align-items: stretch; }
-.qty--lg { display: inline-flex; align-items: center; border: 1px solid var(--line-strong); border-radius: var(--radius); overflow: hidden; }
-.qty--lg button { border: 0; background: transparent; width: 46px; height: 100%; font-size: 18px; color: var(--ink-soft); }
-.qty--lg span { min-width: 44px; text-align: center; font-size: 15px; }
-.pinfo__list { list-style: none; padding: 0; margin: 12px 0 0; border-top: 1px solid var(--line); }
-.pinfo__list li { display: flex; justify-content: space-between; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--line); font-size: 13.5px; color: var(--ink-soft); }
-
-.specsec { background: var(--ivory); border-bottom: 1px solid var(--line); }
-.detail2 { display: grid; grid-template-columns: 1.1fr 1fr; gap: 56px; align-items: start; }
-.detail2__desc { margin-top: 16px; font-size: 15.5px; line-height: 1.9; color: var(--ink-soft); }
-
-.spectable { width: 100%; border-collapse: collapse; margin-top: 18px; background: var(--paper); border: 1px solid var(--line); }
-.spectable th, .spectable td { padding: 13px 18px; border-bottom: 1px solid var(--line); font-size: 14px; text-align: left; }
-.spectable th { width: 40%; color: var(--ink-muted); font-weight: 500; background: #faf8f4; }
-
-.reviewhead { margin-bottom: 30px; }
-.reviewlist { display: flex; flex-direction: column; gap: 16px; }
-.review { border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 20px 22px; background: var(--paper); }
-.review__top { display: flex; align-items: center; justify-content: space-between; }
-.stars { color: var(--gold); letter-spacing: 2px; font-size: 13px; }
-.review__name { font-family: var(--font-display); font-size: 16px; margin: 6px 0 4px; }
-.review__comment { color: var(--ink-soft); line-height: 1.7; }
-.reviewform { margin-top: 40px; border-top: 1px solid var(--line); padding-top: 30px; display: flex; flex-direction: column; gap: 14px; }
-.reviewform__grid { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
-.grid--4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
-
-@media (max-width: 1080px) { .grid--4 { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 900px) {
-  .pdetail__grid { grid-template-columns: 1fr; gap: 38px; }
-  .detail2 { grid-template-columns: 1fr; gap: 40px; }
+.op-detail__spacer {
+  height: var(--header-h);
+  background: #ffffff;
 }
-@media (max-width: 620px) {
-  .pinfo__buy { flex-direction: column; }
-  .grid--4 { grid-template-columns: 1fr; }
+.op-detail__crumb {
+  background: var(--sand);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line-strong);
+  padding-block: 14px;
+}
+.op-detail__crumb-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-roman);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.op-detail__crumb-row a:hover { color: var(--sapphire); }
+.op-detail__crumb-row strong { color: var(--sapphire); }
+
+.op-detail__main {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 64px;
+  align-items: start;
+}
+.op-detail__stage {
+  background: #ffffff;
+  border: 1px solid var(--sand);
+  aspect-ratio: 4 / 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 36px;
+}
+.op-detail__main-img {
+  max-height: 100%;
+  max-width: 100%;
+  object-fit: contain;
+}
+.op-detail__thumbs {
+  margin-top: 14px;
+  display: flex;
+  gap: 12px;
+}
+.op-detail__thumb {
+  width: 78px;
+  height: 92px;
+  padding: 6px;
+  border: 1px solid var(--sand);
+  background: #ffffff;
+  transition: border-color 0.2s;
+}
+.op-detail__thumb.is-active {
+  border-color: var(--sapphire);
+}
+.op-detail__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.op-detail__info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+  padding-top: 10px;
+}
+.op-detail__sku {
+  font-family: var(--font-roman);
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.24em;
+  color: var(--sapphire);
+}
+.op-detail__title {
+  font-family: var(--font-display);
+  font-size: clamp(1.9rem, 3.2vw, 2.7rem);
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  line-height: 1.25;
+}
+.op-detail__price-box {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding-block: 8px;
+}
+.op-detail__desc {
+  font-family: var(--font-display);
+  font-size: 18px;
+  color: var(--ink-soft);
+  line-height: 1.85;
+}
+.op-detail__buy {
+  display: flex;
+  align-items: stretch;
+  gap: 14px;
+  width: 100%;
+  margin-top: 8px;
+}
+.op-detail__qty {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--line-strong);
+  background: #ffffff;
+}
+.op-detail__qty button {
+  width: 42px;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  font-size: 16px;
+  color: var(--ink);
+}
+.op-detail__qty span {
+  min-width: 36px;
+  text-align: center;
+  font-size: 14px;
+}
+.op-detail__trust {
+  list-style: none;
+  padding: 20px 0 0;
+  margin: 12px 0 0;
+  border-top: 1px solid var(--sand);
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  font-size: 13.5px;
+  color: var(--ink-soft);
+}
+
+.op-detail__spec-wrap { max-width: 860px; }
+.op-detail__spec-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #ffffff;
+  border: 1px solid var(--line-strong);
+}
+.op-detail__spec-table th,
+.op-detail__spec-table td {
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--sand);
+  font-size: 15px;
+  text-align: left;
+}
+.op-detail__spec-table th {
+  width: 36%;
+  font-family: var(--font-roman);
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-size: 11px;
+  color: var(--ink);
+  background: #fbfbfd;
+  border-right: 1px solid var(--sand);
+}
+.op-detail__spec-table td {
+  font-family: var(--font-display);
+  font-size: 17px;
+  color: var(--ink-soft);
+}
+
+.op-detail__related {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 28px;
+}
+
+@media (max-width: 900px) {
+  .op-detail__main { grid-template-columns: 1fr; gap: 36px; }
+  .op-detail__related { grid-template-columns: 1fr; }
 }
 </style>

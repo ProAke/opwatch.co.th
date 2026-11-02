@@ -1,57 +1,68 @@
 <script setup lang="ts">
-const { locale } = useI18n()
-const localePath = useLocalePath()
-const route = useRoute()
+defineProps<{
+  lightSurface?: boolean
+}>()
 
-const options = [
-  { code: 'th', label: 'TH' },
-  { code: 'en', label: 'EN' }
-]
+const { locale, locales } = useI18n()
+const switchLocalePath = useSwitchLocalePath()
 
-function toLocale(code: string) {
-  return localePath({ path: route.path, query: route.query }, code)
-}
+const available = computed(() =>
+  (locales.value as Array<{ code: string; name?: string }>).map(l => ({
+    code: l.code,
+    label: l.code.toUpperCase(),
+    path: switchLocalePath(l.code as 'th' | 'en')
+  }))
+)
 </script>
 
 <template>
-  <div class="lang">
+  <div class="lang-switch" :class="{ 'lang-switch--light': lightSurface }" role="group" aria-label="Language">
     <NuxtLink
-      v-for="o in options"
-      :key="o.code"
-      :to="toLocale(o.code)"
-      class="lang__btn"
-      :class="{ 'is-active': locale === o.code }"
-      :lang="o.code"
-      :hreflang="o.code"
+      v-for="item in available"
+      :key="item.code"
+      :to="item.path"
+      class="lang-switch__item"
+      :class="{ 'is-active': locale === item.code }"
     >
-      {{ o.label }}
+      {{ item.label }}
     </NuxtLink>
   </div>
 </template>
 
 <style scoped>
-.lang {
+.lang-switch {
   display: inline-flex;
-  border: 1px solid rgba(255, 255, 255, 0.24);
-  overflow: hidden;
-}
-.lang__btn {
-  padding: 5px 9px;
-  font-family: var(--font-geo);
+  align-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.34);
+  font-family: var(--font-roman);
   font-size: 10px;
-  font-weight: 500;
-  letter-spacing: 0.14em;
-  color: rgba(255, 255, 255, 0.65);
-  background: transparent;
-  transition: background 0.2s, color 0.2s;
-}
-.lang__btn:hover {
-  color: #ffffff;
-  background: rgba(255, 255, 255, 0.1);
-}
-.lang__btn.is-active {
-  background: var(--gold);
-  color: #080808;
   font-weight: 600;
+  letter-spacing: 0.16em;
+  transition: border-color 0.28s var(--ease);
+}
+.lang-switch__item {
+  padding: 5px 9px;
+  color: rgba(255, 255, 255, 0.82);
+  transition: color 0.2s, background 0.2s;
+}
+.lang-switch__item:hover { color: #ffffff; }
+.lang-switch__item.is-active {
+  background: #ffffff;
+  color: var(--sapphire);
+}
+
+/* On #ffffff sticky/page header (olympianus.com header_color) */
+.lang-switch--light {
+  border-color: var(--line-strong);
+}
+.lang-switch--light .lang-switch__item {
+  color: var(--ink-soft);
+}
+.lang-switch--light .lang-switch__item:hover {
+  color: var(--sapphire);
+}
+.lang-switch--light .lang-switch__item.is-active {
+  background: var(--sapphire);
+  color: #ffffff;
 }
 </style>
