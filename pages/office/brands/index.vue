@@ -196,7 +196,7 @@ definePageMeta({ layout: 'office', middleware: 'office' })
           <tr v-for="b in items" :key="b.id">
             <td>
               <div class="row gap-12">
-                <div class="bimg"><img :src="b.heroImage || '/images/op/hero-gold-stones.jpg'" alt="" loading="lazy" referrerpolicy="no-referrer" /></div>
+                <div class="bimg"><img :src="b.logo || b.heroImage || '/images/op/hero-gold-stones.jpg'" alt="" loading="lazy" referrerpolicy="no-referrer" /></div>
                 <div>
                   <div class="serif" style="font-size: 17px">{{ b.name }}</div>
                   <div class="tiny upper faint">{{ locale === 'en' ? b.taglineEn || b.tagline : b.tagline }}</div>
@@ -226,8 +226,8 @@ definePageMeta({ layout: 'office', middleware: 'office' })
 .panel__title { font-size: 20px; margin-bottom: 20px; }
 .panel-pad { padding: 26px 28px; }
 .formgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.bimg { width: 44px; height: 44px; border-radius: var(--radius); overflow: hidden; background: var(--sand); flex: none; }
-.bimg img { width: 100%; height: 100%; object-fit: cover; }
+.bimg { width: 56px; height: 44px; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; background: #ffffff; padding: 2px; flex: none; }
+.bimg img { width: 100%; height: 100%; object-fit: contain; }
 .danger:hover { color: var(--danger) !important; border-color: var(--danger) !important; }
 @media (max-width: 620px) { .formgrid { grid-template-columns: 1fr; } }
 </style>

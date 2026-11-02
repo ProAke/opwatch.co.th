@@ -197,7 +197,7 @@ useHead(() => ({
 
             <!-- Boutique Assurances (Thailand Exclusive) -->
             <ul class="op-detail__trust">
-              <li>✓ {{ locale === 'th' ? 'ของแท้ 100% จากตัวแทนจำหน่ายทางการในประเทศไทย (บริษัท อินเตอร์ ไทม์ส จำกัด)' : '100% Authentic from Thailand Official Distributor (Inter Times Co., Ltd.)' }}</li>
+              <li>✓ {{ locale === 'th' ? 'ของแท้ 100% จากตัวแทนจำหน่ายทางการในประเทศไทย (บริษัท อินเตอร์ไทมส์ จำกัด)' : '100% Authentic from Thailand Official Distributor (Inter Times Co., Ltd.)' }}</li>
               <li>✓ {{ locale === 'th' ? 'กระจกแซฟไฟร์แท้กันรอยขีดข่วน พร้อมกล่องและใบรับประกันศูนย์ไทย 2 ปีเต็ม' : 'Scratch-Resistant Sapphire Crystal, Official Box & 2-Year Thailand Warranty' }}</li>
               <li>✓ {{ locale === 'th' ? 'จัดส่งฟรีพร้อมประกันภัยเฉพาะภายในประเทศไทยครบทั้ง 77 จังหวัด (งดส่งต่างประเทศ)' : 'Complimentary Insured Delivery Exclusively Within Thailand (All 77 Provinces)' }}</li>
             </ul>

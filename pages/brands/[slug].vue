@@ -86,8 +86,15 @@ const availableCategories = computed(() => {
 
 const heroBanner = computed(() => {
   if (slug.value === 'ogival') return '/images/op/hero-ceramic-dark.jpg'
-  if (slug.value === 'opwatch') return '/images/op/hero-gold-stones.jpg'
+  if (slug.value === 'olympia-star' || slug.value === 'opwatch') return '/images/op/hero-gold-stones.jpg'
   return '/images/op/banner-899832ags.jpg'
+})
+
+const brandLogo = computed(() => {
+  if (res.value?.brand?.logo) return res.value.brand.logo
+  if (slug.value === 'ogival') return '/images/logos/ogival.jpg'
+  if (slug.value === 'olympia-star' || slug.value === 'opwatch') return '/images/logos/olympia-star.jpg'
+  return '/images/logos/olym-pianus.jpg'
 })
 
 const brandTitle = computed(() => {
@@ -118,7 +125,9 @@ function goPage(p: number) {
       <img :src="heroBanner" :alt="brandTitle" class="op-brand__img" />
       <div class="op-brand__scrim" />
       <div class="container op-brand__body">
-        <OpCrest size="sm" stacked theme="dark" :sublabel="res?.brand?.countryEn || 'THAILAND OFFICIAL BOUTIQUE'" />
+        <div class="op-brand__logo-badge">
+          <img :src="brandLogo" :alt="brandTitle" class="op-brand__logo-img" />
+        </div>
         <h1 class="page-title">{{ brandTitle }}</h1>
         <p v-if="brandStory">{{ brandStory }}</p>
       </div>
@@ -234,6 +243,20 @@ function goPage(p: number) {
   flex-direction: column;
   align-items: center;
   gap: 16px;
+}
+.op-brand__logo-badge {
+  background: #ffffff;
+  padding: 12px 24px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.op-brand__logo-img {
+  height: 76px;
+  width: auto;
+  max-width: 190px;
+  object-fit: contain;
 }
 .op-brand__body h1 { color: #ffffff; }
 .op-brand__body p {

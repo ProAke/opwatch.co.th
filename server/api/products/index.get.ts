@@ -2,8 +2,11 @@ const BRAND_ALIASES: Record<string, string> = {
   olympinus: 'olympianus',
   'olym-pianus': 'olympianus',
   olympianus: 'olympianus',
-  ogival: 'ogival',
-  opwatch: 'opwatch'
+  'olympia-star': 'olympia-star',
+  olympiastar: 'olympia-star',
+  opa: 'olympia-star',
+  opwatch: 'olympia-star',
+  ogival: 'ogival'
 }
 
 const CATEGORY_ALIASES: Record<string, string | string[]> = {

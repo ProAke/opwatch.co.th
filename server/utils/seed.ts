@@ -80,19 +80,20 @@ export interface SeedCampaign {
   active: boolean
 }
 
-/** Legacy 19 sample SKUs from initial scaffolding to purge from installed stores */
+/** Legacy sample SKUs from initial scaffolding to purge from installed stores */
 export const LEGACY_SAMPLE_SKUS = new Set([
   'OW-M1001', 'OW-M1002', 'OW-L2001', 'OW-L2002', 'OW-S3001', 'OW-C4001', 'OW-K1001',
   'OL-M2001', 'OL-M2002', 'OL-L3001', 'OL-L3002', 'OL-S4001', 'OL-C5001',
-  'OG-M6001', 'OG-M6002', 'OG-L7001', 'OG-L7002', 'OG-S8001', 'OG-K9001'
+  'OG-M6001', 'OG-M6002', 'OG-L7001', 'OG-L7002', 'OG-S8001', 'OG-K9001',
+  'OPW-TH-01', 'OPW-TH-02', 'OPW-TH-03', 'OPW-TH-04'
 ])
 
 export const defaultBrands = (): SeedBrand[] => [
   {
     slug: 'olympianus',
-    name: 'Olympianus',
-    nameEn: 'Olympianus (Olym Pianus)',
-    nameTh: 'Olympianus (โอลิมปิอานัส)',
+    name: 'Olym Pianus',
+    nameEn: 'Olym Pianus',
+    nameTh: 'Olym Pianus (โอลิมปิอานัส)',
     country: 'สวิตเซอร์แลนด์ / ญี่ปุ่น',
     countryEn: 'Swiss Heritage · Japanese Movement',
     movement: 'เครื่องญี่ปุ่นแท้ · กระจกแซฟไฟร์',
@@ -101,56 +102,56 @@ export const defaultBrands = (): SeedBrand[] => [
     tagline: 'Faster, Higher, Stronger — ความสง่างามเหนือกาลเวลา',
     taglineEn: 'Faster, Higher, Stronger — Elegance Beyond Time',
     story:
-      'Olympianus (Olym Pianus) ก่อตั้งขึ้นจากมรดกศาสตร์เรือนเวลาสวิสตั้งแต่ปี ค.ศ. 1953 ภายใต้จิตวิญญาณโอลิมปิก "Faster, Higher, Stronger" ผสานงานออกแบบอันสง่างามเข้ากับกลไกออโตเมติกและควอตซ์ต้นตำรับจากญี่ปุ่น พร้อมกระจกหน้าปัดแซฟไฟร์แท้ป้องกันรอยขีดข่วนในทุกเรือน จัดจำหน่ายอย่างเป็นทางการในประเทศไทยโดย บริษัท อินเตอร์ ไทม์ส จำกัด (Opwatch Thailand)',
+      'Olym Pianus (โอลิมปิอานัส) ก่อตั้งขึ้นจากมรดกศาสตร์เรือนเวลาสวิสตั้งแต่ปี ค.ศ. 1953 ภายใต้จิตวิญญาณโอลิมปิก "Faster, Higher, Stronger" ผสานงานออกแบบอันสง่างามเข้ากับกลไกออโตเมติกและควอตซ์ต้นตำรับจากญี่ปุ่น พร้อมกระจกหน้าปัดแซฟไฟร์แท้ป้องกันรอยขีดข่วนในทุกเรือน จัดจำหน่ายอย่างเป็นทางการในประเทศไทยโดย บริษัท อินเตอร์ไทมส์ จำกัด',
     storyEn:
-      'Born from Swiss watchmaking tradition in 1953 and inspired by the Olympic motto "Faster, Higher, Stronger", Olympianus (Olym Pianus) unites timeless design, scratch-resistant sapphire crystal mirrors, and dependable Japanese automatic and quartz movements. Officially distributed exclusively in Thailand by Inter Times Co., Ltd.',
+      'Born from Swiss watchmaking tradition in 1953 and inspired by the Olympic motto "Faster, Higher, Stronger", Olym Pianus unites timeless design, scratch-resistant sapphire crystal mirrors, and dependable Japanese automatic and quartz movements. Officially distributed in Thailand by Inter Times Co., Ltd.',
     accentColor: '#1d2088',
-    logo: 'https://olympianus.com/wp-content/uploads/2024/06/899832AGS-Black-01-%E5%8E%BB%E8%83%8C.png',
+    logo: '/images/logos/olym-pianus.jpg',
     heroImage: '/images/op/banner-899832ags.jpg',
     sortOrder: 1,
     active: true
   },
   {
+    slug: 'olympia-star',
+    name: 'Olympia Star',
+    nameEn: 'Olympia Star',
+    nameTh: 'Olympia Star (โอลิมเปียสตาร์)',
+    country: 'สวิตเซอร์แลนด์',
+    countryEn: 'Swiss Heritage · Swiss Movement',
+    movement: 'เครื่องสวิสแท้ · กระจกแซฟไฟร์',
+    movementEn: 'Swiss Ronda Movement · Sapphire Crystal',
+    positioning: 'mid',
+    tagline: 'ตรามงกุฎและช่อมะกอกแห่งชัยชนะ ผสานความเที่ยงตรงของกลไกสวิส',
+    taglineEn: 'Crowned Olive-Laurel Emblem Powered by Precision Swiss Movements',
+    story:
+      'Olympia Star (โอลิมเปียสตาร์ · รหัส OPA) คือสายผลิตภัณฑ์เรือนเวลาเครื่องสวิสในตระกูล OP โดดเด่นด้วยตราสัญลักษณ์โล่ OP ประดับมงกุฎและช่อมะกอกคู่แห่งเกียรติยศ ขับเคลื่อนด้วยกลไกสวิสความเที่ยงตรงสูง ตัวเรือนสแตนเลสสตีล 316L และกระจกแซฟไฟร์แท้ป้องกันรอยขีดข่วน จัดจำหน่ายและดูแลหลังการขายในประเทศไทยโดย บริษัท อินเตอร์ไทมส์ จำกัด',
+    storyEn:
+      'Olympia Star (OPA) represents the Swiss-movement pillar of the OP watchmaking family — crowned with the iconic OP shield and twin olive laurels, pairing precision Swiss movements with 316L surgical stainless steel and scratch-resistant sapphire crystal. Officially distributed in Thailand by Inter Times Co., Ltd.',
+    accentColor: '#1d2088',
+    logo: '/images/logos/olympia-star.jpg',
+    heroImage: '/images/op/hero-gold-stones.jpg',
+    sortOrder: 2,
+    active: true
+  },
+  {
     slug: 'ogival',
     name: 'Ogival',
-    nameEn: 'Ogival (Swiss 1903)',
-    nameTh: 'Ogival (โอจิวัล สวิตเซอร์แลนด์ 1903)',
+    nameEn: 'Ogival',
+    nameTh: 'Ogival (โอจิวัล)',
     country: 'สวิตเซอร์แลนด์',
-    countryEn: 'La Chaux-de-Fonds, Switzerland',
+    countryEn: 'La Chaux-de-Fonds, Switzerland (Since 1903)',
     movement: 'เครื่องสวิสแท้ · อัญมณีและจักรกลชั้นสูง',
     movementEn: 'Swiss Automatic & Haute Joaillerie Quartz',
     positioning: 'premium',
     tagline: 'ตำนานปลากระโดดแห่งความโชคดี จากสวิตเซอร์แลนด์ตั้งแต่ปี 1903',
     taglineEn: 'Swiss Lucky Leaping Fish Haute Horlogerie Since 1903',
     story:
-      'Ogival (โอจิวัล) ก่อตั้งขึ้นในปี ค.ศ. 1903 ณ เมือง La Chaux-de-Fonds ประเทศสวิตเซอร์แลนด์ โดย René Brandt ภายใต้สัญลักษณ์ "ปลากระโดดแห่งความโชคดีและความรักอันเปี่ยมล้น" โดดเด่นด้วยเรือนเวลาสวิสออโตเมติก คอลเลกชันดอกคามิลเลีย (Camellia) ดาวตก (Meteor) และนาฬิกาประดับเพชรและอัญมณีธรรมชาติ จัดจำหน่ายและดูแลหลังการขายในประเทศไทยโดย บริษัท อินเตอร์ ไทม์ส จำกัด',
+      'Ogival (โอจิวัล) ก่อตั้งขึ้นในปี ค.ศ. 1903 ณ เมือง La Chaux-de-Fonds ประเทศสวิตเซอร์แลนด์ โดย René Brandt ภายใต้สัญลักษณ์ "ปลากระโดดแห่งความโชคดีและความรักอันเปี่ยมล้น" โดดเด่นด้วยเรือนเวลาสวิสออโตเมติก คอลเลกชันดอกคามิลเลีย (Camellia) ดาวตก (Meteor) และนาฬิกาประดับเพชรและอัญมณีธรรมชาติ จัดจำหน่ายและดูแลหลังการขายในประเทศไทยโดย บริษัท อินเตอร์ไทมส์ จำกัด',
     storyEn:
       'Founded in La Chaux-de-Fonds, Switzerland in 1903 by René Brandt under the emblem of the lucky leaping fish, Ogival is celebrated for Swiss mechanical watchmaking, Camellia and Meteor haute-joaillerie diamond creations, and sapphire-crystal prestige timepieces. Exclusively warranted in Thailand by Inter Times Co., Ltd.',
-    accentColor: '#c5a46d',
-    logo: 'https://img.91app.com/webapi/imagesV3/Cropped/SalePage/10012495/0/639177788611730000?v=1',
+    accentColor: '#8b0d11',
+    logo: '/images/logos/ogival.jpg',
     heroImage: '/images/op/hero-ceramic-dark.jpg',
-    sortOrder: 2,
-    active: true
-  },
-  {
-    slug: 'opwatch',
-    name: 'Opwatch',
-    nameEn: 'Opwatch Thailand Boutique',
-    nameTh: 'Opwatch บูติกประเทศไทย',
-    country: 'ประเทศไทย (เครื่องญี่ปุ่น)',
-    countryEn: 'Thailand Official Edition · Japanese Movement',
-    movement: 'เครื่องญี่ปุ่น · กระจกแซฟไฟร์แท้',
-    movementEn: 'Japanese Movement · Sapphire Crystal',
-    positioning: 'entry',
-    tagline: 'คัดสรรเรือนเวลาคุณภาพสำหรับลูกค้าในประเทศไทยโดยเฉพาะ',
-    taglineEn: 'Curated Sapphire Timepieces Exclusively for Thailand',
-    story:
-      'Opwatch Thailand คัดสรรเรือนเวลาคุณภาพเยี่ยมที่ใช้กลไกญี่ปุ่นแท้และกระจกแซฟไฟร์กันรอยขีดข่วน พร้อมการรับประกันศูนย์ไทยและบริการดูแลหลังการขายครบวงจรสำหรับลูกค้าในประเทศไทยเท่านั้น โดย บริษัท อินเตอร์ ไทม์ส จำกัด',
-    storyEn:
-      'Opwatch Thailand curates sapphire-crystal Japanese-movement timepieces backed by full domestic horological servicing and official warranty exclusively within Thailand by Inter Times Co., Ltd.',
-    accentColor: '#1d2088',
-    logo: '/images/op/watch-990-083-blue.png',
-    heroImage: '/images/op/hero-gold-stones.jpg',
     sortOrder: 3,
     active: true
   }
@@ -162,9 +163,9 @@ export const defaultCategories = (): SeedCategory[] => [
     name: 'นาฬิกาและจิวเวลรี่ทั้งหมด',
     nameEn: 'All Watches & Jewelry',
     nameTh: 'นาฬิกาและจิวเวลรี่ทั้งหมด',
-    description: 'รวมเรือนเวลาของแท้ Olympianus และ Ogival ครบทุกรุ่นในประเทศไทย',
-    descriptionEn: 'Complete official Thailand collection of Olympianus and Ogival timepieces.',
-    descriptionTh: 'รวมเรือนเวลาของแท้ Olympianus และ Ogival ครบทุกรุ่นในประเทศไทย',
+    description: 'รวมเรือนเวลาของแท้ Olym Pianus, Olympia Star และ Ogival ครบทุกรุ่นในประเทศไทย',
+    descriptionEn: 'Complete official Thailand collection of Olym Pianus, Olympia Star, and Ogival timepieces.',
+    descriptionTh: 'รวมเรือนเวลาของแท้ Olym Pianus, Olympia Star และ Ogival ครบทุกรุ่นในประเทศไทย',
     image: '/images/op/watch-990-083-blue.png',
     icon: '/images/op/watch-990-083-blue.png',
     bannerImage: '/images/op/hero-gold-stones.jpg',
@@ -232,9 +233,9 @@ export const defaultCategories = (): SeedCategory[] => [
     name: 'นาฬิกาคู่รัก (Couple)',
     nameEn: 'Couple Watches',
     nameTh: 'นาฬิกาคู่รัก (Couple)',
-    description: 'เรือนเวลาคู่รักชาย-หญิงจาก Ogival และ Olympianus สำหรับโอกาสพิเศษ',
-    descriptionEn: 'Matching His & Hers luxury pair timepieces from Ogival and Olympianus.',
-    descriptionTh: 'เรือนเวลาคู่รักชาย-หญิงจาก Ogival และ Olympianus สำหรับโอกาสพิเศษ',
+    description: 'เรือนเวลาคู่รักชาย-หญิงจาก Ogival, Olym Pianus และ Olympia Star',
+    descriptionEn: 'Matching His & Hers luxury pair timepieces.',
+    descriptionTh: 'เรือนเวลาคู่รักชาย-หญิงจาก Ogival, Olym Pianus และ Olympia Star',
     image: 'https://img.91app.com/webapi/imagesV3/Cropped/SalePage/9124168/0/639177788218500000?v=1',
     icon: '/images/op/watch-130-06-white.png',
     bannerImage: '/images/op/hero-gold-stones.jpg',
@@ -271,134 +272,200 @@ export const defaultCategories = (): SeedCategory[] => [
   }
 ]
 
-const opwatchThailandSignatureProducts = (): SeedProduct[] => [
+const olympiaStarOfficialProducts = (): SeedProduct[] => [
   {
-    sku: 'OPW-TH-01',
-    name: 'Opwatch Thailand Edition โอเพ่นฮาร์ท บลู แซฟไฟร์ 42',
-    nameEn: 'Opwatch Thailand Edition Open-Heart Blue Sapphire 42',
-    nameTh: 'Opwatch Thailand Edition โอเพ่นฮาร์ท บลู แซฟไฟร์ 42',
-    slug: 'opwatch-thailand-open-heart-blue-42',
+    sku: 'OPA-58012MSK-BLUE',
+    name: 'Olympia Star (โอลิมเปียสตาร์) สวิส แซฟไฟร์ รุ่น OPA58012MSK (หน้าปัดสีน้ำเงินเข้ม)',
+    nameEn: 'Olympia Star Swiss Sapphire OPA58012MSK — Royal Blue Dial',
+    nameTh: 'Olympia Star (โอลิมเปียสตาร์) สวิส แซฟไฟร์ รุ่น OPA58012MSK (หน้าปัดสีน้ำเงินเข้ม)',
+    slug: 'olympia-star-opa58012msk-blue',
     categorySlug: 'men-watches',
-    brandSlug: 'opwatch',
-    price: 7900,
-    originalPrice: 9900,
+    brandSlug: 'olympia-star',
+    price: 6900,
+    originalPrice: 8900,
     currency: 'THB',
     images: ['/images/op/watch-990-083-blue.png', '/images/op/lifestyle-men.jpg'],
-    shortDescription: 'รุ่นพิเศษประจำบูติกประเทศไทย · ออโตเมติกญี่ปุ่น Open-Heart · กระจกแซฟไฟร์แท้',
-    shortDescriptionEn: 'Thailand Boutique Edition · Japanese Open-Heart Automatic · Sapphire Crystal',
-    description: 'เรือนเวลาคัดสรรพิเศษสำหรับบูติก Opwatch ประเทศไทย ขับเคลื่อนด้วยกลไกออโตเมติกญี่ปุ่นโชว์จังหวะจักรกล Open-Heart บนหน้าปัดสีน้ำเงินเข้ม กระจกแซฟไฟร์แท้ป้องกันรอยขีดข่วน พร้อมรับประกันศูนย์ไทย 2 ปีเต็ม',
-    descriptionEn: 'Curated Thailand Boutique Edition powered by a Japanese open-heart automatic movement beneath scratch-resistant sapphire crystal, backed by a 2-year official Thailand warranty.',
-    descriptionTh: 'เรือนเวลาคัดสรรพิเศษสำหรับบูติก Opwatch ประเทศไทย ขับเคลื่อนด้วยกลไกออโตเมติกญี่ปุ่นโชว์จังหวะจักรกล Open-Heart บนหน้าปัดสีน้ำเงินเข้ม กระจกแซฟไฟร์แท้ป้องกันรอยขีดข่วน พร้อมรับประกันศูนย์ไทย 2 ปีเต็ม',
+    shortDescription: 'เครื่องสวิสแท้ (Swiss Movement) · กระจกแซฟไฟร์กันรอย · ตัวเรือนทูโทน 316L',
+    shortDescriptionEn: 'Swiss Precision Movement · Scratch-Resistant Sapphire Crystal · Two-Tone 316L Steel',
+    description: 'นาฬิกาข้อมือของแท้ Olympia Star (โอลิมเปียสตาร์) รุ่น OPA58012MSK โดดเด่นด้วยตราสัญลักษณ์โล่ OP ประดับมงกุฎและช่อมะกอกแห่งเกียรติยศ ขับเคลื่อนด้วยกลไกสวิสความเที่ยงตรงสูง หน้าปัดสีน้ำเงินเข้มพร้อมกระจกแซฟไฟร์แท้ป้องกันรอยขีดข่วน จัดจำหน่ายอย่างเป็นทางการในประเทศไทยโดย บริษัท อินเตอร์ไทมส์ จำกัด พร้อมใบรับประกันศูนย์ไทย',
+    descriptionEn: 'Authentic Olympia Star Ref. OPA58012MSK powered by a Swiss movement beneath a scratch-resistant sapphire crystal in a two-tone 316L stainless steel case. Officially distributed in Thailand by Inter Times Co., Ltd.',
+    descriptionTh: 'นาฬิกาข้อมือของแท้ Olympia Star (โอลิมเปียสตาร์) รุ่น OPA58012MSK โดดเด่นด้วยตราสัญลักษณ์โล่ OP ประดับมงกุฎและช่อมะกอกแห่งเกียรติยศ ขับเคลื่อนด้วยกลไกสวิสความเที่ยงตรงสูง หน้าปัดสีน้ำเงินเข้มพร้อมกระจกแซฟไฟร์แท้ป้องกันรอยขีดข่วน จัดจำหน่ายอย่างเป็นทางการในประเทศไทยโดย บริษัท อินเตอร์ไทมส์ จำกัด พร้อมใบรับประกันศูนย์ไทย',
     specs: {
-      Brand: 'Opwatch Thailand Boutique',
-      Reference: 'OPW-TH-01',
-      Movement: 'Japanese Automatic Open-Heart',
-      Crystal: 'Sapphire Crystal',
-      'Case Diameter': '42 mm',
-      'Strap Material': 'Two-Tone 316L Stainless Steel',
+      Brand: 'Olympia Star',
+      Model: 'OPA58012MSK',
+      Movement: 'Swiss Ronda Precision Quartz Movement',
+      Crystal: 'Scratch-Resistant Sapphire Crystal',
+      'Case Diameter': '39 mm',
+      'Strap Material': 'Two-Tone 316L Surgical Stainless Steel',
       'Water Resistance': '5 ATM (50m)',
-      Warranty: '2 Years Official Thailand Warranty (Inter Times Co., Ltd.)'
+      Warranty: '2 Years Official Thailand Warranty (บริษัท อินเตอร์ไทมส์ จำกัด)'
     },
-    stock: 15,
+    stock: 14,
+    status: 'active',
+    badges: ['bestseller', 'sale'],
+    featured: true,
+    sortOrder: 40
+  },
+  {
+    sku: 'OPA-58071DMK-BLACK',
+    name: 'Olympia Star (โอลิมเปียสตาร์) สวิส ไดมอนด์ เบเซล รุ่น OPA58071DMK (หน้าปัดสีดำ)',
+    nameEn: 'Olympia Star Swiss Diamond Bezel OPA58071DMK — Black Dial',
+    nameTh: 'Olympia Star (โอลิมเปียสตาร์) สวิส ไดมอนด์ เบเซล รุ่น OPA58071DMK (หน้าปัดสีดำ)',
+    slug: 'olympia-star-opa58071dmk-black',
+    categorySlug: 'men-jewelry',
+    brandSlug: 'olympia-star',
+    price: 8500,
+    originalPrice: 10900,
+    currency: 'THB',
+    images: ['/images/op/watch-990-163-black.png', '/images/op/openheart-stones.jpg'],
+    shortDescription: 'เครื่องสวิสแท้ · ขอบประดับคริสตัลหรู · กระจกแซฟไฟร์แท้กันรอย',
+    shortDescriptionEn: 'Swiss Movement · Crystal-Set Bezel · Scratch-Resistant Sapphire Crystal',
+    description: 'เรือนเวลาสุภาพบุรุษ Olympia Star รุ่น OPA58071DMK ผสานความเที่ยงตรงของกลไกสวิสเข้ากับตัวเรือนโทนสีทองและหน้าปัดสีดำคมเข้ม พร้อมกระจกแซฟไฟร์แท้กันรอยขีดข่วน รับประกันศูนย์ไทยโดย บริษัท อินเตอร์ไทมส์ จำกัด',
+    descriptionEn: 'Gentlemen’s Olympia Star Ref. OPA58071DMK uniting Swiss quartz precision, crystal-accented bezel details, and scratch-resistant sapphire crystal. Warranted in Thailand by Inter Times Co., Ltd.',
+    descriptionTh: 'เรือนเวลาสุภาพบุรุษ Olympia Star รุ่น OPA58071DMK ผสานความเที่ยงตรงของกลไกสวิสเข้ากับตัวเรือนโทนสีทองและหน้าปัดสีดำคมเข้ม พร้อมกระจกแซฟไฟร์แท้กันรอยขีดข่วน รับประกันศูนย์ไทยโดย บริษัท อินเตอร์ไทมส์ จำกัด',
+    specs: {
+      Brand: 'Olympia Star',
+      Model: 'OPA58071DMK',
+      Movement: 'Swiss Ronda Quartz Movement',
+      Crystal: 'Scratch-Resistant Sapphire Crystal',
+      'Case Diameter': '40 mm',
+      'Strap Material': 'Gold PVD 316L Stainless Steel',
+      'Water Resistance': '5 ATM (50m)',
+      Warranty: '2 Years Official Thailand Warranty (บริษัท อินเตอร์ไทมส์ จำกัด)'
+    },
+    stock: 10,
+    status: 'active',
+    badges: ['new', 'sale'],
+    featured: true,
+    sortOrder: 41
+  },
+  {
+    sku: 'OPA-58062MK-WHITE',
+    name: 'Olympia Star (โอลิมเปียสตาร์) อัลตร้าสลิม สวิส เดรส รุ่น OPA58062MK (หน้าปัดสีขาว)',
+    nameEn: 'Olympia Star Ultra-Slim Swiss Dress OPA58062MK — White Dial',
+    nameTh: 'Olympia Star (โอลิมเปียสตาร์) อัลตร้าสลิม สวิส เดรส รุ่น OPA58062MK (หน้าปัดสีขาว)',
+    slug: 'olympia-star-opa58062mk-white',
+    categorySlug: 'classic-watches',
+    brandSlug: 'olympia-star',
+    price: 5900,
+    originalPrice: 7500,
+    currency: 'THB',
+    images: ['/images/op/watch-130-06-white.png', '/images/op/hero-gold-stones.jpg'],
+    shortDescription: 'เดรสสวิสตัวเรือนบางเฉียบ · สายหนังวัวแท้ · กระจกแซฟไฟร์แท้',
+    shortDescriptionEn: 'Ultra-Slim Swiss Dress · Genuine Calfskin Strap · Sapphire Crystal',
+    description: 'นาฬิกาเดรสคลาสสิก Olympia Star รุ่น OPA58062MK ตัวเรือนบางเฉียบสวมใส่แนบข้อมือ ขับเคลื่อนด้วยกลไกสวิสแท้ หน้าปัดสีขาวสะอาดตาคู่ตัวเรือนโทนสีทองและสายหนังแท้สีดำ จัดจำหน่ายโดย บริษัท อินเตอร์ไทมส์ จำกัด',
+    descriptionEn: 'Ultra-slim Swiss dress watch Olympia Star Ref. OPA58062MK pairing a pure white dial and gold-tone case with genuine calfskin leather and sapphire crystal.',
+    descriptionTh: 'นาฬิกาเดรสคลาสสิก Olympia Star รุ่น OPA58062MK ตัวเรือนบางเฉียบสวมใส่แนบข้อมือ ขับเคลื่อนด้วยกลไกสวิสแท้ หน้าปัดสีขาวสะอาดตาคู่ตัวเรือนโทนสีทองและสายหนังแท้สีดำ จัดจำหน่ายโดย บริษัท อินเตอร์ไทมส์ จำกัด',
+    specs: {
+      Brand: 'Olympia Star',
+      Model: 'OPA58062MK',
+      Movement: 'Swiss Slim Quartz Movement',
+      Crystal: 'Scratch-Resistant Sapphire Crystal',
+      'Case Diameter': '38 mm (Thickness 6.8 mm)',
+      'Strap Material': 'Genuine Calfskin Leather',
+      'Water Resistance': '3 ATM (30m)',
+      Warranty: '2 Years Official Thailand Warranty (บริษัท อินเตอร์ไทมส์ จำกัด)'
+    },
+    stock: 18,
     status: 'active',
     badges: ['sale'],
     featured: false,
     sortOrder: 601
   },
   {
-    sku: 'OPW-TH-02',
-    name: 'Opwatch Thailand Edition เอมเมอรัลด์ สปอร์ต แซฟไฟร์ 40',
-    nameEn: 'Opwatch Thailand Edition Emerald Sport Sapphire 40',
-    nameTh: 'Opwatch Thailand Edition เอมเมอรัลด์ สปอร์ต แซฟไฟร์ 40',
-    slug: 'opwatch-thailand-emerald-sport-40',
-    categorySlug: 'sport-watches',
-    brandSlug: 'opwatch',
-    price: 5900,
-    originalPrice: 7500,
+    sku: 'OPA-28035DLR-WHITE',
+    name: 'Olympia Star (โอลิมเปียสตาร์) เลดี้ สวิส คริสตัล รุ่น OPA28035DLR (โรสโกลด์)',
+    nameEn: 'Olympia Star Ladies Swiss Crystal OPA28035DLR — Rose Gold',
+    nameTh: 'Olympia Star (โอลิมเปียสตาร์) เลดี้ สวิส คริสตัล รุ่น OPA28035DLR (โรสโกลด์)',
+    slug: 'olympia-star-opa28035dlr-white',
+    categorySlug: 'women-watches',
+    brandSlug: 'olympia-star',
+    price: 6800,
+    originalPrice: 8600,
     currency: 'THB',
-    images: ['/images/op/watch-899831-green.png', '/images/op/square-diver-glow.jpg'],
-    shortDescription: 'สปอร์ตหน้าปัดเขียวมรกต · พรายน้ำสว่างคมชัด · กระจกแซฟไฟร์แท้',
-    shortDescriptionEn: 'Emerald Dial Sport · Luminous Hands & Markers · Sapphire Crystal',
-    description: 'นาฬิกาสปอร์ตขนาด 40 มม. หน้าปัดสีเขียวมรกตซันเบิร์สต์ มาพร้อมพรายน้ำสว่างชัดเจนในที่มืด ตัวเรือนสแตนเลสสตีล 316L และกระจกแซฟไฟร์แท้กันรอย จัดส่งเฉพาะภายในประเทศไทยพร้อมใบรับประกันศูนย์ไทย',
-    descriptionEn: '40mm emerald-dial sport watch with luminous markers, 316L stainless steel bracelet, and scratch-resistant sapphire crystal. Available exclusively in Thailand.',
-    descriptionTh: 'นาฬิกาสปอร์ตขนาด 40 มม. หน้าปัดสีเขียวมรกตซันเบิร์สต์ มาพร้อมพรายน้ำสว่างชัดเจนในที่มืด ตัวเรือนสแตนเลสสตีล 316L และกระจกแซฟไฟร์แท้กันรอย จัดส่งเฉพาะภายในประเทศไทยพร้อมใบรับประกันศูนย์ไทย',
+    images: ['/images/op/watch-990-45-lady.png', '/images/op/lifestyle-lady.jpg'],
+    shortDescription: 'นาฬิกาสุภาพสตรีเครื่องสวิส · ขอบประดับคริสตัล · กระจกแซฟไฟร์แท้',
+    shortDescriptionEn: 'Ladies Swiss Quartz · Crystal-Set Bezel · Sapphire Crystal',
+    description: 'นาฬิกาสุภาพสตรี Olympia Star รุ่น OPA28035DLR ตัวเรือนสีโรสโกลด์ประดับคริสตัลรอบขอบหน้าปัด ขับเคลื่อนด้วยกลไกสวิสความเที่ยงตรงสูง พร้อมกระจกแซฟไฟร์แท้ป้องกันรอยขีดข่วน รับประกันศูนย์ไทยโดย บริษัท อินเตอร์ไทมส์ จำกัด',
+    descriptionEn: 'Graceful Olympia Star Ladies Ref. OPA28035DLR featuring a crystal-set rose-gold bezel, Swiss precision quartz movement, and scratch-resistant sapphire crystal.',
+    descriptionTh: 'นาฬิกาสุภาพสตรี Olympia Star รุ่น OPA28035DLR ตัวเรือนสีโรสโกลด์ประดับคริสตัลรอบขอบหน้าปัด ขับเคลื่อนด้วยกลไกสวิสความเที่ยงตรงสูง พร้อมกระจกแซฟไฟร์แท้ป้องกันรอยขีดข่วน รับประกันศูนย์ไทยโดย บริษัท อินเตอร์ไทมส์ จำกัด',
     specs: {
-      Brand: 'Opwatch Thailand Boutique',
-      Reference: 'OPW-TH-02',
-      Movement: 'Japanese Precision Quartz',
-      Crystal: 'Sapphire Crystal',
-      'Case Diameter': '40 mm',
-      'Strap Material': '316L Stainless Steel',
-      'Water Resistance': '5 ATM (50m)',
-      Warranty: '2 Years Official Thailand Warranty (Inter Times Co., Ltd.)'
+      Brand: 'Olympia Star',
+      Model: 'OPA28035DLR',
+      Movement: 'Swiss Ronda Quartz Movement',
+      Crystal: 'Scratch-Resistant Sapphire Crystal',
+      'Case Diameter': '30 mm',
+      'Strap Material': 'Comfortable Silicone / Rose-Gold Clasp',
+      'Water Resistance': '3 ATM (30m)',
+      Warranty: '2 Years Official Thailand Warranty (บริษัท อินเตอร์ไทมส์ จำกัด)'
     },
-    stock: 18,
+    stock: 16,
     status: 'active',
     badges: ['sale'],
     featured: false,
     sortOrder: 602
   },
   {
-    sku: 'OPW-TH-03',
-    name: 'Opwatch Thailand Edition คลาสสิก สลิม โกลด์ 39',
-    nameEn: 'Opwatch Thailand Edition Classic Slim Gold 39',
-    nameTh: 'Opwatch Thailand Edition คลาสสิก สลิม โกลด์ 39',
-    slug: 'opwatch-thailand-classic-slim-gold-39',
-    categorySlug: 'classic-watches',
-    brandSlug: 'opwatch',
-    price: 4900,
-    originalPrice: 6200,
+    sku: 'OPA-58063LSK-CERAMIC',
+    name: 'Olympia Star (โอลิมเปียสตาร์) เลดี้ เซรามิก สวิส รุ่น OPA58063LSK',
+    nameEn: 'Olympia Star Ladies Ceramic Swiss OPA58063LSK — Midnight Black & Gold',
+    nameTh: 'Olympia Star (โอลิมเปียสตาร์) เลดี้ เซรามิก สวิส รุ่น OPA58063LSK',
+    slug: 'olympia-star-opa58063lsk-ceramic',
+    categorySlug: 'women-jewelry',
+    brandSlug: 'olympia-star',
+    price: 7500,
+    originalPrice: 9500,
     currency: 'THB',
-    images: ['/images/op/watch-130-06-white.png', '/images/op/hero-gold-stones.jpg'],
-    shortDescription: 'เดรสคลาสสิกตัวเรือนบาง 7 มม. · สายหนังวัวแท้ · กระจกแซฟไฟร์',
-    shortDescriptionEn: '7mm Ultra-Slim Dress Case · Genuine Calfskin Strap · Sapphire Crystal',
-    description: 'เรือนเวลาเดรสคลาสสิกตัวเรือนบางเฉียบเพียง 7 มม. สวมใส่แนบข้อมืออย่างสง่างาม หน้าปัดสีขาวสะอาดตาตัดกับตัวเรือนโทนสีทองและสายหนังแท้สีดำ รับประกันศูนย์ไทยโดย บริษัท อินเตอร์ ไทม์ส จำกัด',
-    descriptionEn: 'Featherlight 7mm ultra-slim dress watch pairing a crisp white dial and gold-tone bezel with genuine black calfskin leather and sapphire crystal.',
-    descriptionTh: 'เรือนเวลาเดรสคลาสสิกตัวเรือนบางเฉียบเพียง 7 มม. สวมใส่แนบข้อมืออย่างสง่างาม หน้าปัดสีขาวสะอาดตาตัดกับตัวเรือนโทนสีทองและสายหนังแท้สีดำ รับประกันศูนย์ไทยโดย บริษัท อินเตอร์ ไทม์ส จำกัด',
+    images: ['/images/op/watch-82672-lady.png', '/images/op/hero-ceramic-dark.jpg'],
+    shortDescription: 'สุภาพสตรีไฮเทคเซรามิก · เครื่องสวิสแท้ · กระจกแซฟไฟร์กันรอย',
+    shortDescriptionEn: 'Ladies High-Tech Ceramic · Swiss Movement · Sapphire Crystal',
+    description: 'เรือนเวลาจิวเวลรี่สุภาพสตรี Olympia Star รุ่น OPA58063LSK ผสานสายเซรามิกเงางามกันรอยขีดข่วนเข้ากับกลไกสวิสแท้และกระจกแซฟไฟร์คริสตัล จัดจำหน่ายโดย บริษัท อินเตอร์ไทมส์ จำกัด',
+    descriptionEn: 'Jewellery timepiece Olympia Star Ref. OPA58063LSK combining high-gloss ceramic links, warm gold accents, Swiss quartz precision, and sapphire crystal.',
+    descriptionTh: 'เรือนเวลาจิวเวลรี่สุภาพสตรี Olympia Star รุ่น OPA58063LSK ผสานสายเซรามิกเงางามกันรอยขีดข่วนเข้ากับกลไกสวิสแท้และกระจกแซฟไฟร์คริสตัล จัดจำหน่ายโดย บริษัท อินเตอร์ไทมส์ จำกัด',
     specs: {
-      Brand: 'Opwatch Thailand Boutique',
-      Reference: 'OPW-TH-03',
-      Movement: 'Japanese Slim Quartz',
-      Crystal: 'Sapphire Crystal',
-      'Case Diameter': '39 mm (Thickness 7 mm)',
-      'Strap Material': 'Genuine Calfskin Leather',
+      Brand: 'Olympia Star',
+      Model: 'OPA58063LSK',
+      Movement: 'Swiss Precision Quartz Movement',
+      Crystal: 'Scratch-Resistant Sapphire Crystal',
+      'Case Diameter': '30 mm',
+      'Strap Material': 'High-Tech Ceramic & Gold PVD Steel',
       'Water Resistance': '3 ATM (30m)',
-      Warranty: '2 Years Official Thailand Warranty (Inter Times Co., Ltd.)'
+      Warranty: '2 Years Official Thailand Warranty (บริษัท อินเตอร์ไทมส์ จำกัด)'
     },
-    stock: 20,
+    stock: 12,
     status: 'active',
     badges: ['sale'],
     featured: false,
     sortOrder: 603
   },
   {
-    sku: 'OPW-TH-04',
-    name: 'Opwatch Thailand Edition เลดี้ โรส คริสตัล 34',
-    nameEn: 'Opwatch Thailand Edition Ladies Rose Crystal 34',
-    nameTh: 'Opwatch Thailand Edition เลดี้ โรส คริสตัล 34',
-    slug: 'opwatch-thailand-ladies-rose-crystal-34',
-    categorySlug: 'women-watches',
-    brandSlug: 'opwatch',
-    price: 6500,
-    originalPrice: 8200,
+    sku: 'OPA-58029MS-EMERALD',
+    name: 'Olympia Star (โอลิมเปียสตาร์) สปอร์ต สวิส แซฟไฟร์ รุ่น OPA58029MS (เขียวมรกต)',
+    nameEn: 'Olympia Star Sport Swiss Sapphire OPA58029MS — Emerald Dial',
+    nameTh: 'Olympia Star (โอลิมเปียสตาร์) สปอร์ต สวิส แซฟไฟร์ รุ่น OPA58029MS (เขียวมรกต)',
+    slug: 'olympia-star-opa58029ms-emerald',
+    categorySlug: 'sport-watches',
+    brandSlug: 'olympia-star',
+    price: 7200,
+    originalPrice: 9200,
     currency: 'THB',
-    images: ['/images/op/watch-990-45-lady.png', '/images/op/lifestyle-lady.jpg'],
-    shortDescription: 'สปอร์ตลักชัวรีสุภาพสตรี 34 มม. · ขอบประดับคริสตัล · กระจกแซฟไฟร์',
-    shortDescriptionEn: '34mm Ladies Sport-Luxury · Crystal-Set Bezel · Sapphire Crystal',
-    description: 'นาฬิกาสุภาพสตรีสไตล์สปอร์ตลักชัวรีขนาด 34 มม. ตัวเรือนสีโรสโกลด์ล้อมคริสตัลเจียระไน จับคู่สายยางซิลิโคนเนื้อนุ่มสวมใส่สบายในสภาพอากาศเมืองไทย พร้อมกระจกแซฟไฟร์แท้ป้องกันรอยขีดข่วน',
-    descriptionEn: '34mm rose-gold sport-luxury timepiece for women featuring a crystal-set bezel, sapphire crystal, and supple silicone strap ideal for Thailand’s climate.',
-    descriptionTh: 'นาฬิกาสุภาพสตรีสไตล์สปอร์ตลักชัวรีขนาด 34 มม. ตัวเรือนสีโรสโกลด์ล้อมคริสตัลเจียระไน จับคู่สายยางซิลิโคนเนื้อนุ่มสวมใส่สบายในสภาพอากาศเมืองไทย พร้อมกระจกแซฟไฟร์แท้ป้องกันรอยขีดข่วน',
+    images: ['/images/op/watch-899831-green.png', '/images/op/square-diver-glow.jpg'],
+    shortDescription: 'สปอร์ตเครื่องสวิส · หน้าปัดเขียวมรกตพรายน้ำ · กระจกแซฟไฟร์แท้',
+    shortDescriptionEn: 'Swiss Sport Watch · Luminous Emerald Dial · Sapphire Crystal',
+    description: 'นาฬิกาสปอร์ต Olympia Star รุ่น OPA58029MS หน้าปัดสีเขียวมรกตพร้อมพรายน้ำสว่างคมชัด ขับเคลื่อนด้วยกลไกสวิสแท้ ตัวเรือนสแตนเลสสตีล 316L และกระจกแซฟไฟร์ป้องกันรอยขีดข่วน จัดจำหน่ายในประเทศไทยโดย บริษัท อินเตอร์ไทมส์ จำกัด',
+    descriptionEn: 'Sport-ready Olympia Star Ref. OPA58029MS engineered with a Swiss quartz movement, luminous emerald dial, 316L steel bracelet, and sapphire crystal.',
+    descriptionTh: 'นาฬิกาสปอร์ต Olympia Star รุ่น OPA58029MS หน้าปัดสีเขียวมรกตพร้อมพรายน้ำสว่างคมชัด ขับเคลื่อนด้วยกลไกสวิสแท้ ตัวเรือนสแตนเลสสตีล 316L และกระจกแซฟไฟร์ป้องกันรอยขีดข่วน จัดจำหน่ายในประเทศไทยโดย บริษัท อินเตอร์ไทมส์ จำกัด',
     specs: {
-      Brand: 'Opwatch Thailand Boutique',
-      Reference: 'OPW-TH-04',
-      Movement: 'Japanese Precision Quartz',
-      Crystal: 'Sapphire Crystal',
-      'Case Diameter': '34 mm',
-      'Strap Material': 'Soft Sport Rubber Strap',
+      Brand: 'Olympia Star',
+      Model: 'OPA58029MS',
+      Movement: 'Swiss Ronda Sport Quartz Movement',
+      Crystal: 'Scratch-Resistant Sapphire Crystal',
+      'Case Diameter': '40 mm',
+      'Strap Material': '316L Surgical Stainless Steel',
       'Water Resistance': '5 ATM (50m)',
-      Warranty: '2 Years Official Thailand Warranty (Inter Times Co., Ltd.)'
+      Warranty: '2 Years Official Thailand Warranty (บริษัท อินเตอร์ไทมส์ จำกัด)'
     },
-    stock: 16,
+    stock: 15,
     status: 'active',
     badges: ['sale'],
     featured: false,
@@ -409,7 +476,7 @@ const opwatchThailandSignatureProducts = (): SeedProduct[] => [
 export const defaultProducts = (): SeedProduct[] => [
   ...olympianusOfficialProducts,
   ...ogivalOfficialProducts,
-  ...opwatchThailandSignatureProducts()
+  ...olympiaStarOfficialProducts()
 ]
 
 export const defaultCampaigns = (): SeedCampaign[] => [
@@ -418,9 +485,9 @@ export const defaultCampaigns = (): SeedCampaign[] => [
     title: '130-07MK SOVEREIGN GOLD',
     titleEn: '130-07MK SOVEREIGN GOLD',
     titleTh: '130-07MK SOVEREIGN GOLD',
-    subtitle: 'ตัวแทนจำหน่ายอย่างเป็นทางการแต่เพียงผู้เดียวในประเทศไทย · Inter Times Co., Ltd.',
-    subtitleEn: 'Official Thailand Authorized Boutique · Inter Times Co., Ltd.',
-    subtitleTh: 'ตัวแทนจำหน่ายอย่างเป็นทางการแต่เพียงผู้เดียวในประเทศไทย · Inter Times Co., Ltd.',
+    subtitle: 'ตัวแทนจำหน่ายอย่างเป็นทางการในประเทศไทย · บริษัท อินเตอร์ไทมส์ จำกัด',
+    subtitleEn: 'Official Thailand Authorized Distributor · Inter Times Co., Ltd.',
+    subtitleTh: 'ตัวแทนจำหน่ายอย่างเป็นทางการในประเทศไทย · บริษัท อินเตอร์ไทมส์ จำกัด',
     banner: '/images/op/hero-gold-stones.jpg',
     link: '/products/olympianus-130-07mk-gl-white',
     brandSlug: 'olympianus',
@@ -430,17 +497,32 @@ export const defaultCampaigns = (): SeedCampaign[] => [
   },
   {
     slug: 'olympianus-brand-day',
-    title: 'OLYMPIANUS · FASTER, HIGHER, STRONGER',
-    titleEn: 'OLYMPIANUS · FASTER, HIGHER, STRONGER',
-    titleTh: 'OLYMPIANUS · ความสง่างามเหนือกาลเวลา',
-    subtitle: 'ครบทุกคอลเลกชันของแท้จาก Olympianus พร้อมกระจกแซฟไฟร์ทุกรุ่น',
-    subtitleEn: 'Complete official Olympianus sapphire-crystal collection in Thailand.',
-    subtitleTh: 'ครบทุกคอลเลกชันของแท้จาก Olympianus พร้อมกระจกแซฟไฟร์ทุกรุ่น',
+    title: 'OLYM PIANUS · FASTER, HIGHER, STRONGER',
+    titleEn: 'OLYM PIANUS · FASTER, HIGHER, STRONGER',
+    titleTh: 'OLYM PIANUS · ความสง่างามเหนือกาลเวลา',
+    subtitle: 'ครบทุกคอลเลกชันของแท้จาก Olym Pianus พร้อมกระจกแซฟไฟร์ทุกรุ่น',
+    subtitleEn: 'Complete official Olym Pianus sapphire-crystal collection in Thailand.',
+    subtitleTh: 'ครบทุกคอลเลกชันของแท้จาก Olym Pianus พร้อมกระจกแซฟไฟร์ทุกรุ่น',
     banner: '/images/op/banner-899832ags.jpg',
     link: '/brands/olympianus',
     brandSlug: 'olympianus',
     type: 'brand-day',
     sortOrder: 1,
+    active: true
+  },
+  {
+    slug: 'olympia-star-brand-day',
+    title: 'OLYMPIA STAR · SWISS MOVEMENT',
+    titleEn: 'OLYMPIA STAR · SWISS MOVEMENT',
+    titleTh: 'OLYMPIA STAR · เครื่องสวิสแท้ กระจกแซฟไฟร์',
+    subtitle: 'ตรามงกุฎและช่อมะกอกแห่งชัยชนะ ผสานความเที่ยงตรงของกลไกสวิส',
+    subtitleEn: 'Crowned olive-laurel emblem paired with Swiss precision movements.',
+    subtitleTh: 'ตรามงกุฎและช่อมะกอกแห่งชัยชนะ ผสานความเที่ยงตรงของกลไกสวิส',
+    banner: '/images/op/lifestyle-men.jpg',
+    link: '/brands/olympia-star',
+    brandSlug: 'olympia-star',
+    type: 'brand-day',
+    sortOrder: 2,
     active: true
   },
   {
@@ -455,21 +537,6 @@ export const defaultCampaigns = (): SeedCampaign[] => [
     link: '/brands/ogival',
     brandSlug: 'ogival',
     type: 'brand-day',
-    sortOrder: 2,
-    active: true
-  },
-  {
-    slug: 'opwatch-brand-day',
-    title: 'OPWATCH THAILAND · OFFICIAL BOUTIQUE',
-    titleEn: 'OPWATCH THAILAND · OFFICIAL BOUTIQUE',
-    titleTh: 'OPWATCH THAILAND · บูติกทางการประเทศไทย',
-    subtitle: 'จัดส่งฟรีทั่วประเทศไทย 77 จังหวัด พร้อมใบรับประกันศูนย์ไทยแท้',
-    subtitleEn: 'Complimentary insured nationwide delivery across all 77 Thai provinces.',
-    subtitleTh: 'จัดส่งฟรีทั่วประเทศไทย 77 จังหวัด พร้อมใบรับประกันศูนย์ไทยแท้',
-    banner: '/images/op/lifestyle-men.jpg',
-    link: '/brands/opwatch',
-    brandSlug: 'opwatch',
-    type: 'brand-day',
     sortOrder: 3,
     active: true
   }
@@ -479,11 +546,10 @@ let syncPromise: Promise<{ synced: number; removedLegacy: number; total: number 
 
 /**
  * Idempotently upgrades any already-installed MariaDB or JSON store:
- * - Normalizes Thailand currency symbol ('บาท' -> '฿') & country scope
- * - Normalizes 'olympinus' -> 'olympianus' brand slug & metadata
- * - Ensures all canonical categories (including 'couple-watches') exist
- * - Purges the 19 legacy scaffolding SKUs (preserving order history if referenced)
- * - Upserts all 403+ official Olympianus, Ogival, and Opwatch Thailand timepieces
+ * - Normalizes Thailand currency symbol ('฿') & official Inter Times phone ('02 251 5777')
+ * - Syncs the 3 official brands & white-background logos: Olym Pianus, Olympia Star, Ogival
+ * - Migrates legacy 'olympinus' -> 'olympianus' and 'opwatch' -> 'olympia-star'
+ * - Purges legacy sample SKUs and upserts all 405 official watches
  */
 export async function syncOfficialCatalog(
   store: Store,
@@ -492,7 +558,7 @@ export async function syncOfficialCatalog(
   if (syncPromise && !opts.force) return syncPromise
 
   const run = async () => {
-    // 1. Normalize site config currencySymbol ('บาท' -> '฿') & Thailand-only defaults
+    // 1. Normalize site config currencySymbol ('฿') & official phone ('02 251 5777')
     try {
       const cfg = loadConfig()
       if (cfg?.site) {
@@ -503,6 +569,10 @@ export async function syncOfficialCatalog(
         }
         if (!cfg.site.currencySymbol || cfg.site.currencySymbol === 'บาท' || cfg.site.currencySymbol === 'THB') {
           cfg.site.currencySymbol = '฿'
+          changed = true
+        }
+        if (!cfg.site.phone || cfg.site.phone === '+66 2 000 0000') {
+          cfg.site.phone = '02 251 5777'
           changed = true
         }
         if (changed) saveConfig(cfg)
@@ -516,7 +586,7 @@ export async function syncOfficialCatalog(
     const officialProducts = defaultProducts()
     const campaigns = defaultCampaigns()
 
-    // 2. Sync Brands (and migrate legacy 'olympinus' slug -> 'olympianus')
+    // 2. Sync Brands (migrate legacy 'olympinus' -> 'olympianus' and 'opwatch' -> 'olympia-star')
     const existingBrands = await store.all('brands')
     const brandBySlug = new Map<string, any>()
     for (const b of existingBrands) brandBySlug.set(String(b.slug), b)
@@ -526,6 +596,13 @@ export async function syncOfficialCatalog(
       const updated = await store.update('brands', Number(legacyBrand.id), { slug: 'olympianus' })
       brandBySlug.delete('olympinus')
       if (updated) brandBySlug.set('olympianus', updated)
+    }
+
+    if (brandBySlug.has('opwatch') && !brandBySlug.has('olympia-star')) {
+      const legacyOp = brandBySlug.get('opwatch')
+      const updated = await store.update('brands', Number(legacyOp.id), { slug: 'olympia-star' })
+      brandBySlug.delete('opwatch')
+      if (updated) brandBySlug.set('olympia-star', updated)
     }
 
     const brandMap = new Map<string, number>()
@@ -557,10 +634,11 @@ export async function syncOfficialCatalog(
       } else {
         const needsUpdate =
           opts.force ||
-          existing.name === 'Olympinus' ||
-          String(existing.story || '').includes('ทัวร์บิロン') ||
-          String(existing.logo || '').startsWith('/images/p') ||
-          existing.nameEn !== b.nameEn
+          existing.logo !== b.logo ||
+          existing.name !== b.name ||
+          existing.nameEn !== b.nameEn ||
+          existing.sortOrder !== b.sortOrder ||
+          String(existing.story || '').includes('อินเตอร์ ไทม์ส')
         if (needsUpdate) {
           await store.update('brands', Number(existing.id), payload)
         }
@@ -568,15 +646,17 @@ export async function syncOfficialCatalog(
       }
     }
 
-    // If duplicate 'olympinus' still existed alongside 'olympianus', re-point & remove it
-    if (brandBySlug.has('olympinus') && brandMap.has('olympianus')) {
-      const dup = brandBySlug.get('olympinus')
-      const targetId = brandMap.get('olympianus')!
-      const prods = await store.findMany('products', { brandId: Number(dup.id) })
-      for (const pr of prods) {
-        await store.update('products', Number(pr.id), { brandId: targetId, brand: 'olympianus' })
+    // Re-point & remove any leftover duplicate 'olympinus' or 'opwatch' brand row
+    for (const [legacySlug, targetSlug] of [['olympinus', 'olympianus'], ['opwatch', 'olympia-star']] as const) {
+      if (brandBySlug.has(legacySlug) && brandMap.has(targetSlug)) {
+        const dup = brandBySlug.get(legacySlug)
+        const targetId = brandMap.get(targetSlug)!
+        const prods = await store.findMany('products', { brandId: Number(dup.id) })
+        for (const pr of prods) {
+          await store.update('products', Number(pr.id), { brandId: targetId, brand: targetSlug })
+        }
+        await store.remove('brands', Number(dup.id))
       }
-      await store.remove('brands', Number(dup.id))
     }
 
     // 3. Sync Categories
@@ -611,7 +691,7 @@ export async function syncOfficialCatalog(
           opts.force ||
           String(existing.image || '').startsWith('/images/p') ||
           String(existing.image || '').startsWith('/images/cat-') ||
-          existing.name !== c.name
+          existing.description !== c.description
         ) {
           await store.update('categories', Number(existing.id), payload)
         }
@@ -658,10 +738,14 @@ export async function syncOfficialCatalog(
           brand: 'olympianus',
           brandId: brandMap.get('olympianus') ?? row.brandId
         })
+      } else if (row.brand === 'opwatch') {
+        await store.update('products', Number(row.id), {
+          brand: 'olympia-star',
+          brandId: brandMap.get('olympia-star') ?? row.brandId
+        })
       }
     }
 
-    // Remove legacy 'kids-watches' category if empty
     if (catBySlug.has('kids-watches')) {
       const kidsCat = catBySlug.get('kids-watches')
       const remainingKids = await store.findMany('products', { categoryId: Number(kidsCat.id) })
@@ -670,7 +754,7 @@ export async function syncOfficialCatalog(
       }
     }
 
-    // 5. Upsert all official Olympianus + Ogival + Opwatch Thailand products
+    // 5. Upsert all official Olym Pianus + Ogival + Olympia Star products
     allProducts = await store.all('products')
     const bySku = new Map<string, any>()
     const bySlug = new Map<string, any>()
@@ -715,17 +799,24 @@ export async function syncOfficialCatalog(
         !Array.isArray(existing.images) ||
         existing.images.length === 0 ||
         existing.brandId !== payload.brandId ||
-        existing.categoryId !== payload.categoryId
+        existing.categoryId !== payload.categoryId ||
+        String(existing.description || '').includes('อินเตอร์ ไทม์ส')
       ) {
         await store.update('products', Number(existing.id), payload)
         synced++
       }
     }
 
-    // 6. Sync Campaigns (fix broken /products/ol-m2001 or OLYMPINUS links)
+    // 6. Sync Campaigns (remove obsolete opwatch-brand-day & upsert current campaigns)
     const existingCampaigns = await store.all('campaigns')
     const campBySlug = new Map<string, any>()
     for (const c of existingCampaigns) campBySlug.set(String(c.slug), c)
+
+    if (campBySlug.has('opwatch-brand-day')) {
+      const oldCamp = campBySlug.get('opwatch-brand-day')
+      await store.remove('campaigns', Number(oldCamp.id))
+      campBySlug.delete('opwatch-brand-day')
+    }
 
     for (const c of campaigns) {
       const existing = campBySlug.get(c.slug)
@@ -748,9 +839,8 @@ export async function syncOfficialCatalog(
         await store.create('campaigns', payload)
       } else if (
         opts.force ||
-        String(existing.link || '').includes('ol-m2001') ||
-        String(existing.link || '').includes('olympinus') ||
-        String(existing.title || '').includes('OLYMPINUS')
+        existing.link !== c.link ||
+        existing.subtitle !== c.subtitle
       ) {
         await store.update('campaigns', Number(existing.id), payload)
       }
@@ -761,7 +851,6 @@ export async function syncOfficialCatalog(
   }
 
   syncPromise = run().finally(() => {
-    // Allow subsequent manual sync calls after completion
     setTimeout(() => { syncPromise = null }, 1000)
   })
   return syncPromise

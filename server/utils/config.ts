@@ -91,7 +91,7 @@ export function getConfig(): StoreConfig {
       name: 'Opwatch',
       tagline: 'Time, beautifully kept',
       email: 'hello@opwatch.co.th',
-      phone: '+66 2 000 0000',
+      phone: '02 251 5777',
       currency: 'THB',
       currencySymbol: '฿',
       defaultLocale: 'th',
