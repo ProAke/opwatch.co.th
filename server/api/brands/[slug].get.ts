@@ -1,14 +1,49 @@
+const BRAND_ALIASES: Record<string, string> = {
+  olympinus: 'olympianus',
+  'olym-pianus': 'olympianus',
+  olympianus: 'olympianus',
+  ogival: 'ogival',
+  opwatch: 'opwatch'
+}
+
 export default defineEventHandler(async (event) => {
-  const slug = String(getRouterParam(event, 'slug') || '')
+  const rawSlug = String(getRouterParam(event, 'slug') || '').trim().toLowerCase()
+  const canonicalSlug = BRAND_ALIASES[rawSlug] || rawSlug
   const store = useStore()
 
-  const brand = (await store.find('brands', { where: { slug } })).find((b) => b.active !== false)
+  let brand = (await store.find('brands', { where: { slug: canonicalSlug } })).find((b) => b.active !== false)
+  if (!brand && rawSlug !== canonicalSlug) {
+    brand = (await store.find('brands', { where: { slug: rawSlug } })).find((b) => b.active !== false)
+  }
   if (!brand) throw createError({ statusCode: 404, statusMessage: 'brand.notFound' })
 
-  const products = await store.find('products', {
-    where: { brandId: Number(brand.id) },
-    orderBy: 'sortOrder',
-    orderDir: 'asc'
+  const [rawProducts, allCategories] = await Promise.all([
+    store.find('products', {
+      where: { brandId: Number(brand.id), status: 'active' },
+      orderBy: 'sortOrder',
+      orderDir: 'asc'
+    }),
+    store.all('categories')
+  ])
+
+  const catById = new Map(allCategories.map((c) => [Number(c.id), c]))
+  const products = rawProducts.map((p) => {
+    const badges = Array.isArray(p.badges) ? p.badges : []
+    const catObj = p.categoryId ? catById.get(Number(p.categoryId)) || null : null
+    const original = Number(p.originalPrice ?? p.priceCompare)
+    const price = Number(p.price) || 0
+    const discountPercent = original > price ? Math.round(((original - price) / original) * 1000) / 10 : 0
+    return {
+      ...p,
+      badges,
+      brand,
+      brandName: brand.name,
+      brandSlug: brand.slug,
+      categorySlug: catObj?.slug || null,
+      categoryName: catObj?.nameTh || catObj?.name || null,
+      categoryNameEn: catObj?.nameEn || catObj?.name || null,
+      discountPercent
+    }
   })
 
   const root = (await store.find('categories', { where: { parentId: null } }))[0] || null
@@ -19,5 +54,5 @@ export default defineEventHandler(async (event) => {
   const campaigns = (await store.find('campaigns', { orderBy: 'sortOrder', orderDir: 'asc' }))
     .filter((c) => c.active !== false && c.type === 'brand-day' && Number(c.brandId) === Number(brand.id))
 
-  return { brand, products, subcategories, campaigns }
+  return { brand, products, total: products.length, subcategories, campaigns }
 })

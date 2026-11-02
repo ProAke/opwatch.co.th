@@ -5,10 +5,12 @@ const route = useRoute()
 const router = useRouter()
 const reqFetch = useRequestFetch()
 
+const PAGE_SIZE = 36
 const selectedBrand = ref((route.query.brand as string) || '')
 const selectedCategory = ref((route.query.category as string) || '')
 const selectedSort = ref((route.query.sort as string) || 'featured')
 const searchInput = ref((route.query.q as string) || '')
+const currentPage = ref(Math.max(1, Number(route.query.page) || 1))
 
 watch(
   () => route.query,
@@ -17,6 +19,7 @@ watch(
     selectedCategory.value = (q.category as string) || ''
     selectedSort.value = (q.sort as string) || 'featured'
     searchInput.value = (q.q as string) || ''
+    currentPage.value = Math.max(1, Number(q.page) || 1)
   }
 )
 
@@ -26,12 +29,13 @@ const apiUrl = computed(() => {
   if (selectedCategory.value) params.set('category', selectedCategory.value)
   if (selectedSort.value) params.set('sort', selectedSort.value)
   if (searchInput.value.trim()) params.set('q', searchInput.value.trim())
-  params.set('limit', '60')
+  params.set('page', String(currentPage.value))
+  params.set('limit', String(PAGE_SIZE))
   return `/api/products?${params.toString()}`
 })
 
 const [{ data: prodRes, pending }, { data: metaRes }] = await Promise.all([
-  useFetch<{ items?: any[]; products?: any[] }>(apiUrl, { watch: [apiUrl] }),
+  useFetch<{ items?: any[]; products?: any[]; total?: number; totalPages?: number; page?: number }>(apiUrl, { watch: [apiUrl] }),
   useAsyncData('op-catalog-meta', async () => {
     const [b, c] = await Promise.all([
       reqFetch<{ items?: any[]; brands?: any[] }>('/api/brands'),
@@ -45,8 +49,20 @@ const [{ data: prodRes, pending }, { data: metaRes }] = await Promise.all([
 ])
 
 const products = computed(() => prodRes.value?.items || prodRes.value?.products || [])
+const totalCount = computed(() => Number(prodRes.value?.total ?? products.value.length))
+const totalPages = computed(() => Math.max(1, Number(prodRes.value?.totalPages || Math.ceil(totalCount.value / PAGE_SIZE) || 1)))
 const brands = computed(() => metaRes.value?.brands || [])
 const categories = computed(() => metaRes.value?.categories || [])
+
+const visiblePages = computed(() => {
+  const total = totalPages.value
+  const cur = currentPage.value
+  const pages: number[] = []
+  const start = Math.max(1, cur - 2)
+  const end = Math.min(total, start + 4)
+  for (let i = Math.max(1, end - 4); i <= end; i++) pages.push(i)
+  return pages
+})
 
 function applyFilter(patch: Record<string, string>) {
   const next: Record<string, string> = {
@@ -56,10 +72,21 @@ function applyFilter(patch: Record<string, string>) {
     ...(searchInput.value.trim() ? { q: searchInput.value.trim() } : {}),
     ...patch
   }
+  if (!('page' in patch)) {
+    delete next.page
+  }
   Object.keys(next).forEach((k) => {
-    if (!next[k]) delete next[k]
+    if (!next[k] || (k === 'page' && next[k] === '1')) delete next[k]
   })
   router.push({ path: localePath('/products'), query: next })
+}
+
+function goToPage(p: number) {
+  const target = Math.max(1, Math.min(totalPages.value, p))
+  applyFilter({ page: String(target) })
+  if (import.meta.client) {
+    window.scrollTo({ top: 360, behavior: 'smooth' })
+  }
 }
 
 function resetAll() {
@@ -153,7 +180,11 @@ function resetAll() {
       <div class="container">
         <div class="between wrap gap-12 op-cat__count">
           <p class="tiny muted">
-            {{ products.length }} {{ locale === 'th' ? 'เรือนเวลาในคอลเลกชัน' : 'TIMEPIECES' }}
+            {{
+              locale === 'th'
+                ? `ทั้งหมด ${totalCount} เรือนเวลาของแท้ (หน้า ${currentPage} / ${totalPages}) · จัดส่งเฉพาะในประเทศไทย`
+                : `${totalCount} AUTHENTIC TIMEPIECES (PAGE ${currentPage} OF ${totalPages}) · THAILAND ONLY`
+            }}
           </p>
           <button
             v-if="selectedBrand || selectedCategory || searchInput"
@@ -169,9 +200,42 @@ function resetAll() {
           <span class="spinner" />
         </div>
 
-        <div v-else-if="products.length" class="op-cat__grid">
-          <ProductCard v-for="p in products" :key="p.id || p.slug" :product="p" />
-        </div>
+        <template v-else-if="products.length">
+          <div class="op-cat__grid">
+            <ProductCard v-for="p in products" :key="p.id || p.slug" :product="p" />
+          </div>
+
+          <nav v-if="totalPages > 1" class="op-cat__pager" aria-label="Catalog pagination">
+            <button
+              type="button"
+              class="btn btn--ghost btn--sm"
+              :disabled="currentPage <= 1"
+              @click="goToPage(currentPage - 1)"
+            >
+              ‹ {{ locale === 'th' ? 'ก่อนหน้า' : 'Prev' }}
+            </button>
+
+            <button
+              v-for="pNum in visiblePages"
+              :key="pNum"
+              type="button"
+              class="op-cat__page-btn"
+              :class="{ 'is-active': pNum === currentPage }"
+              @click="goToPage(pNum)"
+            >
+              {{ pNum }}
+            </button>
+
+            <button
+              type="button"
+              class="btn btn--ghost btn--sm"
+              :disabled="currentPage >= totalPages"
+              @click="goToPage(currentPage + 1)"
+            >
+              {{ locale === 'th' ? 'ถัดไป' : 'Next' }} ›
+            </button>
+          </nav>
+        </template>
 
         <div v-else class="op-cat__empty">
           <h3>{{ t('products.empty') }}</h3>
@@ -307,6 +371,35 @@ function resetAll() {
   flex-direction: column;
   align-items: center;
   gap: 16px;
+}
+.op-cat__pager {
+  margin-top: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.op-cat__page-btn {
+  min-width: 40px;
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--line-strong);
+  background: #ffffff;
+  color: var(--ink);
+  font-family: var(--font-roman);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.25s var(--ease);
+}
+.op-cat__page-btn:hover {
+  border-color: var(--sapphire);
+  color: var(--sapphire);
+}
+.op-cat__page-btn.is-active {
+  background: var(--sapphire);
+  border-color: var(--sapphire);
+  color: #ffffff;
 }
 .py-60 { padding-block: 60px; }
 

@@ -32,7 +32,7 @@ const form = reactive({
   originalPrice: null as number | null,
   priceCompare: null as number | null,
   currency: 'THB',
-  images: ['/images/p1.jpg', '/images/hero-watch.jpg'] as string[],
+  images: ['/images/op/watch-990-083-blue.png'] as string[],
   shortDescription: '',
   description: '',
   descriptionEn: '',
@@ -80,7 +80,7 @@ if (!isNew.value && loadedProduct) {
     originalPrice: p.originalPrice != null ? Number(p.originalPrice) : p.priceCompare != null ? Number(p.priceCompare) : null,
     priceCompare: p.priceCompare != null ? Number(p.priceCompare) : null,
     currency: p.currency || 'THB',
-    images: Array.isArray(p.images) && p.images.length ? [...p.images] : ['/images/hero-watch.jpg'],
+    images: Array.isArray(p.images) && p.images.length ? [...p.images] : ['/images/op/watch-990-083-blue.png'],
     shortDescription: p.shortDescription || '',
     description: p.description || '',
     descriptionEn: p.descriptionEn || '',
@@ -101,12 +101,12 @@ function onBrandSelect() {
 
 function addImage() {
   if (form.images.length >= 6) return
-  form.images.push('/images/p2.jpg')
+  form.images.push('/images/op/watch-990-083-blue.png')
 }
 
 function removeImage(i: number) {
   form.images.splice(i, 1)
-  if (!form.images.length) form.images.push('/images/hero-watch.jpg')
+  if (!form.images.length) form.images.push('/images/op/watch-990-083-blue.png')
 }
 
 async function save() {
@@ -221,9 +221,9 @@ definePageMeta({ layout: 'office', middleware: 'office' })
           <div class="imglist">
             <div v-for="(img, i) in form.images" :key="i" class="imgrow">
               <div class="imgcell">
-                <img :src="img" alt="" />
+                <img :src="img" alt="" referrerpolicy="no-referrer" />
               </div>
-              <input v-model="form.images[i]" class="input" placeholder="/images/p1.jpg or https://..." />
+              <input v-model="form.images[i]" class="input" placeholder="/images/op/watch-990-083-blue.png or https://..." />
               <button type="button" class="btn btn--sm btn--ghost danger" @click="removeImage(i)">×</button>
             </div>
           </div>

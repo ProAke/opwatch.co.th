@@ -81,14 +81,16 @@ const pillars = computed(() => [
           </p>
 
           <p v-if="locale === 'th'">
-            ภายใต้บูติกทางการ <strong>Opwatch Thailand</strong> เราคัดสรรเรือนเวลาครบทั้ง 3 แบรนด์หลักในเครือ ได้แก่
-            <strong>Opwatch</strong> (กลไกญี่ปุ่นความเที่ยงตรงสูง), <strong>Olym Pianus</strong> (ดีไซน์หรูหราผสานจิตวิญญาณสวิส)
-            และ <strong>Ogival</strong> (เรือนเวลาสวิสระดับพรีเมียมตั้งแต่ปี 1903) เพื่อให้คนรักนาฬิกาชาวไทยได้สัมผัสเรือนเวลาแท้พร้อมการรับประกันศูนย์ไทยอย่างมั่นใจ
+            เว็บไซต์และบูติกทางการ <strong>Opwatch.co.th (บริษัท อินเตอร์ ไทม์ส จำกัด)</strong> ให้บริการจัดจำหน่ายและดูแลหลังการขาย<strong>เฉพาะในประเทศไทยเท่านั้น</strong>
+            โดยรวบรวมเรือนเวลาของแท้ครบทุกรุ่นจาก <strong>Olympianus (Olym Pianus)</strong>,
+            <strong>Ogival (สวิตเซอร์แลนด์ 1903)</strong> และ <strong>Opwatch Thailand</strong>
+            เพื่อให้ลูกค้าในประเทศไทยได้สัมผัสเรือนเวลาแท้พร้อมใบรับประกันศูนย์ไทยและบริการจัดส่งฟรีครบทั้ง 77 จังหวัด
           </p>
           <p v-else>
-            Through the official <strong>Opwatch Boutique</strong>, collectors can explore all three sister houses —
-            <strong>Opwatch</strong> (Japanese movement precision), <strong>Olym Pianus</strong> (Swiss-inspired elegance
-            with sapphire crystal), and <strong>Ogival</strong> (prestigious Swiss lucky-fish heritage since 1903).
+            Operating <strong>exclusively within Thailand</strong>, <strong>Opwatch.co.th (Inter Times Co., Ltd.)</strong>
+            is the official Thailand boutique and service center uniting the complete authentic collections of
+            <strong>Olympianus (Olym Pianus)</strong>, <strong>Ogival (Swiss 1903)</strong>, and
+            <strong>Opwatch Thailand</strong> — backed by official Thailand warranty and insured nationwide delivery across all 77 provinces.
           </p>
         </div>
       </div>

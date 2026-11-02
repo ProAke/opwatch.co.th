@@ -48,7 +48,13 @@ const remainingForFreeShipping = computed(() => {
 
           <div v-for="line in cart.items.value" :key="line.productId" class="dline">
             <NuxtLink :to="localePath('/products/' + line.slug)" class="dline__img" @click="cart.drawerOpen.value = false">
-              <img :src="line.image" :alt="line.name" loading="lazy" />
+              <img
+                :src="line.image || '/images/op/watch-990-083-blue.png'"
+                :alt="line.name"
+                loading="lazy"
+                referrerpolicy="no-referrer"
+                @error="(e: any) => { if (e?.target) e.target.src = '/images/op/watch-990-083-blue.png' }"
+              />
             </NuxtLink>
             <div class="dline__main">
               <NuxtLink :to="localePath('/products/' + line.slug)" class="dline__name" @click="cart.drawerOpen.value = false">

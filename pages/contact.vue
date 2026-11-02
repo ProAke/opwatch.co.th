@@ -2,53 +2,41 @@
 const { locale } = useI18n()
 
 useHead({
-  title: 'Contact Us — Olym Pianus · Opwatch Official Boutique'
+  title: 'Contact Us — Opwatch.co.th Official Boutique Thailand'
 })
 
-const distributors = [
+const thailandCenters = computed(() => [
   {
-    region: 'THAILAND (OFFICIAL BOUTIQUE & SERVICE CENTER)',
-    company: 'Inter Times Co., Ltd. · Opwatch Thailand',
-    detail: 'Bangkok Authorized Sales, Warranty Registration & Horological Service Center',
+    region: locale.value === 'th'
+      ? 'สำนักงานใหญ่และผู้จัดจำหน่ายอย่างเป็นทางการแต่เพียงผู้เดียวในประเทศไทย'
+      : 'THAILAND SOLE AUTHORIZED DISTRIBUTOR & HEADQUARTERS',
+    company: 'บริษัท อินเตอร์ ไทม์ส จำกัด (Inter Times Co., Ltd.) · Opwatch.co.th',
+    detail: locale.value === 'th'
+      ? 'กรุงเทพมหานคร ประเทศไทย · ตัวแทนจำหน่ายเรือนเวลาของแท้ Olympianus (Olym Pianus), Ogival และ Opwatch เฉพาะภายในประเทศไทยเท่านั้น'
+      : 'Bangkok, Thailand · Official authorized distributor for authentic Olympianus, Ogival, and Opwatch timepieces exclusively within Thailand.',
     featured: true
   },
   {
-    region: 'SINGAPORE, MALAYSIA',
-    company: 'Top Win Enterprise Co., Ltd.',
-    detail: 'Regional Authorized Distributor',
+    region: locale.value === 'th'
+      ? 'ศูนย์บริการซ่อมบำรุงและรับประกันศูนย์ไทย (THAILAND SERVICE CENTER)'
+      : 'OFFICIAL THAILAND HOROLOGICAL SERVICE CENTER',
+    company: locale.value === 'th' ? 'ศูนย์บริการมาตรฐานช่างผู้เชี่ยวชาญ อินเตอร์ ไทม์ส' : 'Inter Times Certified Watchmaking Atelier (Bangkok)',
+    detail: locale.value === 'th'
+      ? 'บริการตรวจเช็กความเที่ยงตรง ล้างเครื่องออโตเมติก ทดสอบแรงดันกันน้ำ เปลี่ยนแบตเตอรี่ และอะไหล่แท้ สำหรับเรือนเวลาที่สั่งซื้อในประเทศไทย'
+      : 'Movement regulation, automatic overhaul, pressure water-resistance testing, battery replacement, and genuine parts for Thailand-warranted watches.',
     featured: false
   },
   {
-    region: 'VIETNAM',
-    company: 'Truong Hoan Co., Ltd.',
-    detail: 'Regional Authorized Distributor',
-    featured: false
-  },
-  {
-    region: 'CAMBODIA',
-    company: 'LD Watch Enterprise',
-    detail: 'Regional Authorized Distributor',
-    featured: false
-  },
-  {
-    region: 'TAIWAN',
-    company: 'Laipao Co., Ltd.',
-    detail: 'Regional Authorized Distributor',
-    featured: false
-  },
-  {
-    region: 'HONG KONG',
-    company: 'Fullwing International Development Ltd.',
-    detail: 'Regional Authorized Distributor',
-    featured: false
-  },
-  {
-    region: 'MIDDLE EAST',
-    company: 'Top Win Watch Trading LLC',
-    detail: 'Regional Authorized Distributor',
+    region: locale.value === 'th'
+      ? 'ขอบเขตการจัดส่งสินค้า (จัดส่งเฉพาะในประเทศไทย 77 จังหวัดเท่านั้น)'
+      : 'DOMESTIC DELIVERY SCOPE (THAILAND ONLY — ALL 77 PROVINCES)',
+    company: locale.value === 'th' ? 'จัดส่งด่วนพร้อมประกันภัยเต็มมูลค่าทั่วประเทศไทย' : 'Complimentary Insured Domestic Express Delivery',
+    detail: locale.value === 'th'
+      ? 'เว็บไซต์ opwatch.co.th ให้บริการเฉพาะในประเทศไทยเท่านั้น (งดจัดส่งต่างประเทศ) กรุงเทพฯ และปริมณฑล 1–2 วันทำการ · ต่างจังหวัด 2–3 วันทำการ'
+      : 'Opwatch.co.th serves customers exclusively within Thailand (no international shipping). Bangkok & vicinity 1–2 business days · Provincial Thailand 2–3 business days.',
     featured: false
   }
-]
+])
 
 const form = reactive({
   name: '',
@@ -68,33 +56,33 @@ function submitInquiry() {
   <div class="op-contact">
     <!-- Hero -->
     <section class="op-contact__hero">
-      <img src="/images/op/hero-gold-stones.jpg" alt="Contact Olym Pianus" class="op-contact__hero-img" />
+      <img src="/images/op/hero-gold-stones.jpg" alt="Contact Opwatch Thailand" class="op-contact__hero-img" />
       <div class="op-contact__hero-scrim" />
       <div class="container op-contact__hero-body">
-        <span class="op-contact__eyebrow">GLOBAL NETWORK & BOUTIQUE CONCIERGE</span>
-        <h1 class="page-title">Contact Us</h1>
+        <span class="op-contact__eyebrow">THAILAND OFFICIAL BOUTIQUE & SERVICE CENTER</span>
+        <h1 class="page-title">{{ locale === 'th' ? 'ติดต่อเรา (ประเทศไทย)' : 'Contact Thailand Boutique' }}</h1>
         <p>
           {{
             locale === 'th'
-              ? 'ติดต่อศูนย์บริการและผู้จัดจำหน่ายอย่างเป็นทางการในประเทศไทย (Inter Times Co., Ltd.) และเครือข่ายนานาชาติ'
-              : 'Connect with Inter Times Co., Ltd. (Thailand Official Distributor) and our international service network.'
+              ? 'ติดต่อ บริษัท อินเตอร์ ไทม์ส จำกัด ผู้จัดจำหน่ายและศูนย์บริการอย่างเป็นทางการในประเทศไทย (ให้บริการเฉพาะในประเทศไทยเท่านั้น)'
+              : 'Connect with Inter Times Co., Ltd. — Official Authorized Distributor & Horological Service Center exclusively in Thailand.'
           }}
         </p>
       </div>
     </section>
 
-    <!-- Distributors + Concierge Inquiry (#f8f8f8 main_color) -->
+    <!-- Thailand Centers + Concierge Inquiry (#f8f8f8 main_color) -->
     <section class="section section--pearl">
       <div class="container op-contact__grid">
         <div>
-          <span class="eyebrow">OFFICIAL DISTRIBUTORS</span>
+          <span class="eyebrow">THAILAND EXCLUSIVE SERVICE</span>
           <h2 class="op-contact__h2">
-            {{ locale === 'th' ? 'เครือข่ายผู้จัดจำหน่ายอย่างเป็นทางการ' : 'Authorized Regional Distributors' }}
+            {{ locale === 'th' ? 'ศูนย์บริการและการจัดจำหน่ายในประเทศไทย' : 'Official Thailand Boutique & Service Network' }}
           </h2>
 
           <div class="op-contact__list">
             <div
-              v-for="d in distributors"
+              v-for="d in thailandCenters"
               :key="d.region"
               class="op-contact__card"
               :class="{ 'is-featured': d.featured }"

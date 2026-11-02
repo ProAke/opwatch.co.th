@@ -38,18 +38,18 @@ function submitSearch() {
 }
 
 const opCollections = computed(() => [
-  { label: locale.value === 'th' ? 'Men Watch · นาฬิกาผู้ชาย' : 'Men Watch', query: { category: 'men' } },
-  { label: locale.value === 'th' ? 'Ladies Watch · นาฬิกาผู้หญิง' : 'Ladies Watch', query: { category: 'women' } },
-  { label: locale.value === 'th' ? 'Sport Watch · สปอร์ต & ไดเวอร์' : 'Sport Watch', query: { category: 'men-diver' } },
-  { label: locale.value === 'th' ? 'Classic Watch · คลาสสิกเดรส' : 'Classic Watch', query: { category: 'men-dress' } },
-  { label: locale.value === 'th' ? 'Essential Selection · รุ่นยอดนิยม' : 'Essential Selection', query: { sort: 'featured' } },
-  { label: locale.value === 'th' ? 'Special Occasion · โอกาสพิเศษ' : 'Special Occasion', query: { category: 'limited' } }
+  { label: locale.value === 'th' ? 'Men Watch · นาฬิกาผู้ชาย' : 'Men Watch', query: { category: 'men-watches' } },
+  { label: locale.value === 'th' ? 'Ladies Watch · นาฬิกาผู้หญิง' : 'Ladies Watch', query: { category: 'women-watches' } },
+  { label: locale.value === 'th' ? 'Sport Watch · สปอร์ต & ไดเวอร์' : 'Sport Watch', query: { category: 'sport-watches' } },
+  { label: locale.value === 'th' ? 'Classic Watch · คลาสสิกเดรส' : 'Classic Watch', query: { category: 'classic-watches' } },
+  { label: locale.value === 'th' ? 'Couple Watch · นาฬิกาคู่รัก' : 'Couple Watch', query: { category: 'couple-watches' } },
+  { label: locale.value === 'th' ? 'Jewelry Watch · นาฬิกาจิวเวลรี่เพชร' : 'Jewelry Watch', query: { category: 'women-jewelry' } }
 ])
 
 const brandHouses = computed(() => [
-  { slug: 'olympinus', name: 'Olym Pianus', tag: locale.value === 'th' ? 'Swiss Spirit & Sapphire' : 'Swiss Spirit & Sapphire' },
-  { slug: 'opwatch', name: 'Opwatch', tag: locale.value === 'th' ? 'Japanese Precision' : 'Japanese Precision' },
-  { slug: 'ogival', name: 'Ogival', tag: locale.value === 'th' ? 'Swiss Lucky Fish 1903' : 'Swiss Lucky Fish 1903' }
+  { slug: 'olympianus', name: 'Olympianus (Olym Pianus)', tag: locale.value === 'th' ? '222 รุ่นทางการ · กระจกแซฟไฟร์' : '222 Official Models · Sapphire' },
+  { slug: 'ogival', name: 'Ogival (Swiss 1903)', tag: locale.value === 'th' ? '177 รุ่นทางการ · สวิสลักชัวรี' : '177 Official Models · Swiss Luxury' },
+  { slug: 'opwatch', name: 'Opwatch Thailand', tag: locale.value === 'th' ? 'รุ่นพิเศษบูติกประเทศไทย' : 'Thailand Boutique Edition' }
 ])
 
 watch(() => route.fullPath, () => {

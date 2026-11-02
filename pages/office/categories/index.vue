@@ -101,7 +101,7 @@ definePageMeta({ layout: 'office', middleware: 'office' })
         </thead>
         <tbody>
           <tr v-for="c in items" :key="c.id">
-            <td><div class="catimg"><img :src="c.image || '/images/hero-watch.jpg'" alt="" loading="lazy" /></div></td>
+            <td><div class="catimg"><img :src="c.image || '/images/op/watch-990-083-blue.png'" alt="" loading="lazy" referrerpolicy="no-referrer" /></div></td>
             <td>
               <div>{{ locale === 'en' ? c.nameEn : c.nameTh }}</div>
               <div class="tiny upper faint">{{ c.description }}</div>

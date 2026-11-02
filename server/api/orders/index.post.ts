@@ -35,7 +35,7 @@ export default defineEventHandler(async (event) => {
       productId,
       sku: product.sku,
       name,
-      image: images[0] || '/images/hero-watch.jpg',
+      image: images[0] || '/images/op/watch-990-083-blue.png',
       price: Number(product.price),
       quantity
     })
@@ -69,6 +69,20 @@ export default defineEventHandler(async (event) => {
     })
   }
 
+  // Enforce Thailand-only shipping scope (เว็บไซต์นี้จัดส่งเฉพาะภายในประเทศไทยเท่านั้น)
+  const rawCountry = String(customer.country || 'Thailand').trim().toLowerCase()
+  const isThailand =
+    !rawCountry ||
+    rawCountry.includes('thai') ||
+    rawCountry.includes('ไทย') ||
+    rawCountry === 'th'
+  if (!isThailand) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'checkout.thailandOnly'
+    })
+  }
+
   const order = await store.create('orders', {
     orderNo: orderNo(),
     customerId: user ? Number(user.id) : null,
@@ -78,12 +92,12 @@ export default defineEventHandler(async (event) => {
     address: String(customer.address || '').trim(),
     city: String(customer.city || '').trim(),
     postalCode: String(customer.postalCode || '').trim(),
-    country: String(customer.country || 'Thailand').trim(),
+    country: 'ประเทศไทย (Thailand)',
     subtotal,
     shippingFee,
     discount,
     total,
-    currency: cfg.site.currency,
+    currency: 'THB',
     status: 'pending',
     paymentMethod: String(body?.paymentMethod || 'offline'),
     note: String(body?.note || '').trim().slice(0, 500)

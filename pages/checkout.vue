@@ -16,7 +16,7 @@ const form = reactive({
   address: customer.value?.address || '',
   city: customer.value?.city || '',
   postalCode: customer.value?.postalCode || '',
-  country: customer.value?.country || 'Thailand',
+  country: 'ประเทศไทย (Thailand Only)',
   paymentMethod: 'offline' as 'offline' | 'card' | 'cod',
   note: ''
 })
@@ -147,9 +147,12 @@ onMounted(() => {
                 </div>
                 <div class="field">
                   <label class="label">{{ t('checkout.country') }}</label>
-                  <input v-model="form.country" class="input" />
+                  <input :value="locale === 'th' ? 'ประเทศไทยเท่านั้น (Thailand Only)' : 'Thailand Only (Domestic Delivery)'" class="input" readonly disabled />
                 </div>
               </div>
+              <p class="tiny muted" style="margin-top: 12px">
+                ✓ {{ t('checkout.thailandOnly') }}
+              </p>
             </div>
 
             <div class="formblock">
@@ -195,7 +198,15 @@ onMounted(() => {
             <h3 class="serif summary__title">{{ t('checkout.orderSummary') }}</h3>
             <div class="summary__items">
               <div v-for="line in cart.items.value" :key="line.productId" class="sumline">
-                <div class="sumline__img"><img :src="line.image" :alt="line.name" loading="lazy" /></div>
+                <div class="sumline__img">
+                  <img
+                    :src="line.image || '/images/op/watch-990-083-blue.png'"
+                    :alt="line.name"
+                    loading="lazy"
+                    referrerpolicy="no-referrer"
+                    @error="(e: any) => { if (e?.target) e.target.src = '/images/op/watch-990-083-blue.png' }"
+                  />
+                </div>
                 <div class="sumline__info">
                   <span class="sumline__name">{{ locale === 'en' ? line.nameEn : line.nameTh }}</span>
                   <span class="tiny upper faint">{{ line.sku }} · {{ line.quantity }}</span>
@@ -236,8 +247,8 @@ onMounted(() => {
 .summary__title { font-size: 22px; margin-bottom: 18px; }
 .summary__items { display: flex; flex-direction: column; gap: 14px; padding-bottom: 18px; margin-bottom: 8px; border-bottom: 1px solid var(--line); }
 .sumline { display: grid; grid-template-columns: 48px 1fr auto; gap: 12px; align-items: center; }
-.sumline__img { width: 48px; height: 48px; background: var(--sand); border-radius: var(--radius); overflow: hidden; }
-.sumline__img img { width: 100%; height: 100%; object-fit: cover; }
+.sumline__img { width: 48px; height: 48px; background: #ffffff; border: 1px solid var(--line); padding: 3px; border-radius: var(--radius); overflow: hidden; }
+.sumline__img img { width: 100%; height: 100%; object-fit: contain; }
 .sumline__info { display: flex; flex-direction: column; min-width: 0; }
 .sumline__name { font-family: var(--font-display); font-size: 14px; }
 .summary__row { padding: 10px 0; font-size: 15px; }

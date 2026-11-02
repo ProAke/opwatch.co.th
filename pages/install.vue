@@ -28,10 +28,7 @@ const form = reactive({
 })
 
 const currencyOptions = [
-  { code: 'THB', symbol: '฿', name: 'Thai Baht' },
-  { code: 'USD', symbol: '$', name: 'US Dollar' },
-  { code: 'EUR', symbol: '€', name: 'Euro' },
-  { code: 'JPY', symbol: '¥', name: 'Japanese Yen' }
+  { code: 'THB', symbol: '฿', name: 'Thai Baht (฿ - ประเทศไทยเท่านั้น)' }
 ]
 
 const steps = computed(() => [

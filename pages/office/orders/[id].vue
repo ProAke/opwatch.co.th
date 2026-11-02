@@ -79,7 +79,7 @@ definePageMeta({ layout: 'office', middleware: 'office' })
               <tr v-for="it in items" :key="it.id">
                 <td>
                   <div class="prodcell">
-                    <div class="prodcell__img"><img :src="it.image || '/images/hero-watch.jpg'" alt="" loading="lazy" /></div>
+                    <div class="prodcell__img"><img :src="it.image || '/images/op/watch-990-083-blue.png'" alt="" loading="lazy" referrerpolicy="no-referrer" /></div>
                     <div>
                       <div>{{ it.name }}</div>
                       <div class="tiny upper faint">{{ it.sku }}</div>

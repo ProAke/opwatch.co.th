@@ -4,14 +4,16 @@ export function formatPrice(
   locale = 'th-TH'
 ): string {
   const n = Number(value || 0)
+  const rawSym = String(symbol || '฿').trim()
+  const sym = !rawSym || rawSym === 'บาท' || rawSym.toUpperCase() === 'THB' ? '฿' : rawSym
   try {
     const formatted = new Intl.NumberFormat(locale, {
       minimumFractionDigits: 0,
       maximumFractionDigits: 2
     }).format(n)
-    return `${symbol}${formatted}`
+    return `${sym}${formatted}`
   } catch {
-    return `${symbol}${n.toFixed(2)}`
+    return `${sym}${n.toFixed(0)}`
   }
 }
 
