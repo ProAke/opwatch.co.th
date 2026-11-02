@@ -1,6 +1,9 @@
+import { ensureCatalogReady } from '../../../utils/seed'
+
 export default defineEventHandler(async (event) => {
   await requireAdmin(event)
   const store = useStore()
+  await ensureCatalogReady(store)
 
   const [orders, products, customers] = await Promise.all([
     store.all('orders'),

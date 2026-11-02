@@ -1,3 +1,5 @@
+import { ensureCatalogReady } from '../../utils/seed'
+
 const BRAND_ALIASES: Record<string, string> = {
   olympinus: 'olympianus',
   'olym-pianus': 'olympianus',
@@ -13,6 +15,7 @@ export default defineEventHandler(async (event) => {
   const rawSlug = String(getRouterParam(event, 'slug') || '').trim().toLowerCase()
   const canonicalSlug = BRAND_ALIASES[rawSlug] || rawSlug
   const store = useStore()
+  await ensureCatalogReady(store)
 
   let brand = (await store.find('brands', { where: { slug: canonicalSlug } })).find((b) => b.active !== false)
   if (!brand && rawSlug !== canonicalSlug) {
