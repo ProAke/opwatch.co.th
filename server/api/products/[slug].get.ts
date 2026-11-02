@@ -1,3 +1,5 @@
+import { ensureCatalogReady } from '../../utils/seed'
+
 const LEGACY_SLUG_MAP: Record<string, string> = {
   'ol-m2001': 'olympianus-130-07mk-gl-white',
   'ol-m2002': 'olympianus-899833g1m-black',
@@ -28,6 +30,7 @@ export default defineEventHandler(async (event) => {
   const rawSlug = String(getRouterParam(event, 'slug') || '').trim().toLowerCase()
   const mappedSlug = LEGACY_SLUG_MAP[rawSlug] || rawSlug
   const store = useStore()
+  await ensureCatalogReady(store)
 
   let product = await store.findOne('products', { where: { slug: mappedSlug } })
   if (!product && mappedSlug !== rawSlug) {

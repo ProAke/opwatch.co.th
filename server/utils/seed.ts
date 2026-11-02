@@ -1,7 +1,7 @@
 import type { Store } from '../db/types'
 import { olympianusOfficialProducts } from './catalog-olympianus'
 import { ogivalOfficialProducts } from './catalog-ogival'
-import { loadConfig, saveConfig } from './config'
+import { isInstalled, loadConfig, saveConfig } from './config'
 
 export interface SeedBrand {
   slug: string
@@ -559,8 +559,9 @@ export async function syncOfficialCatalog(
 
   const run = async () => {
     // 1. Normalize site config currencySymbol ('฿') & official phone ('02 251 5777')
+    let cfg: ReturnType<typeof loadConfig> = null
     try {
-      const cfg = loadConfig()
+      cfg = loadConfig()
       if (cfg?.site) {
         let changed = false
         if (!cfg.site.currency || cfg.site.currency !== 'THB') {
@@ -581,279 +582,321 @@ export async function syncOfficialCatalog(
       // Ignore read-only config errors in restricted environments
     }
 
-    const brands = defaultBrands()
-    const categories = defaultCategories()
-    const officialProducts = defaultProducts()
-    const campaigns = defaultCampaigns()
-
-    // 2. Sync Brands (migrate legacy 'olympinus' -> 'olympianus' and 'opwatch' -> 'olympia-star')
-    const existingBrands = await store.all('brands')
-    const brandBySlug = new Map<string, any>()
-    for (const b of existingBrands) brandBySlug.set(String(b.slug), b)
-
-    if (brandBySlug.has('olympinus') && !brandBySlug.has('olympianus')) {
-      const legacyBrand = brandBySlug.get('olympinus')
-      const updated = await store.update('brands', Number(legacyBrand.id), { slug: 'olympianus' })
-      brandBySlug.delete('olympinus')
-      if (updated) brandBySlug.set('olympianus', updated)
-    }
-
-    if (brandBySlug.has('opwatch') && !brandBySlug.has('olympia-star')) {
-      const legacyOp = brandBySlug.get('opwatch')
-      const updated = await store.update('brands', Number(legacyOp.id), { slug: 'olympia-star' })
-      brandBySlug.delete('opwatch')
-      if (updated) brandBySlug.set('olympia-star', updated)
-    }
-
-    const brandMap = new Map<string, number>()
-    for (const b of brands) {
-      const existing = brandBySlug.get(b.slug)
-      const payload = {
-        slug: b.slug,
-        name: b.name,
-        nameEn: b.nameEn,
-        nameTh: b.nameTh,
-        country: b.country,
-        countryEn: b.countryEn,
-        movement: b.movement,
-        movementEn: b.movementEn,
-        positioning: b.positioning,
-        tagline: b.tagline,
-        taglineEn: b.taglineEn,
-        story: b.story,
-        storyEn: b.storyEn,
-        accentColor: b.accentColor,
-        logo: b.logo,
-        heroImage: b.heroImage,
-        sortOrder: b.sortOrder,
-        active: b.active
-      }
-      if (!existing) {
-        const created = await store.create('brands', payload)
-        brandMap.set(b.slug, Number(created.id))
-      } else {
-        const needsUpdate =
-          opts.force ||
-          existing.logo !== b.logo ||
-          existing.name !== b.name ||
-          existing.nameEn !== b.nameEn ||
-          existing.sortOrder !== b.sortOrder ||
-          String(existing.story || '').includes('อินเตอร์ ไทม์ส')
-        if (needsUpdate) {
-          await store.update('brands', Number(existing.id), payload)
+    const work = async () => {
+      // 1b. Self-heal admin customer row if config/site.config.json exists
+      if (cfg?.admin?.email && cfg?.admin?.passwordHash) {
+        const adminEmail = String(cfg.admin.email).trim().toLowerCase()
+        const existingAdmin = await store.findOne('customers', { where: { email: adminEmail } })
+        if (!existingAdmin) {
+          await store.create('customers', {
+            name: 'Administrator',
+            email: adminEmail,
+            passwordHash: cfg.admin.passwordHash,
+            isAdmin: true,
+            points: 0,
+            totalSpent: 0
+          })
+        } else if (!existingAdmin.isAdmin) {
+          await store.update('customers', Number(existingAdmin.id), { isAdmin: true })
         }
-        brandMap.set(b.slug, Number(existing.id))
       }
-    }
 
-    // Re-point & remove any leftover duplicate 'olympinus' or 'opwatch' brand row
-    for (const [legacySlug, targetSlug] of [['olympinus', 'olympianus'], ['opwatch', 'olympia-star']] as const) {
-      if (brandBySlug.has(legacySlug) && brandMap.has(targetSlug)) {
-        const dup = brandBySlug.get(legacySlug)
-        const targetId = brandMap.get(targetSlug)!
-        const prods = await store.findMany('products', { brandId: Number(dup.id) })
-        for (const pr of prods) {
-          await store.update('products', Number(pr.id), { brandId: targetId, brand: targetSlug })
+      const brands = defaultBrands()
+      const categories = defaultCategories()
+      const officialProducts = defaultProducts()
+      const campaigns = defaultCampaigns()
+
+      // 2. Sync Brands (migrate legacy 'olympinus' -> 'olympianus' and 'opwatch' -> 'olympia-star')
+      const existingBrands = await store.all('brands')
+      const brandBySlug = new Map<string, any>()
+      for (const b of existingBrands) brandBySlug.set(String(b.slug), b)
+
+      if (brandBySlug.has('olympinus') && !brandBySlug.has('olympianus')) {
+        const legacyBrand = brandBySlug.get('olympinus')
+        const updated = await store.update('brands', Number(legacyBrand.id), { slug: 'olympianus' })
+        brandBySlug.delete('olympinus')
+        if (updated) brandBySlug.set('olympianus', updated)
+      }
+
+      if (brandBySlug.has('opwatch') && !brandBySlug.has('olympia-star')) {
+        const legacyOp = brandBySlug.get('opwatch')
+        const updated = await store.update('brands', Number(legacyOp.id), { slug: 'olympia-star' })
+        brandBySlug.delete('opwatch')
+        if (updated) brandBySlug.set('olympia-star', updated)
+      }
+
+      const brandMap = new Map<string, number>()
+      for (const b of brands) {
+        const existing = brandBySlug.get(b.slug)
+        const payload = {
+          slug: b.slug,
+          name: b.name,
+          nameEn: b.nameEn,
+          nameTh: b.nameTh,
+          country: b.country,
+          countryEn: b.countryEn,
+          movement: b.movement,
+          movementEn: b.movementEn,
+          positioning: b.positioning,
+          tagline: b.tagline,
+          taglineEn: b.taglineEn,
+          story: b.story,
+          storyEn: b.storyEn,
+          accentColor: b.accentColor,
+          logo: b.logo,
+          heroImage: b.heroImage,
+          sortOrder: b.sortOrder,
+          active: b.active
         }
-        await store.remove('brands', Number(dup.id))
-      }
-    }
-
-    // 3. Sync Categories
-    const existingCats = await store.all('categories')
-    const catBySlug = new Map<string, any>()
-    for (const c of existingCats) catBySlug.set(String(c.slug), c)
-
-    const catMap = new Map<string, number>()
-    const orderedCats = [...categories].sort((a, b) => (a.parentSlug ? 1 : 0) - (b.parentSlug ? 1 : 0))
-    for (const c of orderedCats) {
-      const parentId = c.parentSlug ? (catMap.get(c.parentSlug) ?? null) : null
-      const existing = catBySlug.get(c.slug)
-      const payload = {
-        slug: c.slug,
-        name: c.name,
-        nameEn: c.nameEn,
-        nameTh: c.nameTh,
-        description: c.description,
-        descriptionEn: c.descriptionEn,
-        descriptionTh: c.descriptionTh,
-        image: c.image,
-        icon: c.icon,
-        bannerImage: c.bannerImage,
-        sortOrder: c.sortOrder,
-        parentId
-      }
-      if (!existing) {
-        const created = await store.create('categories', payload)
-        catMap.set(c.slug, Number(created.id))
-      } else {
-        if (
-          opts.force ||
-          String(existing.image || '').startsWith('/images/p') ||
-          String(existing.image || '').startsWith('/images/cat-') ||
-          existing.description !== c.description
-        ) {
-          await store.update('categories', Number(existing.id), payload)
+        if (!existing) {
+          const created = await store.create('brands', payload)
+          brandMap.set(b.slug, Number(created.id))
+        } else {
+          const needsUpdate =
+            opts.force ||
+            existing.logo !== b.logo ||
+            existing.name !== b.name ||
+            existing.nameEn !== b.nameEn ||
+            existing.sortOrder !== b.sortOrder ||
+            String(existing.story || '').includes('อินเตอร์ ไทม์ส')
+          if (needsUpdate) {
+            await store.update('brands', Number(existing.id), payload)
+          }
+          brandMap.set(b.slug, Number(existing.id))
         }
-        catMap.set(c.slug, Number(existing.id))
       }
-    }
 
-    // 4. Purge legacy sample SKUs & fix any katakana typo / broken '/images/p*.jpg' rows
-    let allProducts = await store.all('products')
-    const orderItems = await store.all('order_items').catch(() => [])
-    const orderedProductIds = new Set<number>(
-      orderItems.map((oi: any) => Number(oi.productId)).filter((n: number) => Number.isFinite(n) && n > 0)
-    )
+      // Re-point & remove any leftover duplicate 'olympinus' or 'opwatch' brand row
+      for (const [legacySlug, targetSlug] of [['olympinus', 'olympianus'], ['opwatch', 'olympia-star']] as const) {
+        if (brandBySlug.has(legacySlug) && brandMap.has(targetSlug)) {
+          const dup = brandBySlug.get(legacySlug)
+          const targetId = brandMap.get(targetSlug)!
+          const prods = await store.find('products', { where: { brandId: Number(dup.id) } })
+          for (const pr of prods) {
+            await store.update('products', Number(pr.id), { brandId: targetId, brand: targetSlug })
+          }
+          await store.remove('brands', Number(dup.id))
+        }
+      }
 
-    let removedLegacy = 0
-    for (const row of allProducts) {
-      const sku = String(row.sku || '').toUpperCase()
-      const imgs = Array.isArray(row.images) ? row.images : []
-      const hasLegacyPlaceholderImg = imgs.some((u: any) => /^\/images\/p\d+\./i.test(String(u || '')))
-      const hasTypo =
-        String(row.name || '').includes('ทัวร์บิロン') ||
-        String(row.nameTh || '').includes('ทัวร์บิロン') ||
-        String(row.description || '').includes('ทัวร์บิロン')
+      // 3. Sync Categories
+      const existingCats = await store.all('categories')
+      const catBySlug = new Map<string, any>()
+      for (const c of existingCats) catBySlug.set(String(c.slug), c)
 
-      if (LEGACY_SAMPLE_SKUS.has(sku) || hasLegacyPlaceholderImg || hasTypo) {
-        const id = Number(row.id)
-        if (orderedProductIds.has(id)) {
-          if (row.status !== 'draft') {
-            await store.update('products', id, {
-              status: 'draft',
-              featured: false,
-              name: String(row.name || '').replace('ทัวร์บิロン', 'ทัวร์บิลยอง'),
-              nameTh: String(row.nameTh || '').replace('ทัวร์บิロン', 'ทัวร์บิลยอง'),
-              images: ['/images/op/watch-990-083-blue.png']
-            })
+      const catMap = new Map<string, number>()
+      const orderedCats = [...categories].sort((a, b) => (a.parentSlug ? 1 : 0) - (b.parentSlug ? 1 : 0))
+      for (const c of orderedCats) {
+        const parentId = c.parentSlug ? (catMap.get(c.parentSlug) ?? null) : null
+        const existing = catBySlug.get(c.slug)
+        const payload = {
+          slug: c.slug,
+          name: c.name,
+          nameEn: c.nameEn,
+          nameTh: c.nameTh,
+          description: c.description,
+          descriptionEn: c.descriptionEn,
+          descriptionTh: c.descriptionTh,
+          image: c.image,
+          icon: c.icon,
+          bannerImage: c.bannerImage,
+          sortOrder: c.sortOrder,
+          parentId
+        }
+        if (!existing) {
+          const created = await store.create('categories', payload)
+          catMap.set(c.slug, Number(created.id))
+        } else {
+          if (
+            opts.force ||
+            String(existing.image || '').startsWith('/images/p') ||
+            String(existing.image || '').startsWith('/images/cat-') ||
+            existing.description !== c.description
+          ) {
+            await store.update('categories', Number(existing.id), payload)
+          }
+          catMap.set(c.slug, Number(existing.id))
+        }
+      }
+
+      // 4. Purge legacy sample SKUs & fix any katakana typo / broken '/images/p*.jpg' rows
+      let allProducts = await store.all('products')
+      const orderItems = await store.all('order_items').catch(() => [])
+      const orderedProductIds = new Set<number>(
+        orderItems.map((oi: any) => Number(oi.productId)).filter((n: number) => Number.isFinite(n) && n > 0)
+      )
+
+      let removedLegacy = 0
+      for (const row of allProducts) {
+        const sku = String(row.sku || '').toUpperCase()
+        const imgs = Array.isArray(row.images) ? row.images : []
+        const hasLegacyPlaceholderImg = imgs.some((u: any) => /^\/images\/p\d+\./i.test(String(u || '')))
+        const hasTypo =
+          String(row.name || '').includes('ทัวร์บิロン') ||
+          String(row.nameTh || '').includes('ทัวร์บิロン') ||
+          String(row.description || '').includes('ทัวร์บิロン')
+
+        if (LEGACY_SAMPLE_SKUS.has(sku) || hasLegacyPlaceholderImg || hasTypo) {
+          const id = Number(row.id)
+          if (orderedProductIds.has(id)) {
+            if (row.status !== 'draft') {
+              await store.update('products', id, {
+                status: 'draft',
+                featured: false,
+                name: String(row.name || '').replace('ทัวร์บิロン', 'ทัวร์บิลยอง'),
+                nameTh: String(row.nameTh || '').replace('ทัวร์บิロン', 'ทัวร์บิลยอง'),
+                images: ['/images/op/watch-990-083-blue.png']
+              })
+              removedLegacy++
+            }
+          } else {
+            await store.remove('products', id)
             removedLegacy++
           }
-        } else {
-          await store.remove('products', id)
-          removedLegacy++
+        } else if (row.brand === 'olympinus') {
+          await store.update('products', Number(row.id), {
+            brand: 'olympianus',
+            brandId: brandMap.get('olympianus') ?? row.brandId
+          })
+        } else if (row.brand === 'opwatch') {
+          await store.update('products', Number(row.id), {
+            brand: 'olympia-star',
+            brandId: brandMap.get('olympia-star') ?? row.brandId
+          })
         }
-      } else if (row.brand === 'olympinus') {
-        await store.update('products', Number(row.id), {
-          brand: 'olympianus',
-          brandId: brandMap.get('olympianus') ?? row.brandId
-        })
-      } else if (row.brand === 'opwatch') {
-        await store.update('products', Number(row.id), {
-          brand: 'olympia-star',
-          brandId: brandMap.get('olympia-star') ?? row.brandId
-        })
-      }
-    }
-
-    if (catBySlug.has('kids-watches')) {
-      const kidsCat = catBySlug.get('kids-watches')
-      const remainingKids = await store.findMany('products', { categoryId: Number(kidsCat.id) })
-      if (remainingKids.length === 0) {
-        await store.remove('categories', Number(kidsCat.id))
-      }
-    }
-
-    // 5. Upsert all official Olym Pianus + Ogival + Olympia Star products
-    allProducts = await store.all('products')
-    const bySku = new Map<string, any>()
-    const bySlug = new Map<string, any>()
-    for (const row of allProducts) {
-      bySku.set(String(row.sku || '').toUpperCase(), row)
-      bySlug.set(String(row.slug || '').toLowerCase(), row)
-    }
-
-    let synced = 0
-    for (const p of officialProducts) {
-      const existing = bySku.get(p.sku.toUpperCase()) || bySlug.get(p.slug.toLowerCase())
-      const payload = {
-        sku: p.sku,
-        name: p.name,
-        nameEn: p.nameEn,
-        nameTh: p.nameTh,
-        slug: p.slug,
-        brandId: brandMap.get(p.brandSlug) ?? null,
-        brand: p.brandSlug,
-        categoryId: catMap.get(p.categorySlug) ?? null,
-        price: p.price,
-        originalPrice: p.originalPrice,
-        currency: p.currency,
-        images: p.images,
-        shortDescription: p.shortDescription,
-        description: p.description,
-        descriptionEn: p.descriptionEn,
-        descriptionTh: p.descriptionTh,
-        specs: p.specs,
-        stock: existing ? Number(existing.stock ?? p.stock) : p.stock,
-        status: p.status,
-        badges: p.badges,
-        featured: p.featured,
-        sortOrder: p.sortOrder
       }
 
-      if (!existing) {
-        await store.create('products', payload)
-        synced++
-      } else if (
-        opts.force ||
-        !Array.isArray(existing.images) ||
-        existing.images.length === 0 ||
-        existing.brandId !== payload.brandId ||
-        existing.categoryId !== payload.categoryId ||
-        String(existing.description || '').includes('อินเตอร์ ไทม์ส')
-      ) {
-        await store.update('products', Number(existing.id), payload)
-        synced++
+      if (catBySlug.has('kids-watches')) {
+        const kidsCat = catBySlug.get('kids-watches')
+        const remainingKids = await store.find('products', { where: { categoryId: Number(kidsCat.id) } })
+        if (remainingKids.length === 0) {
+          await store.remove('categories', Number(kidsCat.id))
+        }
       }
+
+      // 5. Upsert all official Olym Pianus + Ogival + Olympia Star products
+      allProducts = await store.all('products')
+      const bySku = new Map<string, any>()
+      const bySlug = new Map<string, any>()
+      for (const row of allProducts) {
+        bySku.set(String(row.sku || '').toUpperCase(), row)
+        bySlug.set(String(row.slug || '').toLowerCase(), row)
+      }
+
+      let synced = 0
+      for (const p of officialProducts) {
+        const existing = bySku.get(p.sku.toUpperCase()) || bySlug.get(p.slug.toLowerCase())
+        const payload = {
+          sku: p.sku,
+          name: p.name,
+          nameEn: p.nameEn,
+          nameTh: p.nameTh,
+          slug: p.slug,
+          brandId: brandMap.get(p.brandSlug) ?? null,
+          brand: p.brandSlug,
+          categoryId: catMap.get(p.categorySlug) ?? null,
+          price: p.price,
+          originalPrice: p.originalPrice,
+          currency: p.currency,
+          images: p.images,
+          shortDescription: p.shortDescription,
+          description: p.description,
+          descriptionEn: p.descriptionEn,
+          descriptionTh: p.descriptionTh,
+          specs: p.specs,
+          stock: existing ? Number(existing.stock ?? p.stock) : p.stock,
+          status: p.status,
+          badges: p.badges,
+          featured: p.featured,
+          sortOrder: p.sortOrder
+        }
+
+        if (!existing) {
+          await store.create('products', payload)
+          synced++
+        } else if (
+          opts.force ||
+          !Array.isArray(existing.images) ||
+          existing.images.length === 0 ||
+          existing.brandId !== payload.brandId ||
+          existing.categoryId !== payload.categoryId ||
+          String(existing.description || '').includes('อินเตอร์ ไทม์ส')
+        ) {
+          await store.update('products', Number(existing.id), payload)
+          synced++
+        }
+      }
+
+      // 6. Sync Campaigns (remove obsolete scaffold campaigns & upsert official campaigns)
+      const existingCampaigns = await store.all('campaigns')
+      const campBySlug = new Map<string, any>()
+      for (const c of existingCampaigns) campBySlug.set(String(c.slug), c)
+
+      const obsoleteCampaignSlugs = ['anniversary', 'opwatch-brand-day', 'watches-spotlight', 'luxury-gift']
+      for (const oldSlug of obsoleteCampaignSlugs) {
+        if (campBySlug.has(oldSlug)) {
+          const oldCamp = campBySlug.get(oldSlug)
+          await store.remove('campaigns', Number(oldCamp.id))
+          campBySlug.delete(oldSlug)
+        }
+      }
+
+      for (const c of campaigns) {
+        const existing = campBySlug.get(c.slug)
+        const payload = {
+          slug: c.slug,
+          title: c.title,
+          titleEn: c.titleEn,
+          titleTh: c.titleTh,
+          subtitle: c.subtitle,
+          subtitleEn: c.subtitleEn,
+          subtitleTh: c.subtitleTh,
+          banner: c.banner,
+          link: c.link,
+          brandId: c.brandSlug ? (brandMap.get(c.brandSlug) ?? null) : null,
+          type: c.type,
+          sortOrder: c.sortOrder,
+          active: c.active
+        }
+        if (!existing) {
+          await store.create('campaigns', payload)
+        } else if (
+          opts.force ||
+          existing.link !== c.link ||
+          existing.banner !== c.banner ||
+          existing.title !== c.title ||
+          existing.subtitle !== c.subtitle
+        ) {
+          await store.update('campaigns', Number(existing.id), payload)
+        }
+      }
+
+      const finalCount = await store.count('products', { where: { status: 'active' } })
+      return { synced, removedLegacy, total: finalCount }
     }
 
-    // 6. Sync Campaigns (remove obsolete opwatch-brand-day & upsert current campaigns)
-    const existingCampaigns = await store.all('campaigns')
-    const campBySlug = new Map<string, any>()
-    for (const c of existingCampaigns) campBySlug.set(String(c.slug), c)
-
-    if (campBySlug.has('opwatch-brand-day')) {
-      const oldCamp = campBySlug.get('opwatch-brand-day')
-      await store.remove('campaigns', Number(oldCamp.id))
-      campBySlug.delete('opwatch-brand-day')
+    if (typeof (store as any).runInBatch === 'function') {
+      return await (store as any).runInBatch(work)
     }
-
-    for (const c of campaigns) {
-      const existing = campBySlug.get(c.slug)
-      const payload = {
-        slug: c.slug,
-        title: c.title,
-        titleEn: c.titleEn,
-        titleTh: c.titleTh,
-        subtitle: c.subtitle,
-        subtitleEn: c.subtitleEn,
-        subtitleTh: c.subtitleTh,
-        banner: c.banner,
-        link: c.link,
-        brandId: c.brandSlug ? (brandMap.get(c.brandSlug) ?? null) : null,
-        type: c.type,
-        sortOrder: c.sortOrder,
-        active: c.active
-      }
-      if (!existing) {
-        await store.create('campaigns', payload)
-      } else if (
-        opts.force ||
-        existing.link !== c.link ||
-        existing.subtitle !== c.subtitle
-      ) {
-        await store.update('campaigns', Number(existing.id), payload)
-      }
-    }
-
-    const finalCount = await store.count('products', { status: 'active' })
-    return { synced, removedLegacy, total: finalCount }
+    return await work()
   }
 
   syncPromise = run().finally(() => {
     setTimeout(() => { syncPromise = null }, 1000)
   })
   return syncPromise
+}
+
+/**
+ * Ensures an installed store never serves an empty product catalog
+ * (e.g. if a previous startup sync was interrupted or worker booted lazily).
+ */
+export async function ensureCatalogReady(store: Store): Promise<void> {
+  if (!isInstalled()) return
+  const count = await store.count('products')
+  if (count === 0) {
+    await syncOfficialCatalog(store)
+  }
 }
 
 export async function seedStore(

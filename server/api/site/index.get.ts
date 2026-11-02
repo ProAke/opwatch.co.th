@@ -1,15 +1,19 @@
+import { ensureCatalogReady } from '../../utils/seed'
+
 export default defineEventHandler(async () => {
   const cfg = getConfig()
   const store = useStore()
-  const [categories, brands] = await Promise.all([
+  if (cfg.installed) {
+    await ensureCatalogReady(store)
+  }
+  const [categories, allRawBrands] = await Promise.all([
     store.find('categories', { orderBy: 'sortOrder', orderDir: 'asc' }),
-    store.find('brands', { where: { active: 1 }, orderBy: 'sortOrder', orderDir: 'asc' }).catch(async () => {
-      const all = await store.all('brands')
-      return all.filter((b) => b.active !== false).sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0))
-    })
+    store.find('brands', { orderBy: 'sortOrder', orderDir: 'asc' })
   ])
-  // In JSON mode `active` may be stored as boolean `true` or `1`
-  const allBrands = brands.length ? brands : (await store.all('brands')).filter((b) => b.active !== false)
+  const allBrands = allRawBrands
+    .filter((b) => b.active !== false && Number(b.active) !== 0)
+    .sort((a, b) => Number(a.sortOrder || 0) - Number(b.sortOrder || 0))
+
   return {
     installed: cfg.installed,
     site: cfg.site,

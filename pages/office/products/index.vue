@@ -54,11 +54,11 @@ async function syncOfficial() {
     await load()
     useToast().success(
       locale.value === 'th'
-        ? `ซิงค์สำเร็จ: รวมสินค้าของแท้ ${res.total} เรือน`
+        ? `ดึงข้อมูลสำเร็จ: สินค้าของแท้ครบ ${res.total} เรือน`
         : `Catalog synced: ${res.total} official timepieces active`
     )
-  } catch {
-    useToast().error(t('errors.generic'))
+  } catch (err: any) {
+    useToast().error(err?.data?.statusMessage || err?.data?.message || t('errors.generic'))
   } finally {
     syncing.value = false
   }
@@ -85,8 +85,8 @@ definePageMeta({ layout: 'office', middleware: 'office' })
             syncing
               ? t('common.loading')
               : locale === 'th'
-                ? '↻ ซิงค์แคตตาล็อกทางการ (Olympianus + Ogival)'
-                : '↻ Sync Official Catalog (Olympianus + Ogival)'
+                ? '↻ ดึงข้อมูลสินค้าทางการครบ 3 แบรนด์ (Olym Pianus · Olympia Star · Ogival)'
+                : '↻ Sync Official 3-Brand Catalog (Olym Pianus · Olympia Star · Ogival)'
           }}
         </button>
         <NuxtLink :to="localePath('/office/products/new')" class="btn btn--sm btn--gold">{{ t('admin.newProduct') }}</NuxtLink>

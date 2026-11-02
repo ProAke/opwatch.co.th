@@ -1,3 +1,5 @@
+import { ensureCatalogReady } from '../../utils/seed'
+
 const BRAND_ALIASES: Record<string, string> = {
   olympinus: 'olympianus',
   'olym-pianus': 'olympianus',
@@ -31,6 +33,7 @@ const CATEGORY_ALIASES: Record<string, string | string[]> = {
 export default defineEventHandler(async (event) => {
   const q = getQuery(event)
   const store = useStore()
+  await ensureCatalogReady(store)
 
   const where: Record<string, any> = { status: 'active' }
   let categoryIds: number[] | null = null

@@ -15,6 +15,8 @@ export class JsonStore implements Store {
   private data: Record<Entity, any[]>
   private maxId: Record<Entity, number>
   private readonly file: string
+  private batchDepth = 0
+  private dirty = false
 
   constructor(private baseDir: string) {
     this.file = resolve(baseDir, 'store.json')
@@ -48,12 +50,30 @@ export class JsonStore implements Store {
     return out
   }
 
-  private persist(): void {
+  private persist(force = false): void {
+    if (this.batchDepth > 0 && !force) {
+      this.dirty = true
+      return
+    }
     try {
       if (!existsSync(this.baseDir)) mkdirSync(this.baseDir, { recursive: true })
       writeFileSync(this.file, JSON.stringify(this.data, null, 2) + '\n', 'utf-8')
+      this.dirty = false
     } catch (err) {
       console.error('[opwatch] Failed to persist JSON store:', err)
+    }
+  }
+
+  /** Execute multiple mutations and flush to disk once at the end. */
+  async runInBatch<T>(fn: () => Promise<T>): Promise<T> {
+    this.batchDepth++
+    try {
+      return await fn()
+    } finally {
+      this.batchDepth = Math.max(0, this.batchDepth - 1)
+      if (this.batchDepth === 0 && this.dirty) {
+        this.persist(true)
+      }
     }
   }
 
