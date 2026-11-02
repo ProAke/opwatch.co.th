@@ -1,1249 +1,1141 @@
 <script setup lang="ts">
-const { t, locale } = useI18n()
+const { locale, t } = useI18n()
 const localePath = useLocalePath()
-const { site, brands } = useSite()
-const cart = useCart()
+const reqFetch = useRequestFetch()
 
-const [{ data: recData }, { data: allData }] = await Promise.all([
-  useFetch<{ items: Record<string, any>[]; total: number }>('/api/products', {
-    query: { featured: 'true', limit: 6 },
-    default: () => ({ items: [], total: 0 })
-  }),
-  useFetch<{ items: Record<string, any>[]; total: number }>('/api/products', {
-    query: { limit: 19 },
-    default: () => ({ items: [], total: 0 })
-  })
-])
-
-const allProducts = computed(() => allData.value?.items || [])
-const recommended = computed(() => {
-  const feat = recData.value?.items || []
-  return (feat.length >= 6 ? feat : allProducts.value).slice(0, 6)
+const { data: homeData } = await useAsyncData('op-home-data', async () => {
+  const [prodRes, brandRes] = await Promise.all([
+    reqFetch<{ items?: any[]; products?: any[] }>('/api/products?limit=24'),
+    reqFetch<{ items?: any[]; brands?: any[] }>('/api/brands')
+  ])
+  const allProducts = prodRes?.items || prodRes?.products || []
+  const allBrands = brandRes?.items || brandRes?.brands || []
+  return { allProducts, allBrands }
 })
 
-// 1. 100vw x 100vh Pure Photographic Hero Slider (6 slides matching olympianus.com)
+/* 1. Full-Viewport Hero Slides (exact olympianus.com Banner01 / Banner02 / Banner03) */
 const heroSlides = computed(() => [
   {
-    image: '/images/op/hero-gold-stones.jpg',
-    code: '130-07MK-GL-WHITE',
-    captionEn: 'Sovereign Gold · Sapphire Crystal',
-    captionTh: 'Sovereign Gold · กระจกแซฟไฟร์แท้',
-    to: localePath('/products/ol-m2001')
-  },
-  {
-    image: '/images/op/banner-899832ags.jpg',
+    image: '/images/op/hero-diver-dark.jpg',
     code: '899832AGS',
-    captionEn: 'Super Luminous Sports Mechanical 40mm',
-    captionTh: 'Super Luminous สปอร์ตออโตเมติก 40 มม.',
-    to: localePath('/products/ow-s3001')
+    subtitle: locale.value === 'th' ? 'Automatic Diver · กระจกแซฟไฟร์แท้' : 'Automatic Diver · Sapphire Crystal',
+    link: { path: localePath('/products'), query: { category: 'men-diver' } }
   },
   {
     image: '/images/op/hero-ceramic-dark.jpg',
-    code: '82671M-CERAMIC',
-    captionEn: 'Midnight High-Tech Ceramic & Diamond',
-    captionTh: 'Midnight High-Tech Ceramic ประดับเพชร',
-    to: localePath('/products/ol-l3001')
+    code: '899831G',
+    subtitle: locale.value === 'th' ? 'Sport Luxury Chronograph · ขอบสเกลทาคีมิเตอร์' : 'Sport Luxury Chronograph · Tachymeter Bezel',
+    link: { path: localePath('/products'), query: { category: 'men' } }
   },
   {
-    image: '/images/op/lifestyle-men.jpg',
-    code: 'MEN COLLECTION',
-    captionEn: ' Precision Tailored for Modern Gentlemen',
-    captionTh: 'เรือนเวลาสำหรับสุภาพบุรุษยุคใหม่',
-    to: localePath({ path: '/products', query: { category: 'men-watches' } })
-  },
-  {
-    image: '/images/op/lifestyle-lady.jpg',
-    code: 'LADIES COLLECTION',
-    captionEn: 'Timeless Grace & Mother-of-Pearl Radiance',
-    captionTh: 'ความสง่างามเหนือกาลเวลาสำหรับสุภาพสตรี',
-    to: localePath({ path: '/products', query: { category: 'women-watches' } })
-  },
-  {
-    image: '/images/op/lifestyle-sport.jpg',
-    code: 'SPORT COLLECTION',
-    captionEn: 'Engineered Endurance · 100M–300M',
-    captionTh: 'สมรรถนะสปอร์ตเต็มพิกัด กันน้ำลึก',
-    to: localePath({ path: '/products', query: { category: 'sport-watches' } })
+    image: '/images/op/hero-gold-stones.jpg',
+    code: '99141-71AGSK',
+    subtitle: locale.value === 'th' ? 'Open-Heart Automatic · ตัวเรือนทูโทนพรีเมียม' : 'Open-Heart Automatic · Two-Tone Gold & Steel',
+    link: { path: localePath('/products'), query: { brand: 'olympinus' } }
   }
 ])
 
-const heroIdx = ref(0)
-let heroTimer: any = null
+const activeHero = ref(0)
+let heroTimer: ReturnType<typeof setInterval> | null = null
 
-function setHero(i: number) {
-  heroIdx.value = (i + heroSlides.value.length) % heroSlides.value.length
+function nextHero() {
+  activeHero.value = (activeHero.value + 1) % heroSlides.value.length
 }
-function startHero() {
-  stopHero()
-  heroTimer = setInterval(() => setHero(heroIdx.value + 1), 5800)
-}
-function stopHero() {
-  if (heroTimer) clearInterval(heroTimer)
+function prevHero() {
+  activeHero.value = (activeHero.value - 1 + heroSlides.value.length) % heroSlides.value.length
 }
 
-function scrollToRecommend() {
-  if (import.meta.client) {
-    document.getElementById('recommend')?.scrollIntoView({ behavior: 'smooth' })
-  }
+/* 2. RECOMMEND — 6 Studio Cutout Timepieces (3x2 grid) */
+const recommendedProducts = computed(() => {
+  const list = homeData.value?.allProducts || []
+  const featured = list.filter((p: any) => p.featured)
+  return (featured.length >= 6 ? featured : list).slice(0, 6)
+})
+
+/* 3. Full-Bleed 1000x1500 Portrait Carousel (exact 8 OP studio vertical frames) */
+const portraitFrames = [
+  { img: '/images/op/portrait-8934msk.jpg', model: '8934MSK', query: { category: 'men-dress' } },
+  { img: '/images/op/portrait-82671m.jpg', model: '82671M', query: { category: 'men' } },
+  { img: '/images/op/portrait-99141agnsk.jpg', model: '99141AGNSK', query: { brand: 'olympinus' } },
+  { img: '/images/op/portrait-8909amk.jpg', model: '8909AMK', query: { category: 'men' } },
+  { img: '/images/op/portrait-diver.jpg', model: '899832AGS', query: { category: 'men-diver' } },
+  { img: '/images/op/openheart-stones.jpg', model: '990-163AMSK', query: { brand: 'olympinus' } },
+  { img: '/images/op/square-diver-glow.jpg', model: '899831G', query: { category: 'men-diver' } },
+  { img: '/images/op/square-gold-stones.jpg', model: '899833G1B', query: { sort: 'featured' } }
+]
+const portraitOffset = ref(0)
+function slidePortraits(dir: number) {
+  const maxStart = portraitFrames.length - 5
+  portraitOffset.value = Math.max(0, Math.min(maxStart, portraitOffset.value + dir))
 }
 
-// 3. Full-Bleed 100vw Vertical Portrait Strip (1000x1500 exact olympianus.com format)
-const portraitFrames = computed(() => [
-  {
-    img: '/images/op/portrait-diver.jpg',
-    sku: '899832AGS',
-    title: 'Super Luminous Diver',
-    to: localePath('/products/ow-s3001')
-  },
-  {
-    img: '/images/op/portrait-8934msk.jpg',
-    sku: '8934MSK',
-    title: 'Two-Tone Open-Heart',
-    to: localePath('/products/ow-m1001')
-  },
-  {
-    img: '/images/op/portrait-82671m.jpg',
-    sku: '82671M',
-    title: 'Midnight Ceramic Diamond',
-    to: localePath('/products/ol-l3001')
-  },
-  {
-    img: '/images/op/portrait-8909amk.jpg',
-    sku: '8909AMK',
-    title: 'Executive Automatic',
-    to: localePath('/products/ow-m1002')
-  },
-  {
-    img: '/images/op/portrait-99141agnsk.jpg',
-    sku: '99141AGNSK',
-    title: 'Heritage Open-Heart',
-    to: localePath('/products/ow-c4001')
-  },
-  {
-    img: '/images/op/hero-gold-stones.jpg',
-    sku: '130-07MK',
-    title: 'Sovereign Gold Slim',
-    to: localePath('/products/ol-m2001')
-  }
-])
-
-const stripTrack = ref<HTMLElement | null>(null)
-function scrollStrip(dir: number) {
-  if (!stripTrack.value) return
-  const w = stripTrack.value.clientWidth * 0.5
-  stripTrack.value.scrollBy({ left: dir * w, behavior: 'smooth' })
-}
-
-// 4. Full-Width 899832AGS Luminous Video / Interactive Showcase Modal
-const filmOpen = ref(false)
-const lumeMode = ref(true)
-const diverProduct = computed(() => allProducts.value.find((p) => p.slug === 'ow-s3001') || allProducts.value[0])
-
-function quickAddDiver() {
-  const p = diverProduct.value
-  if (!p) return
-  cart.add({
-    productId: Number(p.id),
-    slug: p.slug,
-    name: p.name,
-    nameEn: p.nameEn || p.name,
-    nameTh: p.nameTh || p.name,
-    price: Number(p.price || 0),
-    image: Array.isArray(p.images) && p.images[0] ? p.images[0] : '/images/op/watch-899831-green.png',
-    maxStock: Number(p.stock || 10),
-    sku: p.sku
-  })
-  filmOpen.value = false
-}
-
-// 5. Full-Width 1920x1280 Lifestyle Slider (Men / Lady / Sport / Obsidian / Ceramic)
-const lifeSlides = computed(() => [
+/* 5. Full-Bleed 1920x1280 Lifestyle Slider (Men / Lady / Sport) */
+const lifestyleSlides = computed(() => [
   {
     img: '/images/op/lifestyle-men.jpg',
-    tag: 'MEN WATCH',
-    titleEn: 'Commanding Presence on Every Occasion',
-    titleTh: 'ความภูมิฐานเหนือระดับในทุกโอกาสสำคัญ',
-    to: localePath({ path: '/products', query: { category: 'men-watches' } })
+    tag: 'MEN COLLECTION',
+    title: locale.value === 'th' ? 'เรือนเวลาสุภาพบุรุษเหนือระดับ' : 'Refined Masculine Presence',
+    to: { path: localePath('/products'), query: { category: 'men' } }
   },
   {
     img: '/images/op/lifestyle-lady.jpg',
-    tag: 'LADIES WATCH',
-    titleEn: 'Poetic Proportions & Refined Radiance',
-    titleTh: 'สัดส่วนอันอ่อนช้อยเปล่งประกายบนข้อมือ',
-    to: localePath({ path: '/products', query: { category: 'women-watches' } })
+    tag: 'LADIES COLLECTION',
+    title: locale.value === 'th' ? 'ความสง่างามเหนือกาลเวลาสำหรับสุภาพสตรี' : 'Graceful Brilliance on Every Wrist',
+    to: { path: localePath('/products'), query: { category: 'women' } }
   },
   {
     img: '/images/op/lifestyle-sport.jpg',
-    tag: 'SPORT WATCH',
-    titleEn: 'Built for Motion, Depth & Precision',
-    titleTh: 'พร้อมลุยทุกจังหวะชีวิตด้วยความเที่ยงตรงสูงสุด',
-    to: localePath({ path: '/products', query: { category: 'sport-watches' } })
-  },
-  {
-    img: '/images/op/hero-gold-stones.jpg',
-    tag: 'CLASSIC WATCH',
-    titleEn: 'Pure Dress Minimalism in Mirror Gold',
-    titleTh: 'ความเรียบหรูเหนือกาลเวลาในเรือนทองขัดเงา',
-    to: localePath({ path: '/products', query: { category: 'classic-watches' } })
-  },
-  {
-    img: '/images/op/hero-ceramic-dark.jpg',
-    tag: 'SPECIAL OCCASION',
-    titleEn: 'Obsidian Ceramic & Brilliant-Cut Brilliance',
-    titleTh: 'เซรามิกสีดำขลับผสานประกายคริสตัลเจียระไน',
-    to: localePath({ path: '/products', query: { brand: 'ogival' } })
+    tag: 'SPORT & DIVER',
+    title: locale.value === 'th' ? 'สมรรถนะสปอร์ตผสานจิตวิญญาณโอลิมปิก' : 'Engineered for Dynamic Precision',
+    to: { path: localePath('/products'), query: { category: 'men-diver' } }
   }
 ])
-const lifeIdx = ref(0)
-function setLife(i: number) {
-  lifeIdx.value = (i + lifeSlides.value.length) % lifeSlides.value.length
+const activeLife = ref(0)
+function nextLife() {
+  activeLife.value = (activeLife.value + 1) % lifestyleSlides.value.length
+}
+function prevLife() {
+  activeLife.value = (activeLife.value - 1 + lifestyleSlides.value.length) % lifestyleSlides.value.length
 }
 
-// 6. Exact 6 COLLECTIONS Interactive Preview Showcase
-const activeCollectionIdx = ref(0)
-const collections = computed(() => [
+/* 6. COLLECTIONS Interactive 6-Category Showcase (exact olympianus.com #ebebf1 + .IconTable) */
+const collectionEntries = computed(() => [
   {
-    num: '01',
+    key: 'men',
     en: 'Men Watch',
-    th: 'นาฬิกาผู้ชาย · Men Watch',
-    subEn: 'Automatic Open-Heart & Executive Dress',
-    subTh: 'เรือนเวลาออโตเมติกและเดรสสำหรับสุภาพบุรุษ',
-    cutout: '/images/op/watch-990-083-blue.png',
-    bg: '/images/op/lifestyle-men.jpg',
-    to: localePath({ path: '/products', query: { category: 'men-watches' } })
+    th: 'นาฬิกาผู้ชาย',
+    roman: 'I',
+    preview: '/images/op/watch-990-083-blue.png',
+    model: '990-083 · Royal Sapphire Dial',
+    query: { category: 'men' }
   },
   {
-    num: '02',
+    key: 'ladies',
     en: 'Ladies Watch',
-    th: 'นาฬิกาผู้หญิง · Ladies Watch',
-    subEn: 'Slim Sapphire, Mother-of-Pearl & Crystal',
-    subTh: 'ตัวเรือนบางเฉียบ หน้าปัดมุกและคริสตัลหรู',
-    cutout: '/images/op/watch-990-45-lady.png',
-    bg: '/images/op/lifestyle-lady.jpg',
-    to: localePath({ path: '/products', query: { category: 'women-watches' } })
+    th: 'นาฬิกาผู้หญิง',
+    roman: 'II',
+    preview: '/images/op/watch-990-45-lady.png',
+    model: '990-45LS · Diamond Mother-of-Pearl',
+    query: { category: 'women' }
   },
   {
-    num: '03',
+    key: 'sport',
     en: 'Sport Watch',
-    th: 'นาฬิกาสปอร์ต · Sport Watch',
-    subEn: 'Super Luminous Divers & Chronographs',
-    subTh: 'สปอร์ตไดเวอร์พรายน้ำสว่างสูงและโครโนกราฟ',
-    cutout: '/images/op/watch-899831-green.png',
-    bg: '/images/op/lifestyle-sport.jpg',
-    to: localePath({ path: '/products', query: { category: 'sport-watches' } })
+    th: 'นาฬิกาสปอร์ต',
+    roman: 'III',
+    preview: '/images/op/watch-899831-green.png',
+    model: '899831 · Emerald Sport Bezel',
+    query: { category: 'men-diver' }
   },
   {
-    num: '04',
+    key: 'classic',
     en: 'Classic Watch',
-    th: 'นาฬิกาคลาสสิก · Classic Watch',
-    subEn: 'Heritage Dress & Roman Dial Signatures',
-    subTh: 'คลาสสิกเหนือกาลเวลาในดีไซน์ร่วมสมัย',
-    cutout: '/images/op/watch-990-083-white.png',
-    bg: '/images/op/portrait-99141agnsk.jpg',
-    to: localePath({ path: '/products', query: { category: 'classic-watches' } })
+    th: 'นาฬิกาคลาสสิก',
+    roman: 'IV',
+    preview: '/images/op/watch-130-06-white.png',
+    model: '130-06 · Slim Roman Dress',
+    query: { category: 'men-dress' }
   },
   {
-    num: '05',
+    key: 'essential',
     en: 'Essential Selection',
-    th: 'Essential Selection',
-    subEn: 'Everyday Japanese Movement Icons',
-    subTh: 'เรือนเวลาคู่ใจสวมใส่ได้ทุกวันด้วยกลไกญี่ปุ่น',
-    cutout: '/images/op/watch-990-163-black.png',
-    bg: '/images/op/portrait-8909amk.jpg',
-    to: localePath({ path: '/products', query: { brand: 'opwatch' } })
+    th: 'รุ่นยอดนิยมประจำบูติก',
+    roman: 'V',
+    preview: '/images/op/watch-990-163-black.png',
+    model: '990-163 · Open-Heart Mechanical',
+    query: { sort: 'featured' }
   },
   {
-    num: '06',
+    key: 'special',
     en: 'Special Occasion',
-    th: 'Special Occasion',
-    subEn: 'Swiss Haute Horlogerie & Diamond Editions',
-    subTh: 'เรือนเวลาสวิสประดับเพชรสำหรับช่วงเวลาพิเศษ',
-    cutout: '/images/op/watch-82672-lady.png',
-    bg: '/images/op/hero-ceramic-dark.jpg',
-    to: localePath({ path: '/products', query: { brand: 'ogival' } })
+    th: 'เรือนเวลาโอกาสพิเศษ & ลิมิเต็ด',
+    roman: 'VI',
+    preview: '/images/op/watch-899833-black.png',
+    model: '899833 · Prestige Edition',
+    query: { category: 'limited' }
+  }
+])
+const hoveredCollection = ref(0)
+
+/* Three Horological Houses under Opwatch Boutique */
+const brandCards = computed(() => [
+  {
+    slug: 'opwatch',
+    name: 'Opwatch',
+    origin: locale.value === 'th' ? 'Japanese Precision Movement' : 'Japanese Precision Movement',
+    desc: locale.value === 'th'
+      ? 'ความเที่ยงตรงระดับกลไกญี่ปุ่น กระจกแซฟไฟร์กันรอย ดีไซน์ร่วมสมัยสำหรับทุกวัน'
+      : 'Reliable Japanese automatic & quartz calibers paired with scratch-resistant sapphire crystal.'
+  },
+  {
+    slug: 'olympinus',
+    name: 'Olym Pianus',
+    origin: locale.value === 'th' ? 'Olympic Spirit · Swiss Heritage' : 'Olympic Spirit · Swiss Heritage',
+    desc: locale.value === 'th'
+      ? 'แรงบันดาลใจจากจิตวิญญาณแห่งโอลิมปิก ผสานศาสตร์การประดิษฐ์เรือนเวลาสวิสอันประณีต'
+      : 'Inspired by the ultimate glory of the Olympic spirit, fusing Swiss watchmaking tradition and elegance.'
+  },
+  {
+    slug: 'ogival',
+    name: 'Ogival',
+    origin: locale.value === 'th' ? 'La Chaux-de-Fonds · Since 1903' : 'La Chaux-de-Fonds · Since 1903',
+    desc: locale.value === 'th'
+      ? 'เรือนเวลาสวิสระดับสูง สัญลักษณ์ปลาโดดมงคล โดดเด่นด้วยงานแกะสลักและเพชรแท้'
+      : 'Prestigious Swiss haute horlogerie emblem of blessing, skeleton artistry, and diamond-set mastery.'
   }
 ])
 
-onMounted(() => startHero())
-onUnmounted(() => stopHero())
+function scrollToRecommend() {
+  if (import.meta.client) {
+    document.getElementById('op-recommend')?.scrollIntoView({ behavior: 'smooth' })
+  }
+}
 
-useHead(() => ({
-  title: `Olym Pianus · ${site.value.name || 'Opwatch'} — Official Watch Boutique`
-}))
+onMounted(() => {
+  heroTimer = setInterval(nextHero, 6500)
+})
+onBeforeUnmount(() => {
+  if (heroTimer) clearInterval(heroTimer)
+})
 </script>
 
 <template>
-  <div class="ophome">
-    <!-- ===================================================================
-         1. FULL-VIEWPORT 100vw × 100vh EDGE-TO-EDGE HERO SLIDER
-            Pure dark studio watch photography + arrows + 1..6 + scroll cue
-         =================================================================== -->
-    <section class="ophero" @mouseenter="stopHero" @mouseleave="startHero">
-      <div class="ophero__slides">
-        <div
-          v-for="(s, i) in heroSlides"
-          :key="i"
-          class="ophero__slide"
-          :class="{ 'is-active': i === heroIdx }"
-        >
-          <img :src="s.image" :alt="s.code" :loading="i === 0 ? 'eager' : 'lazy'" />
-          <div class="ophero__vignette" />
-        </div>
+  <div class="op-home">
+    <!-- =====================================================================
+         SECTION 1: FULL-VIEWPORT HERO SLIDER (Exact olympianus.com Slider)
+         ===================================================================== -->
+    <section class="op-hero" aria-label="Featured Watch">
+      <div
+        v-for="(slide, idx) in heroSlides"
+        :key="slide.image"
+        class="op-hero__slide"
+        :class="{ 'is-active': idx === activeHero }"
+      >
+        <img :src="slide.image" :alt="slide.code" class="op-hero__img" />
+        <div class="op-hero__vignette" />
       </div>
 
-      <!-- Prev / Next Minimal Edge Arrows -->
-      <button type="button" class="ophero__arrow ophero__arrow--prev" :aria-label="t('common.prev')" @click="setHero(heroIdx - 1)">
-        ‹
+      <!-- Exact olympianus.com 60x60 Circular Outline Arrows (#fff -> bg #fff / #1d2088) -->
+      <button type="button" class="op-hero__arrow op-hero__arrow--prev" aria-label="Previous slide" @click="prevHero">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">
+          <path d="m15 19-7-7 7-7" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
       </button>
-      <button type="button" class="ophero__arrow ophero__arrow--next" :aria-label="t('common.next')" @click="setHero(heroIdx + 1)">
-        ›
+      <button type="button" class="op-hero__arrow op-hero__arrow--next" aria-label="Next slide" @click="nextHero">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">
+          <path d="m9 5 7 7-7 7" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
       </button>
 
-      <!-- Bottom Bar: Dots (left), Animated "scroll" Cue (center), Subtle Model Shop Link (right) -->
-      <div class="ophero__bottom">
-        <div class="ophero__dots" role="tablist">
-          <button
-            v-for="(_, i) in heroSlides"
-            :key="i"
-            type="button"
-            class="ophero__dot"
-            :class="{ 'is-active': i === heroIdx }"
-            :aria-label="`Slide ${i + 1}`"
-            @click="setHero(i)"
-          >
-            0{{ i + 1 }}
-          </button>
-        </div>
-
-        <button type="button" class="op-scroll-cue ophero__scroll" @click="scrollToRecommend">
+      <!-- Bottom Bar: Scroll Cue + Wide 70x4 Bar Dots + Luxury Model Preview -->
+      <div class="container op-hero__bottom">
+        <button type="button" class="op-scroll-cue" @click="scrollToRecommend">
           <span>scroll</span>
           <span class="op-scroll-cue__line" />
         </button>
 
-        <NuxtLink :to="heroSlides[heroIdx].to" class="ophero__model">
-          <span class="ophero__code">{{ heroSlides[heroIdx].code }}</span>
-          <span class="ophero__cap">{{ locale === 'en' ? heroSlides[heroIdx].captionEn : heroSlides[heroIdx].captionTh }}</span>
-          <span class="ophero__cta">{{ t('common.shopNow') }} →</span>
-        </NuxtLink>
-      </div>
-    </section>
-
-    <!-- ===================================================================
-         2. RECOMMEND — Pure White Studio Cutout 3×2 Grid + [Collections]
-         =================================================================== -->
-    <section id="recommend" class="oprec">
-      <div class="container">
-        <div class="op-sec-head">
-          <h2 class="op-sec-title">RECOMMEND</h2>
-          <p class="op-sec-sub">{{ t('home.featuredSubtitle') }}</p>
-        </div>
-
-        <div class="oprec__grid">
-          <ProductCard
-            v-for="(p, idx) in recommended"
-            :key="p.id"
-            :product="p"
-            :priority="idx < 3"
+        <div class="op-hero__dots" role="tablist">
+          <button
+            v-for="(s, idx) in heroSlides"
+            :key="s.code"
+            type="button"
+            class="op-hero__dot"
+            :class="{ 'is-active': idx === activeHero }"
+            :aria-label="`Slide ${idx + 1}`"
+            @click="activeHero = idx"
           />
         </div>
 
-        <div class="oprec__foot">
-          <NuxtLink :to="localePath('/products')" class="btn btn--ghost">
-            {{ locale === 'en' ? 'Collections' : t('nav.collections') }}
-          </NuxtLink>
-        </div>
-      </div>
-    </section>
-
-    <!-- ===================================================================
-         3. FULL-BLEED 100vw EDGE-TO-EDGE PORTRAIT STRIP CAROUSEL (1000×1500)
-         =================================================================== -->
-    <section class="opstrip" aria-label="Editorial Watch Gallery">
-      <button type="button" class="opstrip__nav opstrip__nav--prev" :aria-label="t('common.prev')" @click="scrollStrip(-1)">
-        ‹
-      </button>
-
-      <div ref="stripTrack" class="opstrip__track">
-        <NuxtLink
-          v-for="(item, idx) in portraitFrames"
-          :key="idx"
-          :to="item.to"
-          class="opstrip__panel"
-        >
-          <img :src="item.img" :alt="item.sku" loading="lazy" />
-          <div class="opstrip__overlay">
-            <span class="opstrip__sku">{{ item.sku }}</span>
-            <span class="opstrip__name">{{ item.title }}</span>
-          </div>
+        <NuxtLink :to="heroSlides[activeHero].link" class="op-hero__caption">
+          <span class="op-hero__code">{{ heroSlides[activeHero].code }}</span>
+          <span class="op-hero__sub">{{ heroSlides[activeHero].subtitle }}</span>
+          <span class="op-hero__shop">{{ locale === 'th' ? 'ชมเรือนเวลา →' : 'Discover Timepiece →' }}</span>
         </NuxtLink>
       </div>
-
-      <button type="button" class="opstrip__nav opstrip__nav--next" :aria-label="t('common.next')" @click="scrollStrip(1)">
-        ›
-      </button>
     </section>
 
-    <!-- ===================================================================
-         4. FULL-WIDTH 16:9 LUMINOUS DIVER CINEMATIC SHOWCASE (899832AGS)
-         =================================================================== -->
-    <section class="opvideo">
-      <div class="opvideo__bg" :class="{ 'is-lume': lumeMode }">
-        <img src="/images/op/hero-diver-dark.jpg" alt="Olym Pianus 899832AGS Super Luminous" loading="lazy" />
+    <!-- =====================================================================
+         SECTION 2: RECOMMEND — 3x2 Studio Cutout Grid on #f8f8f8 (main_color)
+         ===================================================================== -->
+    <section id="op-recommend" class="section op-recommend">
+      <div class="container">
+        <div class="op-sec-head">
+          <h2 class="op-sec-title">RECOMMEND</h2>
+          <p class="op-sec-sub">
+            {{
+              locale === 'th'
+                ? 'คัดสรรเรือนเวลายอดนิยมจากบูติก Olym Pianus, Opwatch และ Ogival พร้อมสั่งซื้อออนไลน์ทันที'
+                : 'Curated signature timepieces crafted with sapphire crystal and enduring horological artistry.'
+            }}
+          </p>
+        </div>
+
+        <div class="op-recommend__grid">
+          <ProductCard
+            v-for="item in recommendedProducts"
+            :key="item.id || item.slug"
+            :product="item"
+          />
+        </div>
+
+        <div class="center op-recommend__cta">
+          <NuxtLink :to="localePath('/products')" class="btn btn--ghost">
+            Collections
+          </NuxtLink>
+        </div>
       </div>
-      <div class="opvideo__scrim" />
+    </section>
 
-      <div class="container opvideo__content">
-        <p class="eyebrow">899832AGS · SUPER LUMINOUS 40MM</p>
-        <h2 class="opvideo__title">
-          Olym Pianus · {{ locale === 'en' ? 'Super Luminous Sports Mechanical Watch' : 'นาฬิกาสปอร์ตกลไกออโตเมติก พรายน้ำสว่างพิเศษ' }}
-        </h2>
-        <p class="opvideo__desc">{{ t('home.filmBody') }}</p>
+    <!-- =====================================================================
+         SECTION 3: FULL-BLEED 1000x1500 PORTRAIT STRIP CAROUSEL
+         ===================================================================== -->
+    <section class="op-portraits" aria-label="Timepiece Gallery">
+      <button
+        type="button"
+        class="op-portraits__nav op-portraits__nav--prev"
+        :disabled="portraitOffset === 0"
+        aria-label="Previous watches"
+        @click="slidePortraits(-1)"
+      >
+        ‹
+      </button>
 
-        <div class="opvideo__actions">
-          <button type="button" class="opvideo__play" @click="filmOpen = true">
-            <span class="opvideo__playring">▶</span>
-            <span>{{ locale === 'en' ? 'WATCH SHOWCASE' : 'ชมภาพยนตร์เรือนเวลา' }}</span>
-          </button>
-
-          <NuxtLink :to="localePath('/products/ow-s3001')" class="btn btn--outline-gold btn--sm">
-            {{ t('common.shopNow') }} · 899832AGS
+      <div class="op-portraits__viewport">
+        <div
+          class="op-portraits__track"
+          :style="{ transform: `translateX(-${portraitOffset * 20}%)` }"
+        >
+          <NuxtLink
+            v-for="frame in portraitFrames"
+            :key="frame.img"
+            :to="{ path: localePath('/products'), query: frame.query }"
+            class="op-portraits__item"
+          >
+            <img :src="frame.img" :alt="frame.model" loading="lazy" />
+            <div class="op-portraits__caption">
+              <span>{{ frame.model }}</span>
+            </div>
           </NuxtLink>
         </div>
       </div>
 
-      <!-- Interactive Widescreen Showcase Modal -->
-      <div v-if="filmOpen" class="opmodal" @click.self="filmOpen = false">
-        <div class="opmodal__box">
-          <button type="button" class="opmodal__close" aria-label="Close" @click="filmOpen = false">✕</button>
-          <div class="opmodal__stage" :class="{ 'is-lume': lumeMode }">
-            <img
-              :src="lumeMode ? '/images/op/square-diver-glow.jpg' : '/images/op/banner-899832ags.jpg'"
-              alt="899832AGS Showcase"
-            />
-            <div class="opmodal__controls">
-              <button type="button" class="btn btn--sm btn--ghost-light" @click="lumeMode = !lumeMode">
-                {{ lumeMode ? '☀ Studio Light View' : '◐ Super-LumiNova Night Glow' }}
-              </button>
-              <button type="button" class="btn btn--sm btn--gold" @click="quickAddDiver">
-                + {{ t('common.addToCart') }}
-              </button>
-            </div>
-          </div>
+      <button
+        type="button"
+        class="op-portraits__nav op-portraits__nav--next"
+        :disabled="portraitOffset >= portraitFrames.length - 5"
+        aria-label="Next watches"
+        @click="slidePortraits(1)"
+      >
+        ›
+      </button>
+    </section>
+
+    <!-- =====================================================================
+         SECTION 4: FULL-WIDTH LUMINOUS FEATURE BANNER (899832AGS)
+         ===================================================================== -->
+    <section class="op-feature-banner">
+      <img src="/images/op/banner-899832ags.jpg" alt="Olym Pianus Luminous Bezel 899832AGS" class="op-feature-banner__img" loading="lazy" />
+      <div class="op-feature-banner__overlay">
+        <div class="container op-feature-banner__content">
+          <p class="op-feature-banner__eyebrow">LUMINOUS PRECISION · SAPPHIRE CRYSTAL</p>
+          <h2>
+            {{
+              locale === 'th'
+                ? 'เปล่งประกายชัดเจนในทุกมิติแห่งเวลา'
+                : 'Crafted to Radiate Through Every Hour'
+            }}
+          </h2>
+          <p>
+            {{
+              locale === 'th'
+                ? 'พรายน้ำสว่างคมชัด ขอบเซรามิกหมุนได้ทิศทางเดียว และกระจกแซฟไฟร์แท้ป้องกันรอยขีดข่วน'
+                : 'High-luminosity markers, unidirectional diver bezel, and scratch-resistant sapphire crystal.'
+            }}
+          </p>
+          <NuxtLink :to="{ path: localePath('/products'), query: { category: 'men-diver' } }" class="btn btn--ghost-light">
+            {{ locale === 'th' ? 'สำรวจคอลเลกชันสปอร์ต' : 'Explore Sport Watches' }}
+          </NuxtLink>
         </div>
       </div>
     </section>
 
-    <!-- ===================================================================
-         5. FULL-WIDTH 1920×1280 LIFESTYLE SLIDER (Men / Lady / Sport)
-         =================================================================== -->
-    <section class="oplife">
-      <div class="oplife__slides">
-        <div
-          v-for="(ls, idx) in lifeSlides"
-          :key="idx"
-          class="oplife__slide"
-          :class="{ 'is-active': idx === lifeIdx }"
-        >
-          <img :src="ls.img" :alt="ls.tag" loading="lazy" />
-          <div class="oplife__grad" />
-          <div class="container oplife__caption">
-            <span class="eyebrow">{{ ls.tag }}</span>
-            <h3 class="oplife__heading">{{ locale === 'en' ? ls.titleEn : ls.titleTh }}</h3>
-            <NuxtLink :to="ls.to" class="btn btn--ghost-light btn--sm">
-              {{ locale === 'en' ? 'Explore Collection' : 'ชมคอลเลกชัน' }} →
-            </NuxtLink>
-          </div>
+    <!-- =====================================================================
+         SECTION 5: FULL-BLEED 1920x1280 LIFESTYLE SLIDER (Men / Lady / Sport)
+         ===================================================================== -->
+    <section class="op-lifestyle">
+      <div
+        v-for="(slide, idx) in lifestyleSlides"
+        :key="slide.img"
+        class="op-lifestyle__slide"
+        :class="{ 'is-active': idx === activeLife }"
+      >
+        <img :src="slide.img" :alt="slide.tag" loading="lazy" />
+        <div class="op-lifestyle__scrim" />
+        <div class="container op-lifestyle__cap">
+          <span class="op-lifestyle__tag">{{ slide.tag }}</span>
+          <h3>{{ slide.title }}</h3>
+          <NuxtLink :to="slide.to" class="btn btn--ghost-light btn--sm">
+            {{ locale === 'th' ? 'ดูคอลเลกชัน' : 'View Collection' }}
+          </NuxtLink>
         </div>
       </div>
 
-      <button type="button" class="oplife__arrow oplife__arrow--prev" :aria-label="t('common.prev')" @click="setLife(lifeIdx - 1)">
-        ‹
-      </button>
-      <button type="button" class="oplife__arrow oplife__arrow--next" :aria-label="t('common.next')" @click="setLife(lifeIdx + 1)">
-        ›
-      </button>
+      <button type="button" class="op-lifestyle__arrow op-lifestyle__arrow--prev" aria-label="Previous" @click="prevLife">‹</button>
+      <button type="button" class="op-lifestyle__arrow op-lifestyle__arrow--next" aria-label="Next" @click="nextLife">›</button>
 
-      <div class="oplife__dots">
+      <div class="op-lifestyle__dots">
         <button
-          v-for="(_, idx) in lifeSlides"
-          :key="idx"
+          v-for="(s, idx) in lifestyleSlides"
+          :key="s.tag"
           type="button"
-          class="oplife__dot"
-          :class="{ 'is-active': idx === lifeIdx }"
-          :aria-label="`Lifestyle slide ${idx + 1}`"
-          @click="setLife(idx)"
+          :class="{ 'is-active': idx === activeLife }"
+          :aria-label="s.tag"
+          @click="activeLife = idx"
         />
       </div>
     </section>
 
-    <!-- ===================================================================
-         6. COLLECTIONS — Dark Architectural 6-Collection Interactive Showcase
-         =================================================================== -->
-    <section class="opcolls">
+    <!-- =====================================================================
+         SECTION 6: COLLECTIONS — Exact olympianus.com #ebebf1 + .IconTable
+         ===================================================================== -->
+    <section class="section op-collections">
       <div class="container">
-        <div class="op-sec-head opcolls__head">
+        <div class="op-sec-head">
           <h2 class="op-sec-title">COLLECTIONS</h2>
-          <p class="op-sec-sub" style="color: rgba(255,255,255,0.66)">
-            {{ t('home.collectionsSubtitle') }}
-          </p>
-        </div>
-
-        <div class="opcolls__layout">
-          <!-- Left Live Studio Preview Stage -->
-          <NuxtLink :to="collections[activeCollectionIdx].to" class="opcolls__preview">
-            <img
-              :key="collections[activeCollectionIdx].bg"
-              class="opcolls__bg"
-              :src="collections[activeCollectionIdx].bg"
-              :alt="collections[activeCollectionIdx].en"
-            />
-            <div class="opcolls__FloatingWatch">
-              <img
-                :key="collections[activeCollectionIdx].cutout"
-                :src="collections[activeCollectionIdx].cutout"
-                :alt="collections[activeCollectionIdx].en"
-              />
-            </div>
-          </NuxtLink>
-
-          <!-- Right 6 Exact olympianus.com Collection Rows -->
-          <div class="opcolls__list">
-            <NuxtLink
-              v-for="(c, idx) in collections"
-              :key="c.num"
-              :to="c.to"
-              class="opcolls__row"
-              :class="{ 'is-active': idx === activeCollectionIdx }"
-              @mouseenter="activeCollectionIdx = idx"
-            >
-              <span class="opcolls__num">{{ c.num }}</span>
-              <div class="opcolls__text">
-                <h3 class="opcolls__name">{{ locale === 'en' ? c.en : c.th }}</h3>
-                <p class="opcolls__sub">{{ locale === 'en' ? c.subEn : c.subTh }}</p>
-              </div>
-              <span class="opcolls__go">→</span>
-            </NuxtLink>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ===================================================================
-         7. ASYMMETRIC OLYM PIANUS STORY + FULL-BLEED AD POSTER (MORE)
-         =================================================================== -->
-    <section class="opstory">
-      <div class="opstory__text">
-        <div class="opstory__inner">
-          <OpCrest size="md" sublabel="HERITAGE & SPIRIT" />
-          <p class="opstory__quote">
+          <p class="op-sec-sub">
             {{
-              locale === 'en'
-                ? 'Inspired by the ultimate glory of the Olympic spirit — "Faster, Higher, Stronger" — Olym Pianus and Opwatch unite precision watchmaking craftsmanship with contemporary form.'
-                : 'แรงบันดาลใจจากเกียรติยศสูงสุดแห่งจิตวิญญาณโอลิมปิก ภายใต้คำขวัญ “Faster, Higher, Stronger” ถ่ายทอดสู่เรือนเวลาที่ผสานความเที่ยงตรงระดับสากล กระจกแซฟไฟร์แท้ และความงามร่วมสมัยอย่างสมบูรณ์แบบ'
+              locale === 'th'
+                ? 'แรงบันดาลใจจากเกียรติยศสูงสุดแห่งจิตวิญญาณโอลิมปิก ผสานศิลปะแห่งเรือนเวลาเข้ากับดีไซน์ร่วมสมัยอย่างลงตัว'
+                : 'Inspired by the ultimate glory of the Olympic spirit, fusing exquisite craftsmanship and contemporary watchmaking.'
             }}
           </p>
-          <span class="opstory__slash">/</span>
-          <div>
-            <NuxtLink :to="localePath('/about')" class="btn btn--ghost-light btn--sm">
-              MORE
+        </div>
+
+        <div class="op-collections__split">
+          <!-- Left: Pure #ffffff Studio Watch Pedestal -->
+          <div class="op-collections__stage">
+            <img
+              :src="collectionEntries[hoveredCollection].preview"
+              :alt="collectionEntries[hoveredCollection].en"
+              class="op-collections__watch"
+            />
+            <p class="op-collections__model">{{ collectionEntries[hoveredCollection].model }}</p>
+          </div>
+
+          <!-- Right: Exact olympianus.com .IconTable 6-Category Menu -->
+          <div class="op-collections__list">
+            <NuxtLink
+              v-for="(entry, idx) in collectionEntries"
+              :key="entry.key"
+              :to="{ path: localePath('/products'), query: entry.query }"
+              class="op-collections__row"
+              :class="{ 'is-active': idx === hoveredCollection }"
+              @mouseenter="hoveredCollection = idx"
+            >
+              <div class="op-collections__left">
+                <span class="op-collections__medallion">{{ entry.roman }}</span>
+                <div>
+                  <span class="op-collections__en">{{ entry.en }}</span>
+                  <span v-if="locale === 'th'" class="op-collections__th">{{ entry.th }}</span>
+                </div>
+              </div>
+              <span class="op-collections__arrow">→</span>
             </NuxtLink>
           </div>
         </div>
       </div>
+    </section>
 
-      <div class="opstory__poster">
-        <img src="/images/op/portrait-8934msk.jpg" alt="Olym Pianus Masterpiece" loading="lazy" />
+    <!-- =====================================================================
+         SECTION 7: ASYMMETRIC BRAND STORY SPLIT (#f8f8f8 + 899833G1B_AD)
+         ===================================================================== -->
+    <section class="op-story">
+      <div class="op-story__text">
+        <div class="op-story__inner">
+          <OpCrest size="md" theme="light" sublabel="HERITAGE & CRAFTSMANSHIP" />
+
+          <h2 class="op-story__heading">
+            {{
+              locale === 'th'
+                ? 'จิตวิญญาณแห่งความเที่ยงตรง สู่เรือนเวลาคู่ข้อมือ'
+                : 'The Spirit of Glory Upon Every Wrist'
+            }}
+          </h2>
+
+          <p class="op-story__quote">
+            {{
+              locale === 'th'
+                ? 'ถือกำเนิดจากเกียรติยศแห่งจิตวิญญาณโอลิมปิก ผสานงานฝีมืออันประณีตเข้ากับนวัตกรรมเรือนเวลาร่วมสมัย เพื่อส่งมอบคุณค่าเหนือกาลเวลาในทุกวินาที'
+                : 'Inspired by the ultimate glory of the Olympic spirit, fusing exquisite craftsmanship and contemporary watchmaking into every timepiece.'
+            }}
+          </p>
+
+          <span class="op-story__slash">/</span>
+
+          <NuxtLink :to="localePath('/about')" class="btn btn--line">
+            MORE
+          </NuxtLink>
+        </div>
+      </div>
+
+      <div class="op-story__poster">
+        <img src="/images/op/portrait-99141agnsk.jpg" alt="Olym Pianus Advertisement" loading="lazy" />
       </div>
     </section>
 
-    <!-- ===================================================================
-         8. THREE WATCH HOUSES BOUTIQUE BAR (Opwatch · Olympinus · Ogival)
-         =================================================================== -->
-    <section v-if="brands.length" class="ophouses">
-      <div class="container ophouses__grid">
-        <NuxtLink
-          v-for="b in brands"
-          :key="b.slug"
-          :to="localePath('/brands/' + b.slug)"
-          class="ophouse"
-        >
-          <span class="ophouse__move">{{ locale === 'en' ? b.movementEn : b.movement }}</span>
-          <h3 class="ophouse__name">{{ locale === 'en' ? b.nameEn || b.name : b.nameTh || b.name }}</h3>
-          <p class="ophouse__tag">{{ locale === 'en' ? b.taglineEn || b.tagline : b.tagline }}</p>
-          <span class="ophouse__cta">{{ t('common.shopNow') }} →</span>
-        </NuxtLink>
+    <!-- =====================================================================
+         SECTION 8: THREE HOROLOGICAL HOUSES (.TextIconBox on #f8f8f8)
+         ===================================================================== -->
+    <section class="section op-houses">
+      <div class="container">
+        <div class="op-sec-head">
+          <h2 class="op-sec-title">{{ locale === 'th' ? 'OUR WATCH HOUSES' : 'OUR WATCH HOUSES' }}</h2>
+          <p class="op-sec-sub">
+            {{
+              locale === 'th'
+                ? 'ศูนย์รวมเรือนเวลาของแท้จาก 3 แบรนด์ชั้นนำ พร้อมใบรับประกันศูนย์ไทยและบริการหลังการขายครบวงจร'
+                : 'Official Thailand boutique uniting three distinguished watchmaking houses under one roof.'
+            }}
+          </p>
+        </div>
+
+        <div class="op-houses__grid">
+          <NuxtLink
+            v-for="b in brandCards"
+            :key="b.slug"
+            :to="localePath(`/brands/${b.slug}`)"
+            class="op-houses__card"
+          >
+            <span class="op-houses__origin">{{ b.origin }}</span>
+            <h3>{{ b.name }}</h3>
+            <p>{{ b.desc }}</p>
+            <span class="op-houses__cta">
+              {{ locale === 'th' ? 'สำรวจคอลเลกชัน →' : 'Explore House →' }}
+            </span>
+          </NuxtLink>
+        </div>
       </div>
     </section>
   </div>
 </template>
 
 <style scoped>
-/* 1. 100vw x 100vh Pure Edge-to-Edge Hero Slider */
-.ophero {
+/* 1. HERO SLIDER */
+.op-hero {
   position: relative;
   width: 100%;
   height: 100vh;
-  min-height: 620px;
-  max-height: 1080px;
-  background: #050505;
+  min-height: 640px;
+  max-height: 1020px;
+  background: var(--ink);
   overflow: hidden;
 }
-.ophero__slides,
-.ophero__slide {
+.op-hero__slide {
   position: absolute;
   inset: 0;
-}
-.ophero__slide {
   opacity: 0;
-  transition: opacity 1.1s var(--ease);
-  pointer-events: none;
+  transition: opacity 1.1s ease, transform 6.5s ease-out;
+  transform: scale(1.03);
 }
-.ophero__slide.is-active {
+.op-hero__slide.is-active {
   opacity: 1;
-  pointer-events: auto;
+  transform: scale(1);
+  z-index: 1;
 }
-.ophero__slide img {
+.op-hero__img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transform: scale(1.04);
-  transition: transform 6.5s ease-out;
+  object-position: center;
 }
-.ophero__slide.is-active img {
-  transform: scale(1);
-}
-.ophero__vignette {
+.op-hero__vignette {
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at center, rgba(0, 0, 0, 0.04) 30%, rgba(0, 0, 0, 0.56) 100%),
-    linear-gradient(180deg, rgba(0, 0, 0, 0.36) 0%, transparent 26%, transparent 72%, rgba(0, 0, 0, 0.78) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(20, 22, 52, 0.44) 0%,
+    rgba(20, 22, 52, 0.06) 44%,
+    rgba(20, 22, 52, 0.62) 100%
+  );
 }
 
-.ophero__arrow {
+/* Exact olympianus.com enfold_child.css 60x60px circular slider arrows */
+.op-hero__arrow {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  z-index: 5;
-  width: 52px;
-  height: 52px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  background: rgba(0, 0, 0, 0.28);
-  color: rgba(255, 255, 255, 0.85);
-  font-size: 28px;
-  line-height: 1;
+  z-index: 4;
+  width: 60px;
+  height: 60px;
+  border-radius: 60px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  color: #ffffff;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.25s, border-color 0.25s, color 0.25s;
+  transition: background 0.3s var(--ease), color 0.3s var(--ease), border-color 0.3s var(--ease);
 }
-.ophero__arrow:hover {
-  background: rgba(197, 164, 109, 0.9);
-  border-color: var(--gold);
-  color: #080808;
+.op-hero__arrow:hover {
+  background: #ffffff;
+  border-color: #ffffff;
+  color: var(--sapphire);
 }
-.ophero__arrow--prev { left: 28px; }
-.ophero__arrow--next { right: 28px; }
+.op-hero__arrow--prev { left: 28px; }
+.op-hero__arrow--next { right: 28px; }
 
-.ophero__bottom {
+.op-hero__bottom {
   position: absolute;
-  left: 36px;
-  right: 36px;
-  bottom: 26px;
-  z-index: 6;
+  left: 0;
+  right: 0;
+  bottom: 30px;
+  z-index: 4;
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: end;
   gap: 20px;
 }
-.ophero__dots {
+.op-hero__bottom .op-scroll-cue {
+  justify-self: start;
+}
+
+/* Exact olympianus.com wide horizontal bar dots (70px x 4px) */
+.op-hero__dots {
   display: flex;
-  align-items: center;
-  gap: 14px;
+  gap: 12px;
+  padding-bottom: 14px;
 }
-.ophero__dot {
+.op-hero__dot {
+  width: 64px;
+  height: 4px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.85);
   background: transparent;
-  border: 0;
-  padding: 4px 0;
-  font-family: var(--font-geo);
-  font-size: 11px;
-  letter-spacing: 0.16em;
-  color: rgba(255, 255, 255, 0.42);
-  border-bottom: 1px solid transparent;
-  transition: color 0.25s, border-color 0.25s;
+  transition: background 0.3s;
 }
-.ophero__dot.is-active {
-  color: #ffffff;
-  border-bottom-color: var(--gold);
+.op-hero__dot.is-active {
+  background: #ffffff;
 }
-.ophero__scroll {
-  justify-self: center;
-}
-.ophero__model {
+
+.op-hero__caption {
   justify-self: end;
   text-align: right;
+  color: #ffffff;
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  color: #ffffff;
-  padding: 10px 16px;
-  background: rgba(8, 8, 8, 0.55);
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  transition: border-color 0.25s;
+  gap: 4px;
+  padding: 16px 22px;
+  background: rgba(25, 26, 53, 0.52);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  transition: border-color 0.25s, background 0.25s;
 }
-.ophero__model:hover {
-  border-color: var(--gold);
+.op-hero__caption:hover {
+  background: rgba(29, 32, 136, 0.78);
+  border-color: rgba(255, 255, 255, 0.65);
 }
-.ophero__code {
-  font-family: var(--font-geo);
-  font-size: 11px;
+.op-hero__code {
+  font-family: var(--font-roman);
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+}
+.op-hero__sub {
+  font-family: var(--font-display);
+  font-size: 15.5px;
+  color: rgba(255, 255, 255, 0.88);
+}
+.op-hero__shop {
+  font-family: var(--font-roman);
+  font-size: 10px;
   font-weight: 600;
-  letter-spacing: 0.24em;
-  color: var(--gold);
-}
-.ophero__cap {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.78);
-}
-.ophero__cta {
-  font-family: var(--font-geo);
-  font-size: 9.5px;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: #ffffff;
+  color: var(--champagne-soft);
+  margin-top: 3px;
 }
 
-/* 2. RECOMMEND White Studio Cutout Grid */
-.oprec {
-  background: #ffffff;
-  padding-block: 104px 96px;
+/* 2. RECOMMEND (olympianus.com #f8f8f8 main_color) */
+.op-recommend {
+  background: var(--ivory);
 }
-.oprec__grid {
+.op-recommend__grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 48px 36px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 28px;
 }
-.oprec__foot {
-  margin-top: 64px;
-  text-align: center;
+.op-recommend__cta {
+  margin-top: 52px;
 }
 
-/* 3. Full-Bleed 100vw Edge-to-Edge Portrait Strip */
-.opstrip {
+/* 3. PORTRAIT STRIP CAROUSEL (1000x1500) */
+.op-portraits {
   position: relative;
   width: 100%;
-  background: #080808;
+  overflow: hidden;
+  background: var(--paper);
+}
+.op-portraits__viewport {
+  width: 100%;
   overflow: hidden;
 }
-.opstrip__track {
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: calc(100% / 5);
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  scrollbar-width: none;
+.op-portraits__track {
+  display: flex;
+  transition: transform 0.65s var(--ease);
 }
-.opstrip__track::-webkit-scrollbar { display: none; }
-
-.opstrip__panel {
-  position: relative;
+.op-portraits__item {
+  flex: 0 0 20%;
   aspect-ratio: 2 / 3;
+  position: relative;
   overflow: hidden;
-  scroll-snap-align: start;
-  border-right: 1px solid rgba(255, 255, 255, 0.08);
 }
-.opstrip__panel img {
+.op-portraits__item img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.85s var(--ease);
+  transition: transform 0.8s var(--ease);
 }
-.opstrip__panel:hover img {
+.op-portraits__item:hover img {
   transform: scale(1.06);
 }
-.opstrip__overlay {
+.op-portraits__caption {
   position: absolute;
   inset: auto 0 0 0;
-  padding: 28px 18px 20px;
-  background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.84) 100%);
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  opacity: 0.88;
-  transition: opacity 0.3s;
-}
-.opstrip__panel:hover .opstrip__overlay { opacity: 1; }
-.opstrip__sku {
-  font-family: var(--font-geo);
+  padding: 20px 14px 16px;
+  background: linear-gradient(transparent, rgba(25, 26, 53, 0.84));
+  color: #ffffff;
+  text-align: center;
+  font-family: var(--font-roman);
   font-size: 11px;
   letter-spacing: 0.22em;
-  color: var(--gold);
+  opacity: 0;
+  transition: opacity 0.3s;
 }
-.opstrip__name {
-  font-size: 13px;
-  color: #ffffff;
-  font-weight: 300;
+.op-portraits__item:hover .op-portraits__caption {
+  opacity: 1;
 }
 
-.opstrip__nav {
+/* Exact olympianus.com .TabSection 60x60px circular Royal Sapphire arrows */
+.op-portraits__nav {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
   z-index: 4;
-  width: 44px;
-  height: 44px;
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  background: rgba(8, 8, 8, 0.72);
-  color: #ffffff;
-  font-size: 24px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-.opstrip__nav:hover {
-  background: var(--gold);
-  border-color: var(--gold);
-  color: #080808;
-}
-.opstrip__nav--prev { left: 16px; }
-.opstrip__nav--next { right: 16px; }
-
-/* 4. Full-Width Luminous Diver Video Showcase */
-.opvideo {
-  position: relative;
-  min-height: 620px;
-  display: flex;
-  align-items: center;
-  background: #040608;
-  color: #ffffff;
-  overflow: hidden;
-}
-.opvideo__bg {
-  position: absolute;
-  inset: 0;
-}
-.opvideo__bg img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  filter: contrast(1.06);
-}
-.opvideo__scrim {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(90deg, rgba(4, 6, 8, 0.88) 0%, rgba(4, 6, 8, 0.52) 52%, rgba(4, 6, 8, 0.22) 100%);
-}
-.opvideo__content {
-  position: relative;
-  z-index: 2;
-  max-width: 680px;
-  margin-inline: 0;
-  padding-left: max(32px, calc((100vw - var(--container)) / 2 + 32px));
-  padding-block: 80px;
-}
-.opvideo__title {
-  font-family: var(--font-geo);
-  font-size: clamp(1.7rem, 3.2vw, 2.5rem);
-  font-weight: 300;
-  letter-spacing: 0.1em;
-  margin: 14px 0 18px;
-  line-height: 1.3;
-}
-.opvideo__desc {
-  color: rgba(255, 255, 255, 0.74);
-  font-weight: 300;
-  line-height: 1.85;
-  margin-bottom: 32px;
-}
-.opvideo__actions {
-  display: flex;
-  align-items: center;
-  gap: 22px;
-  flex-wrap: wrap;
-}
-.opvideo__play {
-  display: inline-flex;
-  align-items: center;
-  gap: 14px;
-  background: transparent;
-  border: 0;
-  color: #ffffff;
-  font-family: var(--font-geo);
-  font-size: 11px;
-  letter-spacing: 0.24em;
-  padding: 0;
-}
-.opvideo__playring {
   width: 56px;
   height: 56px;
-  border-radius: 50%;
-  border: 1px solid var(--gold);
-  color: var(--gold);
+  border-radius: 56px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid var(--sapphire);
+  color: var(--sapphire);
+  font-size: 26px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 15px;
-  transition: background 0.25s, color 0.25s, transform 0.25s;
+  box-shadow: var(--shadow);
+  transition: background 0.25s, color 0.25s;
 }
-.opvideo__play:hover .opvideo__playring {
-  background: var(--gold);
-  color: #080808;
-  transform: scale(1.06);
-}
-
-/* Showcase Modal */
-.opmodal {
-  position: fixed;
-  inset: 0;
-  z-index: 120;
-  background: rgba(0, 0, 0, 0.88);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-}
-.opmodal__box {
-  position: relative;
-  max-width: 920px;
-  width: 100%;
-  background: #080808;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-}
-.opmodal__close {
-  position: absolute;
-  top: 14px;
-  right: 14px;
-  z-index: 3;
-  width: 38px;
-  height: 38px;
-  background: rgba(0, 0, 0, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.25);
+.op-portraits__nav:hover:not(:disabled) {
+  background: var(--sapphire);
   color: #ffffff;
 }
-.opmodal__stage {
-  position: relative;
-  aspect-ratio: 16 / 10;
-  background: #000000;
+.op-portraits__nav:disabled {
+  opacity: 0.28;
+  cursor: default;
 }
-.opmodal__stage img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-.opmodal__controls {
-  position: absolute;
-  left: 20px;
-  right: 20px;
-  bottom: 20px;
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-}
+.op-portraits__nav--prev { left: 20px; }
+.op-portraits__nav--next { right: 20px; }
 
-/* 5. Full-Width 1920x1280 Lifestyle Slider */
-.oplife {
+/* 4. FEATURE LUMINOUS BANNER */
+.op-feature-banner {
   position: relative;
-  height: 74vh;
-  min-height: 480px;
-  max-height: 780px;
-  background: #0c0c0c;
+  width: 100%;
+  min-height: 540px;
+  max-height: 760px;
   overflow: hidden;
+  display: flex;
+  align-items: center;
+  background: var(--ink);
 }
-.oplife__slides,
-.oplife__slide {
+.op-feature-banner__img {
   position: absolute;
   inset: 0;
-}
-.oplife__slide {
-  opacity: 0;
-  transition: opacity 0.9s var(--ease);
-  pointer-events: none;
-}
-.oplife__slide.is-active {
-  opacity: 1;
-  pointer-events: auto;
-}
-.oplife__slide img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
-.oplife__grad {
+.op-feature-banner__overlay {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  padding-block: 96px;
+  background: linear-gradient(90deg, rgba(19, 21, 56, 0.84) 0%, rgba(19, 21, 56, 0.44) 55%, rgba(19, 21, 56, 0.14) 100%);
+}
+.op-feature-banner__content {
+  max-width: 580px;
+  margin-left: max(32px, calc((100vw - var(--container)) / 2 + 32px));
+  margin-right: auto;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 18px;
+}
+.op-feature-banner__eyebrow {
+  font-family: var(--font-roman);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  color: var(--champagne-soft);
+}
+.op-feature-banner__content h2 {
+  color: #ffffff;
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 3.6vw, 3rem);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  line-height: 1.24;
+}
+.op-feature-banner__content p {
+  font-family: var(--font-display);
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 18px;
+  line-height: 1.75;
+}
+
+/* 5. LIFESTYLE SLIDER */
+.op-lifestyle {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  min-height: 460px;
+  max-height: 800px;
+  background: var(--ink);
+  overflow: hidden;
+}
+.op-lifestyle__slide {
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, transparent 35%, rgba(0, 0, 0, 0.78) 100%);
+  opacity: 0;
+  transition: opacity 0.9s ease;
+  display: flex;
+  align-items: flex-end;
 }
-.oplife__caption {
+.op-lifestyle__slide.is-active {
+  opacity: 1;
+  z-index: 1;
+}
+.op-lifestyle__slide img {
   position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 52px;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.op-lifestyle__scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(20, 22, 52, 0.08) 40%, rgba(20, 22, 52, 0.76) 100%);
+}
+.op-lifestyle__cap {
+  position: relative;
   z-index: 2;
+  padding-bottom: 58px;
   color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
 }
-.oplife__heading {
-  font-family: var(--font-geo);
-  font-size: clamp(1.5rem, 2.8vw, 2.2rem);
-  font-weight: 300;
-  letter-spacing: 0.1em;
-  margin: 10px 0 20px;
+.op-lifestyle__tag {
+  font-family: var(--font-roman);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.28em;
+  color: var(--champagne-soft);
 }
-.oplife__arrow {
+.op-lifestyle__cap h3 {
+  color: #ffffff;
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 3vw, 2.55rem);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}
+.op-lifestyle__arrow {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  z-index: 4;
-  width: 46px;
-  height: 46px;
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  background: rgba(0, 0, 0, 0.35);
+  z-index: 3;
+  width: 56px;
+  height: 56px;
+  border-radius: 56px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.8);
   color: #ffffff;
-  font-size: 24px;
+  font-size: 26px;
+  transition: background 0.25s, color 0.25s;
 }
-.oplife__arrow:hover {
-  background: var(--gold);
-  border-color: var(--gold);
-  color: #080808;
+.op-lifestyle__arrow:hover {
+  background: #ffffff;
+  color: var(--sapphire);
 }
-.oplife__arrow--prev { left: 24px; }
-.oplife__arrow--next { right: 24px; }
-
-.oplife__dots {
+.op-lifestyle__arrow--prev { left: 24px; }
+.op-lifestyle__arrow--next { right: 24px; }
+.op-lifestyle__dots {
   position: absolute;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 4;
+  bottom: 24px;
+  right: 34px;
+  z-index: 3;
   display: flex;
   gap: 10px;
 }
-.oplife__dot {
-  width: 28px;
-  height: 2px;
-  border: 0;
-  background: rgba(255, 255, 255, 0.3);
+.op-lifestyle__dots button {
+  width: 48px;
+  height: 4px;
   padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  background: transparent;
 }
-.oplife__dot.is-active {
-  background: var(--gold);
-}
+.op-lifestyle__dots button.is-active { background: #ffffff; }
 
-/* 6. COLLECTIONS Interactive Dark Showcase */
-.opcolls {
-  background: #0c0c0c;
-  color: #ffffff;
-  padding-block: 104px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+/* 6. COLLECTIONS — Exact olympianus.com #ebebf1 alternate_color + .IconTable */
+.op-collections {
+  background: var(--sand);
 }
-.opcolls__layout {
+.op-collections__split {
   display: grid;
-  grid-template-columns: 1fr 1.15fr;
+  grid-template-columns: 0.95fr 1.05fr;
   gap: 56px;
   align-items: center;
 }
-.opcolls__preview {
-  position: relative;
-  aspect-ratio: 4 / 4.6;
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: #050505;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.opcolls__bg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  opacity: 0.36;
-  transition: transform 0.8s var(--ease);
-}
-.opcolls__preview:hover .opcolls__bg {
-  transform: scale(1.05);
-}
-.opcolls__FloatingWatch {
-  position: relative;
-  z-index: 2;
-  width: 66%;
-  height: 66%;
-  background: rgba(255, 255, 255, 0.96);
-  padding: 22px;
-  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.55);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.opcolls__FloatingWatch img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-.opcolls__list {
+.op-collections__stage {
+  background: #ffffff;
+  border: 1px solid var(--line-strong);
+  padding: 40px 28px 30px;
   display: flex;
   flex-direction: column;
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  align-items: center;
+  justify-content: center;
+  min-height: 460px;
+  box-shadow: var(--shadow-sm);
 }
-.opcolls__row {
-  display: grid;
-  grid-template-columns: 44px 1fr auto;
+.op-collections__watch {
+  max-height: 360px;
+  width: auto;
+  object-fit: contain;
+  transition: transform 0.55s var(--ease);
+}
+.op-collections__stage:hover .op-collections__watch {
+  transform: scale(1.04);
+}
+.op-collections__model {
+  margin-top: 20px;
+  font-family: var(--font-roman);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--sapphire);
+}
+.op-collections__list {
+  display: flex;
+  flex-direction: column;
+  background: var(--ivory);
+  border: 1px solid var(--line-strong);
+  padding: 12px 28px;
+}
+.op-collections__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 8px;
+  border-bottom: 1px solid var(--line-strong);
+  transition: padding-left 0.3s var(--ease), color 0.25s;
+}
+.op-collections__row:last-child {
+  border-bottom: 0;
+}
+.op-collections__row:hover,
+.op-collections__row.is-active {
+  padding-left: 16px;
+}
+.op-collections__left {
+  display: flex;
   align-items: center;
   gap: 18px;
-  padding: 20px 14px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-  transition: background 0.25s, padding-left 0.25s var(--ease);
 }
-.opcolls__row:hover,
-.opcolls__row.is-active {
-  background: rgba(255, 255, 255, 0.04);
-  padding-left: 24px;
-}
-.opcolls__num {
-  font-family: var(--font-geo);
+.op-collections__medallion {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid var(--line-strong);
+  background: #ffffff;
+  color: var(--sapphire);
+  font-family: var(--font-roman);
   font-size: 11px;
-  letter-spacing: 0.2em;
-  color: var(--gold);
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.3s, color 0.3s, border-color 0.3s;
 }
-.opcolls__name {
-  font-family: var(--font-geo);
-  font-size: 17px;
-  font-weight: 400;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+.op-collections__row:hover .op-collections__medallion,
+.op-collections__row.is-active .op-collections__medallion {
+  background: var(--sapphire);
+  border-color: var(--sapphire);
   color: #ffffff;
 }
-.opcolls__sub {
-  font-size: 12.5px;
-  color: rgba(255, 255, 255, 0.52);
-  margin-top: 3px;
+.op-collections__en {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: var(--ink);
+  transition: color 0.25s;
 }
-.opcolls__go {
-  color: var(--gold);
+.op-collections__row:hover .op-collections__en,
+.op-collections__row.is-active .op-collections__en {
+  color: var(--sapphire);
+}
+.op-collections__th {
+  display: block;
+  font-size: 12.5px;
+  color: var(--ink-muted);
+  margin-top: 1px;
+}
+.op-collections__arrow {
   font-size: 18px;
+  color: var(--ink-faint);
+  transition: transform 0.25s, color 0.25s;
+}
+.op-collections__row:hover .op-collections__arrow,
+.op-collections__row.is-active .op-collections__arrow {
+  color: var(--sapphire);
+  transform: translateX(5px);
 }
 
-/* 7. Asymmetric Olym Pianus Brand Story + Full-Bleed Poster Split */
-.opstory {
+/* 7. ASYMMETRIC BRAND STORY SPLIT (#f8f8f8 Pearl + Poster) */
+.op-story {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  background: #131313;
-  color: #ffffff;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--ivory);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
 }
-.opstory__text {
+.op-story__text {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 88px 48px;
+  padding: 88px 52px;
 }
-.opstory__inner {
-  max-width: 480px;
+.op-story__inner {
+  max-width: 490px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  align-items: center;
+  text-align: center;
+  gap: 22px;
 }
-.opstory__quote {
-  font-size: 15px;
-  font-weight: 300;
-  line-height: 1.95;
-  color: rgba(255, 255, 255, 0.78);
+.op-story__heading {
+  font-family: var(--font-display);
+  font-size: clamp(1.65rem, 2.5vw, 2.2rem);
+  font-weight: 500;
+  color: var(--ink);
+  letter-spacing: 0.05em;
 }
-.opstory__slash {
-  font-family: var(--font-geo);
-  font-size: 26px;
-  font-weight: 200;
-  color: var(--gold);
+.op-story__quote {
+  font-family: var(--font-display);
+  font-size: 18.5px;
+  font-weight: 400;
+  line-height: 1.85;
+  color: var(--ink-soft);
 }
-.opstory__poster {
+.op-story__slash {
+  font-family: var(--font-display);
+  font-size: 22px;
+  color: var(--sapphire);
+}
+.op-story__poster {
   min-height: 540px;
-  max-height: 680px;
   overflow: hidden;
 }
-.opstory__poster img {
+.op-story__poster img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-/* 8. Three Watch Houses Bar */
-.ophouses {
-  background: #0d0d0d;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  padding-block: 64px;
+/* 8. THREE HOROLOGICAL HOUSES (olympianus.com .TextIconBox style) */
+.op-houses {
+  background: var(--paper);
 }
-.ophouses__grid {
+.op-houses__grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 28px;
 }
-.ophouse {
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: #121212;
-  padding: 32px 28px;
+.op-houses__card {
+  background: var(--ivory);
+  border: 1px solid var(--sand);
+  border-bottom: 2px solid var(--sapphire);
+  padding: 42px 32px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  transition: border-color 0.25s, transform 0.25s var(--ease);
+  align-items: center;
+  text-align: center;
+  gap: 14px;
+  transition: transform 0.35s var(--ease), box-shadow 0.35s var(--ease), background 0.3s;
 }
-.ophouse:hover {
-  border-color: var(--gold);
-  transform: translateY(-3px);
+.op-houses__card:hover {
+  background: #ffffff;
+  transform: translateY(-4px);
+  box-shadow: var(--shadow);
 }
-.ophouse__move {
-  font-family: var(--font-geo);
+.op-houses__origin {
+  font-family: var(--font-roman);
   font-size: 10px;
-  letter-spacing: 0.26em;
+  font-weight: 600;
+  letter-spacing: 0.24em;
   text-transform: uppercase;
-  color: var(--gold);
+  color: var(--sapphire);
 }
-.ophouse__name {
-  font-family: var(--font-geo);
-  font-size: 20px;
+.op-houses__card h3 {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  color: var(--ink);
+}
+.op-houses__card p {
+  font-size: 14.5px;
+  color: var(--ink-soft);
+  line-height: 1.75;
+  flex: 1;
+}
+.op-houses__cta {
+  margin-top: 8px;
+  font-family: var(--font-roman);
+  font-size: 10.5px;
+  font-weight: 600;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: #ffffff;
-}
-.ophouse__tag {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.58);
-  margin-bottom: 8px;
-}
-.ophouse__cta {
-  margin-top: auto;
-  font-family: var(--font-geo);
-  font-size: 10.5px;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: #ffffff;
+  color: var(--sapphire);
 }
 
-@media (max-width: 1080px) {
-  .opstrip__track { grid-auto-columns: calc(100% / 3); }
-  .opcolls__layout { grid-template-columns: 1fr; }
-  .opcolls__preview { max-width: 480px; margin-inline: auto; width: 100%; }
+@media (max-width: 1024px) {
+  .op-recommend__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .op-portraits__item { flex: 0 0 33.333%; }
+  .op-collections__split { grid-template-columns: 1fr; }
+  .op-story { grid-template-columns: 1fr; }
+  .op-houses__grid { grid-template-columns: 1fr; }
 }
-@media (max-width: 900px) {
-  .oprec__grid { grid-template-columns: repeat(2, 1fr); gap: 32px 20px; }
-  .opstory { grid-template-columns: 1fr; }
-  .opstory__poster { min-height: 400px; }
-  .ophouses__grid { grid-template-columns: 1fr; }
-  .ophero__bottom {
-    left: 20px;
-    right: 20px;
-    grid-template-columns: 1fr auto;
-  }
-  .ophero__scroll { display: none; }
-}
-@media (max-width: 580px) {
-  .oprec__grid { grid-template-columns: 1fr; }
-  .opstrip__track { grid-auto-columns: 78%; }
-  .ophero__arrow { width: 38px; height: 38px; font-size: 22px; }
-  .ophero__arrow--prev { left: 10px; }
-  .ophero__arrow--next { right: 10px; }
-  .ophero__bottom { grid-template-columns: 1fr; gap: 12px; }
-  .ophero__model { justify-self: start; text-align: left; }
+@media (max-width: 640px) {
+  .op-recommend__grid { grid-template-columns: 1fr; }
+  .op-portraits__item { flex: 0 0 50%; }
+  .op-hero__bottom { grid-template-columns: 1fr; justify-items: center; }
+  .op-hero__caption { justify-self: center; text-align: center; }
+  .op-hero__arrow { width: 44px; height: 44px; }
+  .op-hero__arrow--prev { left: 10px; }
+  .op-hero__arrow--next { right: 10px; }
 }
 </style>

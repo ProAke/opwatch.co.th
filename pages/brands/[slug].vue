@@ -1,107 +1,70 @@
 <script setup lang="ts">
-const route = useRoute()
-const { t, locale } = useI18n()
+const { locale } = useI18n()
 const localePath = useLocalePath()
-const { site } = useSite()
+const route = useRoute()
+const reqFetch = useRequestFetch()
 
-const slug = computed(() => String(route.params.slug))
+const slug = computed(() => String(route.params.slug || ''))
 
-const { data, error } = await useFetch<{
-  brand: Record<string, any>
-  products: Record<string, any>[]
-  subcategories: Record<string, any>[]
-  campaigns: Record<string, any>[]
-}>(() => `/api/brands/${slug.value}`, { key: 'brand-' + slug.value })
-
-const brand = computed(() => data.value?.brand)
-const products = computed(() =>
-  (data.value?.products || []).map((p) => ({
-    ...p,
-    brand: brand.value
-  }))
+const { data: res } = await useAsyncData(
+  () => `op-brand-${slug.value}`,
+  async () => {
+    const [brandData, prodData] = await Promise.all([
+      reqFetch<any>(`/api/brands/${slug.value}`).catch(() => null),
+      reqFetch<{ items?: any[]; products?: any[] }>(`/api/products?brand=${slug.value}&limit=48`)
+    ])
+    return {
+      brand: brandData?.brand || brandData,
+      products: prodData?.items || prodData?.products || []
+    }
+  },
+  { watch: [slug] }
 )
-const subcategories = computed(() => data.value?.subcategories || [])
 
-if (error.value || !brand.value) {
-  setResponseStatus(404)
-}
-
-const activeCatId = ref<number | null>(null)
-const filteredProducts = computed(() => {
-  if (!activeCatId.value) return products.value
-  return products.value.filter((p) => Number(p.categoryId) === activeCatId.value)
+const heroBanner = computed(() => {
+  if (slug.value === 'ogival') return '/images/op/hero-gold-stones.jpg'
+  if (slug.value === 'opwatch') return '/images/op/hero-diver-dark.jpg'
+  return '/images/op/hero-ceramic-dark.jpg'
 })
 
-const brandName = computed(() => {
-  const b = brand.value
+const brandTitle = computed(() => {
+  const b = res.value?.brand
+  if (!b) return slug.value.toUpperCase()
+  return locale.value === 'en' && b.nameEn ? b.nameEn : b.nameTh || b.nameEn || b.name
+})
+
+const brandStory = computed(() => {
+  const b = res.value?.brand
   if (!b) return ''
-  return locale.value === 'en' ? b.nameEn || b.name : b.nameTh || b.name
+  return locale.value === 'en' && (b.storyEn || b.descriptionEn)
+    ? b.storyEn || b.descriptionEn
+    : b.story || b.descriptionTh || b.storyEn || b.descriptionEn || ''
 })
-
-useHead(() => ({
-  title: brandName.value ? `${brandName.value} — ${site.value.name}` : site.value.name
-}))
 </script>
 
 <template>
-  <div v-if="error || !brand">
-    <section class="section">
-      <div class="container center">
-        <p class="eyebrow" style="justify-content: center">404</p>
-        <h1 class="page-title" style="margin: 16px 0 14px">{{ t('errors.notFound') }}</h1>
-        <NuxtLink :to="localePath('/products')" class="btn">{{ t('products.backToCollections') }}</NuxtLink>
-      </div>
-    </section>
-  </div>
-
-  <div v-else>
-    <!-- Brand Hero Banner -->
-    <section class="bhero">
-      <div class="bhero__bg">
-        <img :src="brand.heroImage || '/images/hero-watch.jpg'" :alt="brandName" />
-      </div>
-      <div class="container bhero__inner">
-        <p class="eyebrow" style="color: var(--gold-soft)">
-          {{ locale === 'en' ? brand.countryEn || brand.country : brand.country }} · {{ locale === 'en' ? brand.movementEn || brand.movement : brand.movement }}
-        </p>
-        <h1 class="bhero__title">{{ brandName }}</h1>
-        <p class="bhero__tagline serif">{{ locale === 'en' ? brand.taglineEn || brand.tagline : brand.tagline }}</p>
-        <p class="bhero__story">{{ locale === 'en' ? brand.storyEn || brand.story : brand.story }}</p>
+  <div class="op-brand">
+    <section class="op-brand__hero">
+      <img :src="heroBanner" :alt="brandTitle" class="op-brand__img" />
+      <div class="op-brand__scrim" />
+      <div class="container op-brand__body">
+        <OpCrest size="sm" stacked theme="dark" :sublabel="res?.brand?.origin || 'OFFICIAL HOUSE'" />
+        <h1 class="page-title">{{ brandTitle }}</h1>
+        <p v-if="brandStory">{{ brandStory }}</p>
       </div>
     </section>
 
-    <!-- Brand Products -->
-    <section class="section">
+    <section class="section section--pearl">
       <div class="container">
-        <div v-if="subcategories.length" class="cats">
-          <button
-            type="button"
-            class="cats__btn"
-            :class="{ 'is-active': activeCatId === null }"
-            @click="activeCatId = null"
-          >
-            {{ t('common.all') }} ({{ products.length }})
-          </button>
-          <button
-            v-for="sc in subcategories"
-            :key="sc.id"
-            type="button"
-            class="cats__btn"
-            :class="{ 'is-active': activeCatId === Number(sc.id) }"
-            @click="activeCatId = Number(sc.id)"
-          >
-            {{ locale === 'en' ? sc.nameEn || sc.name : sc.nameTh || sc.name }}
-          </button>
-        </div>
-
-        <div class="grid-3">
-          <ProductCard v-for="p in filteredProducts" :key="p.id" :product="p" />
-        </div>
-
-        <div class="center" style="margin-top: 52px">
+        <div class="between wrap gap-12" style="margin-bottom: 36px">
+          <p class="tiny muted">{{ res?.products?.length || 0 }} TIMEPIECES</p>
           <NuxtLink :to="localePath('/products')" class="link-underline">
-            ← {{ t('products.backToCollections') }}
+            {{ locale === 'th' ? 'ดูครบทั้ง 3 แบรนด์' : 'All Boutique Collections' }}
           </NuxtLink>
+        </div>
+
+        <div v-if="res?.products?.length" class="op-brand__grid">
+          <ProductCard v-for="p in res.products" :key="p.id || p.slug" :product="p" />
         </div>
       </div>
     </section>
@@ -109,48 +72,57 @@ useHead(() => ({
 </template>
 
 <style scoped>
-.bhero {
+.op-brand__hero {
   position: relative;
-  min-height: 480px;
+  min-height: 54vh;
   display: flex;
   align-items: center;
-  background: #080808;
+  justify-content: center;
+  text-align: center;
+  background: var(--ink);
   color: #ffffff;
+  padding-top: var(--header-h);
   overflow: hidden;
 }
-.bhero__bg { position: absolute; inset: 0; }
-.bhero__bg img { width: 100%; height: 100%; object-fit: cover; opacity: 0.46; }
-.bhero__bg::after {
-  content: '';
+.op-brand__img {
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, rgba(8, 8, 8, 0.92) 0%, rgba(8, 8, 8, 0.58) 60%, rgba(8, 8, 8, 0.3) 100%);
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.48;
 }
-.bhero__inner { position: relative; z-index: 2; padding-top: calc(var(--header-h) + 56px); padding-bottom: 68px; max-width: 720px; }
-.bhero__title {
-  font-family: var(--font-roman);
-  font-size: clamp(2.4rem, 5vw, 4rem);
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  margin: 14px 0 8px;
+.op-brand__scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(20, 22, 54, 0.58) 0%, rgba(20, 22, 54, 0.86) 100%);
 }
-.bhero__tagline { font-size: 22px; color: var(--gold-soft); margin-bottom: 16px; }
-.bhero__story { color: #d5cdbe; line-height: 1.85; font-size: 15.5px; }
-
-.cats { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 38px; justify-content: center; }
-.cats__btn {
-  border: 1px solid var(--line-strong);
-  background: var(--paper);
-  padding: 9px 18px;
-  font-size: 12px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--ink-soft);
-  transition: all 0.2s;
+.op-brand__body {
+  position: relative;
+  z-index: 2;
+  padding-block: 68px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
 }
-.cats__btn.is-active, .cats__btn:hover { background: var(--ink); border-color: var(--ink); color: #f7f4ee; }
-
-.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
-@media (max-width: 980px) { .grid-3 { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 580px) { .grid-3 { grid-template-columns: 1fr; } }
+.op-brand__body h1 { color: #ffffff; }
+.op-brand__body p {
+  max-width: 680px;
+  font-family: var(--font-display);
+  font-size: 19px;
+  color: rgba(255, 255, 255, 0.88);
+  line-height: 1.8;
+}
+.op-brand__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 28px;
+}
+@media (max-width: 960px) {
+  .op-brand__grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 580px) {
+  .op-brand__grid { grid-template-columns: 1fr; }
+}
 </style>

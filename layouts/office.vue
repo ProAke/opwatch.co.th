@@ -30,11 +30,7 @@ async function doLogout() {
   <div class="office">
     <aside class="office__side">
       <NuxtLink :to="localePath('/office')" class="office__brand">
-        <span class="brandmark">OP</span>
-        <div class="office__brandtext">
-          <span>{{ site.name || 'Opwatch' }}</span>
-          <small class="tiny upper">BACK OFFICE</small>
-        </div>
+        <OpCrest size="sm" theme="dark" sublabel="BACK OFFICE" />
       </NuxtLink>
 
       <nav class="office__nav" aria-label="Office Navigation">
@@ -62,7 +58,7 @@ async function doLogout() {
           <span class="tiny upper faint">{{ site.name }}</span>
         </div>
         <div class="row gap-16">
-          <LocaleSwitch />
+          <LocaleSwitch :light-surface="true" />
           <span class="small muted">{{ customer?.email }}</span>
         </div>
       </header>
@@ -75,55 +71,33 @@ async function doLogout() {
 </template>
 
 <style scoped>
-.office { display: grid; grid-template-columns: 248px 1fr; min-height: 100vh; background: var(--ivory); }
+.office { display: grid; grid-template-columns: 256px 1fr; min-height: 100vh; background: var(--ivory); }
 .office__side {
-  background: #121110;
-  color: #cfc8b9;
+  background: var(--ink);
+  color: #d6d7ea;
   padding: 28px 20px;
   display: flex;
   flex-direction: column;
   position: sticky;
   top: 0;
   height: 100vh;
-  border-right: 1px solid rgba(176, 141, 87, 0.18);
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
 }
 .office__brand {
   display: flex;
   align-items: center;
-  gap: 12px;
   padding-bottom: 24px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.09);
-  color: #f4f0e8;
-  font-family: var(--font-roman, var(--font-display));
-  font-size: 17px;
-  font-weight: 500;
-  letter-spacing: 0.1em;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   margin-bottom: 22px;
 }
-.office__brandtext { display: flex; flex-direction: column; gap: 3px; }
-.office__brandtext small { color: var(--gold); font-size: 9px; letter-spacing: 0.22em; font-family: var(--font-sans); }
-.brandmark {
-  font-family: var(--font-roman, var(--font-display));
-  font-size: 14px;
-  color: var(--gold);
-  border: 1px solid var(--gold);
-  border-radius: 50%;
-  width: 34px;
-  height: 34px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex: none;
-}
 
-.office__nav { display: flex; flex-direction: column; gap: 3px; flex: 1; }
+.office__nav { display: flex; flex-direction: column; gap: 4px; flex: 1; }
 .office__link {
   display: block;
   padding: 11px 14px;
-  border-radius: var(--radius);
-  font-size: 13px;
+  font-size: 13.5px;
   letter-spacing: 0.04em;
-  color: #bfb7a9;
+  color: #c5c7de;
   transition: all 0.18s;
   background: transparent;
   border: 0;
@@ -131,18 +105,18 @@ async function doLogout() {
   text-align: left;
   cursor: pointer;
 }
-.office__link:hover { background: rgba(255, 255, 255, 0.07); color: #fff; }
+.office__link:hover { background: rgba(255, 255, 255, 0.07); color: #ffffff; }
 .office__link.is-active {
-  background: rgba(176, 141, 87, 0.16);
-  color: #fff;
-  border-left: 2px solid var(--gold);
+  background: rgba(54, 59, 214, 0.32);
+  color: #ffffff;
+  border-left: 2px solid var(--champagne-soft);
   padding-left: 12px;
 }
 
 .office__foot {
   margin-top: 20px;
   padding-top: 18px;
-  border-top: 1px solid rgba(255, 255, 255, 0.09);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -151,7 +125,7 @@ async function doLogout() {
 .office__main { padding: 0 44px 60px; min-width: 0; }
 .office__top {
   height: 74px;
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid var(--line-strong);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -160,12 +134,12 @@ async function doLogout() {
   padding-inline: 44px;
 }
 .office__pill {
-  background: var(--gold-tint);
-  color: var(--gold);
-  padding: 4px 10px;
-  border-radius: 999px;
+  background: var(--sapphire-tint);
+  color: var(--sapphire);
+  padding: 4px 12px;
+  border: 1px solid #cfd2f2;
   font-weight: 600;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.14em;
 }
 .office__content { max-width: 1140px; }
 
@@ -173,7 +147,6 @@ async function doLogout() {
   .office { grid-template-columns: 1fr; }
   .office__side { position: static; height: auto; flex-direction: row; align-items: center; overflow-x: auto; padding: 14px 18px; gap: 8px; }
   .office__brand { padding-bottom: 0; border: 0; margin: 0; white-space: nowrap; }
-  .office__brandtext small { display: none; }
   .office__nav { flex-direction: row; gap: 4px; flex: none; }
   .office__link { white-space: nowrap; }
   .office__link.is-active { border-left: 0; }

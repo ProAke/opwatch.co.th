@@ -1,5 +1,11 @@
 <script setup lang="ts">
 const { locale } = useI18n()
+const route = useRoute()
+
+const isHeroPage = computed(() => {
+  const p = route.path.replace(/^\/en(\/|$)/, '/').replace(/\/+$/, '') || '/'
+  return p === '/' || p === '/about' || p === '/news' || p === '/contact' || p === '/products' || p.startsWith('/brands/')
+})
 
 watch(
   () => locale.value,
@@ -16,7 +22,7 @@ watch(
   <div id="top" class="shell">
     <AppHeader />
 
-    <main>
+    <main :class="{ 'main--offset': !isHeroPage }">
       <slot />
     </main>
 
@@ -26,3 +32,9 @@ watch(
     <ToastHost />
   </div>
 </template>
+
+<style scoped>
+.main--offset {
+  padding-top: var(--header-h);
+}
+</style>
