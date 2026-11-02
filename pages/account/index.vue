@@ -33,7 +33,7 @@ function syncForm() {
   form.address = c?.address || ''
   form.city = c?.city || ''
   form.postalCode = c?.postalCode || ''
-  form.country = c?.country || ''
+  form.country = 'ประเทศไทย (Thailand)'
 }
 
 onMounted(syncForm)
@@ -104,7 +104,7 @@ definePageMeta({ middleware: 'auth' })
             </div>
             <div class="field">
               <label class="label">{{ t('checkout.country') }}</label>
-              <input v-model="form.country" class="input" />
+              <input :value="locale === 'th' ? 'ประเทศไทย (Thailand Only)' : 'Thailand Only'" class="input" readonly disabled />
             </div>
             <div class="field" style="grid-column: 1 / -1">
               <label class="label">{{ t('checkout.address') }}</label>

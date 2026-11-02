@@ -22,7 +22,7 @@ const form = reactive({
   story: '',
   storyEn: '',
   accentColor: '#b08d57',
-  heroImage: '/images/hero-watch.jpg',
+  heroImage: '/images/op/hero-gold-stones.jpg',
   sortOrder: 1,
   active: true
 })
@@ -50,7 +50,7 @@ function openNew() {
     story: '',
     storyEn: '',
     accentColor: '#b08d57',
-    heroImage: '/images/hero-watch.jpg',
+    heroImage: '/images/op/hero-gold-stones.jpg',
     sortOrder: items.value.length + 1,
     active: true
   })
@@ -74,7 +74,7 @@ function openEdit(b: Record<string, any>) {
     story: b.story || '',
     storyEn: b.storyEn || '',
     accentColor: b.accentColor || '#b08d57',
-    heroImage: b.heroImage || '/images/hero-watch.jpg',
+    heroImage: b.heroImage || '/images/op/hero-gold-stones.jpg',
     sortOrder: Number(b.sortOrder || 1),
     active: b.active !== false
   })
@@ -196,7 +196,7 @@ definePageMeta({ layout: 'office', middleware: 'office' })
           <tr v-for="b in items" :key="b.id">
             <td>
               <div class="row gap-12">
-                <div class="bimg"><img :src="b.heroImage || '/images/hero-watch.jpg'" alt="" loading="lazy" /></div>
+                <div class="bimg"><img :src="b.heroImage || '/images/op/hero-gold-stones.jpg'" alt="" loading="lazy" referrerpolicy="no-referrer" /></div>
                 <div>
                   <div class="serif" style="font-size: 17px">{{ b.name }}</div>
                   <div class="tiny upper faint">{{ locale === 'en' ? b.taglineEn || b.tagline : b.tagline }}</div>

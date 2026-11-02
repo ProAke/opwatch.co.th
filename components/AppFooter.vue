@@ -2,17 +2,6 @@
 const { locale } = useI18n()
 const localePath = useLocalePath()
 
-/* Exact 7 regional distributors listed in the official olympianus.com footer */
-const distributors = [
-  { region: 'SINGAPORE, MALAYSIA', company: 'Top Win Enterprise Co., Ltd.', highlight: false },
-  { region: 'VIETNAM', company: 'Truong Hoan Co., Ltd.', highlight: false },
-  { region: 'THAILAND', company: 'Inter Times Co., Ltd.', highlight: true },
-  { region: 'CAMBODIA', company: 'LD Watch Enterprise', highlight: false },
-  { region: 'TAIWAN', company: 'Laipao Co., Ltd.', highlight: false },
-  { region: 'HONG KONG', company: 'Fullwing International Development Ltd.', highlight: false },
-  { region: 'MIDDLE EAST', company: 'Top Win Watch Trading LLC', highlight: false }
-]
-
 function scrollToTop() {
   if (import.meta.client) {
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -22,25 +11,27 @@ function scrollToTop() {
 
 <template>
   <footer class="op-ftr">
-    <!-- Upper Main Footer: Exact olympianus.com #f0f0f0 Platinum Surface (footer_color) -->
+    <!-- Upper Main Footer: Thailand-Only Official Distributor & Boutique (#f0f0f0 Platinum Surface) -->
     <div class="op-ftr__main">
       <div class="container op-ftr__inner">
         <div class="op-ftr__distributors">
-          <p
-            v-for="d in distributors"
-            :key="d.region"
-            class="op-ftr__dist-line"
-            :class="{ 'is-th': d.highlight }"
-          >
-            <span class="op-ftr__region">({{ d.region }})</span>
+          <p class="op-ftr__dist-line is-th">
+            <span class="op-ftr__region">(THAILAND OFFICIAL SOLE DISTRIBUTOR)</span>
             <span class="op-ftr__dash">–</span>
-            <span class="op-ftr__company">{{ d.company }}</span>
+            <span class="op-ftr__company">Inter Times Co., Ltd. · บริษัท อินเตอร์ ไทม์ส จำกัด</span>
+          </p>
+          <p class="op-ftr__dist-line">
+            {{
+              locale === 'th'
+                ? 'เว็บไซต์และบูติกอย่างเป็นทางการสำหรับลูกค้าในประเทศไทยเท่านั้น · จัดส่งฟรีพร้อมประกันภัยครบทั้ง 77 จังหวัดทั่วไทย'
+                : 'Official Boutique & Authorized Service Center Exclusively in Thailand · Complimentary Insured Delivery Across All 77 Thai Provinces'
+            }}
           </p>
         </div>
 
         <div class="op-ftr__cta">
           <NuxtLink :to="localePath('/contact')" class="op-ftr__contact-btn">
-            {{ locale === 'th' ? 'Contact Us · ติดต่อเรา' : 'Contact Us' }}
+            {{ locale === 'th' ? 'ศูนย์บริการและติดต่อเรา (ประเทศไทย) · Contact Thailand Boutique' : 'Contact Official Thailand Boutique' }}
           </NuxtLink>
         </div>
 
@@ -50,7 +41,7 @@ function scrollToTop() {
             target="_blank"
             rel="noopener noreferrer"
             class="op-ftr__social-btn op-ftr__social-btn--line"
-            aria-label="Official LINE"
+            aria-label="Official LINE Thailand"
           >
             <span>LINE</span>
           </a>
@@ -59,7 +50,7 @@ function scrollToTop() {
             target="_blank"
             rel="noopener noreferrer"
             class="op-ftr__social-btn op-ftr__social-btn--fb"
-            aria-label="Official Facebook"
+            aria-label="Official Facebook Thailand"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
               <path d="M13.5 21v-8h2.7l.4-3.1h-3.1V7.9c0-.9.3-1.5 1.6-1.5h1.7V3.6c-.3 0-1.3-.1-2.5-.1-2.5 0-4.1 1.5-4.1 4.2v2.2H7.5V13h2.7v8h3.3Z" />
@@ -69,8 +60,8 @@ function scrollToTop() {
 
         <!-- Centered Royal Sapphire & Midnight Olym Pianus Typographic Crest -->
         <div class="op-ftr__brand">
-          <NuxtLink :to="localePath('/')" aria-label="Olym Pianus">
-            <OpCrest size="lg" stacked theme="light" sublabel="OLYM PIANUS · OPWATCH · OGIVAL" />
+          <NuxtLink :to="localePath('/')" aria-label="Olym Pianus · Ogival · Opwatch Thailand">
+            <OpCrest size="lg" stacked theme="light" sublabel="OLYMPIANUS · OGIVAL · OPWATCH THAILAND" />
           </NuxtLink>
         </div>
 
@@ -79,9 +70,9 @@ function scrollToTop() {
           <NuxtLink :to="localePath('/')">{{ locale === 'th' ? 'หน้าแรก' : 'Home' }}</NuxtLink>
           <NuxtLink :to="localePath('/about')">About</NuxtLink>
           <NuxtLink :to="localePath('/products')">Collections</NuxtLink>
-          <NuxtLink :to="localePath('/brands/opwatch')">Opwatch</NuxtLink>
-          <NuxtLink :to="localePath('/brands/olympinus')">Olympinus</NuxtLink>
+          <NuxtLink :to="localePath('/brands/olympianus')">Olympianus</NuxtLink>
           <NuxtLink :to="localePath('/brands/ogival')">Ogival</NuxtLink>
+          <NuxtLink :to="localePath('/brands/opwatch')">Opwatch</NuxtLink>
           <NuxtLink :to="localePath('/news')">News</NuxtLink>
           <NuxtLink :to="localePath('/cart')">{{ locale === 'th' ? 'ตะกร้าสินค้า' : 'Cart' }}</NuxtLink>
           <NuxtLink :to="localePath('/account')">{{ locale === 'th' ? 'บัญชีสมาชิก' : 'Account' }}</NuxtLink>
@@ -93,11 +84,17 @@ function scrollToTop() {
     <!-- Bottom Copyright Socket Bar: Exact olympianus.com #1d2088 Royal Sapphire (socket_color) -->
     <div class="op-ftr__socket">
       <div class="container op-ftr__socket-row">
-        <p>© Copyright – Olym Pianus · Opwatch Official Boutique Thailand (Inter Times Co., Ltd.)</p>
+        <p>
+          {{
+            locale === 'th'
+              ? '© สงวนลิขสิทธิ์ – Opwatch.co.th · ตัวแทนจำหน่ายอย่างเป็นทางการในประเทศไทย (บริษัท อินเตอร์ ไทม์ส จำกัด)'
+              : '© Copyright – Opwatch.co.th · Official Boutique Exclusively in Thailand (Inter Times Co., Ltd.)'
+          }}
+        </p>
         <div class="op-ftr__socket-links">
           <NuxtLink :to="localePath('/about')">Heritage</NuxtLink>
-          <NuxtLink :to="localePath('/products')">Boutique</NuxtLink>
-          <NuxtLink :to="localePath('/contact')">Service Center</NuxtLink>
+          <NuxtLink :to="localePath('/products')">Thailand Boutique</NuxtLink>
+          <NuxtLink :to="localePath('/contact')">Thailand Service Center</NuxtLink>
         </div>
       </div>
     </div>

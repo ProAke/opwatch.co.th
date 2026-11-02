@@ -5,7 +5,7 @@ const reqFetch = useRequestFetch()
 
 const { data: homeData } = await useAsyncData('op-home-data', async () => {
   const [prodRes, brandRes] = await Promise.all([
-    reqFetch<{ items?: any[]; products?: any[] }>('/api/products?limit=24'),
+    reqFetch<{ items?: any[]; products?: any[]; total?: number }>('/api/products?featured=true&limit=24'),
     reqFetch<{ items?: any[]; brands?: any[] }>('/api/brands')
   ])
   const allProducts = prodRes?.items || prodRes?.products || []
@@ -18,20 +18,20 @@ const heroSlides = computed(() => [
   {
     image: '/images/op/hero-diver-dark.jpg',
     code: '899832AGS',
-    subtitle: locale.value === 'th' ? 'Automatic Diver · กระจกแซฟไฟร์แท้' : 'Automatic Diver · Sapphire Crystal',
-    link: { path: localePath('/products'), query: { category: 'men-diver' } }
+    subtitle: locale.value === 'th' ? 'Olympianus Automatic Diver · กระจกแซฟไฟร์แท้' : 'Olympianus Automatic Diver · Sapphire Crystal',
+    link: { path: localePath('/products/olympianus-899832ags-black') }
   },
   {
     image: '/images/op/hero-ceramic-dark.jpg',
-    code: '899831G',
-    subtitle: locale.value === 'th' ? 'Sport Luxury Chronograph · ขอบสเกลทาคีมิเตอร์' : 'Sport Luxury Chronograph · Tachymeter Bezel',
-    link: { path: localePath('/products'), query: { category: 'men' } }
+    code: 'OGIVAL 1903',
+    subtitle: locale.value === 'th' ? 'Swiss Lucky Fish Haute Horlogerie · ครบ 177 รุ่นทางการ' : 'Swiss Lucky Fish Haute Horlogerie · 177 Official Models',
+    link: { path: localePath('/brands/ogival') }
   },
   {
     image: '/images/op/hero-gold-stones.jpg',
     code: '99141-71AGSK',
-    subtitle: locale.value === 'th' ? 'Open-Heart Automatic · ตัวเรือนทูโทนพรีเมียม' : 'Open-Heart Automatic · Two-Tone Gold & Steel',
-    link: { path: localePath('/products'), query: { brand: 'olympinus' } }
+    subtitle: locale.value === 'th' ? 'Olympianus Open-Heart Automatic · ครบ 222 รุ่นทางการ' : 'Olympianus Open-Heart Automatic · 222 Official Models',
+    link: { path: localePath('/brands/olympianus') }
   }
 ])
 
@@ -45,23 +45,27 @@ function prevHero() {
   activeHero.value = (activeHero.value - 1 + heroSlides.value.length) % heroSlides.value.length
 }
 
-/* 2. RECOMMEND — 6 Studio Cutout Timepieces (3x2 grid) */
+/* 2. RECOMMEND — 6 Studio Cutout Timepieces (3 Olympianus + 3 Ogival) */
 const recommendedProducts = computed(() => {
   const list = homeData.value?.allProducts || []
-  const featured = list.filter((p: any) => p.featured)
-  return (featured.length >= 6 ? featured : list).slice(0, 6)
+  const op = list.filter((p: any) => p.brandSlug === 'olympianus')
+  const og = list.filter((p: any) => p.brandSlug === 'ogival')
+  if (op.length >= 3 && og.length >= 3) {
+    return [...op.slice(0, 3), ...og.slice(0, 3)]
+  }
+  return list.slice(0, 6)
 })
 
 /* 3. Full-Bleed 1000x1500 Portrait Carousel (exact 8 OP studio vertical frames) */
 const portraitFrames = [
-  { img: '/images/op/portrait-8934msk.jpg', model: '8934MSK', query: { category: 'men-dress' } },
-  { img: '/images/op/portrait-82671m.jpg', model: '82671M', query: { category: 'men' } },
-  { img: '/images/op/portrait-99141agnsk.jpg', model: '99141AGNSK', query: { brand: 'olympinus' } },
-  { img: '/images/op/portrait-8909amk.jpg', model: '8909AMK', query: { category: 'men' } },
-  { img: '/images/op/portrait-diver.jpg', model: '899832AGS', query: { category: 'men-diver' } },
-  { img: '/images/op/openheart-stones.jpg', model: '990-163AMSK', query: { brand: 'olympinus' } },
-  { img: '/images/op/square-diver-glow.jpg', model: '899831G', query: { category: 'men-diver' } },
-  { img: '/images/op/square-gold-stones.jpg', model: '899833G1B', query: { sort: 'featured' } }
+  { img: '/images/op/portrait-8934msk.jpg', model: '8934MSK', query: { q: '8934' } },
+  { img: '/images/op/portrait-82671m.jpg', model: '82671M', query: { q: '82671' } },
+  { img: '/images/op/portrait-99141agnsk.jpg', model: '99141-71AGSK', query: { q: '99141' } },
+  { img: '/images/op/portrait-8909amk.jpg', model: '890-09AMK', query: { q: '890-09' } },
+  { img: '/images/op/portrait-diver.jpg', model: '899832AGS', query: { q: '899832' } },
+  { img: '/images/op/openheart-stones.jpg', model: '990-163AMSK', query: { q: '990-163' } },
+  { img: '/images/op/square-diver-glow.jpg', model: '899831G1S', query: { q: '899831' } },
+  { img: '/images/op/square-gold-stones.jpg', model: '899833G1', query: { q: '899833' } }
 ]
 const portraitOffset = ref(0)
 function slidePortraits(dir: number) {
@@ -75,19 +79,19 @@ const lifestyleSlides = computed(() => [
     img: '/images/op/lifestyle-men.jpg',
     tag: 'MEN COLLECTION',
     title: locale.value === 'th' ? 'เรือนเวลาสุภาพบุรุษเหนือระดับ' : 'Refined Masculine Presence',
-    to: { path: localePath('/products'), query: { category: 'men' } }
+    to: { path: localePath('/products'), query: { category: 'men-watches' } }
   },
   {
     img: '/images/op/lifestyle-lady.jpg',
     tag: 'LADIES COLLECTION',
     title: locale.value === 'th' ? 'ความสง่างามเหนือกาลเวลาสำหรับสุภาพสตรี' : 'Graceful Brilliance on Every Wrist',
-    to: { path: localePath('/products'), query: { category: 'women' } }
+    to: { path: localePath('/products'), query: { category: 'women-watches' } }
   },
   {
     img: '/images/op/lifestyle-sport.jpg',
     tag: 'SPORT & DIVER',
     title: locale.value === 'th' ? 'สมรรถนะสปอร์ตผสานจิตวิญญาณโอลิมปิก' : 'Engineered for Dynamic Precision',
-    to: { path: localePath('/products'), query: { category: 'men-diver' } }
+    to: { path: localePath('/products'), query: { category: 'sport-watches' } }
   }
 ])
 const activeLife = ref(0)
@@ -107,7 +111,7 @@ const collectionEntries = computed(() => [
     roman: 'I',
     preview: '/images/op/watch-990-083-blue.png',
     model: '990-083 · Royal Sapphire Dial',
-    query: { category: 'men' }
+    query: { category: 'men-watches' }
   },
   {
     key: 'ladies',
@@ -115,8 +119,8 @@ const collectionEntries = computed(() => [
     th: 'นาฬิกาผู้หญิง',
     roman: 'II',
     preview: '/images/op/watch-990-45-lady.png',
-    model: '990-45LS · Diamond Mother-of-Pearl',
-    query: { category: 'women' }
+    model: '990-45LS · Crystal Sport-Luxury',
+    query: { category: 'women-watches' }
   },
   {
     key: 'sport',
@@ -125,7 +129,7 @@ const collectionEntries = computed(() => [
     roman: 'III',
     preview: '/images/op/watch-899831-green.png',
     model: '899831 · Emerald Sport Bezel',
-    query: { category: 'men-diver' }
+    query: { category: 'sport-watches' }
   },
   {
     key: 'classic',
@@ -133,55 +137,55 @@ const collectionEntries = computed(() => [
     th: 'นาฬิกาคลาสสิก',
     roman: 'IV',
     preview: '/images/op/watch-130-06-white.png',
-    model: '130-06 · Slim Roman Dress',
-    query: { category: 'men-dress' }
+    model: '130-06 · Slim Classic Dress',
+    query: { category: 'classic-watches' }
   },
   {
-    key: 'essential',
-    en: 'Essential Selection',
-    th: 'รุ่นยอดนิยมประจำบูติก',
+    key: 'couple',
+    en: 'Couple Watch',
+    th: 'นาฬิกาคู่รัก (His & Hers)',
     roman: 'V',
     preview: '/images/op/watch-990-163-black.png',
-    model: '990-163 · Open-Heart Mechanical',
-    query: { sort: 'featured' }
+    model: 'Ogival & Olympianus Pair Watches',
+    query: { category: 'couple-watches' }
   },
   {
-    key: 'special',
-    en: 'Special Occasion',
-    th: 'เรือนเวลาโอกาสพิเศษ & ลิมิเต็ด',
+    key: 'jewelry',
+    en: 'Jewelry Watch',
+    th: 'นาฬิกาจิวเวลรี่เพชร & คามิลเลีย',
     roman: 'VI',
-    preview: '/images/op/watch-899833-black.png',
-    model: '899833 · Prestige Edition',
-    query: { category: 'limited' }
+    preview: '/images/op/watch-82672-lady.png',
+    model: 'Ogival Camellia & Ceramic Series',
+    query: { category: 'women-jewelry' }
   }
 ])
 const hoveredCollection = ref(0)
 
-/* Three Horological Houses under Opwatch Boutique */
+/* Three Horological Houses under Opwatch Thailand Boutique */
 const brandCards = computed(() => [
   {
-    slug: 'opwatch',
-    name: 'Opwatch',
-    origin: locale.value === 'th' ? 'Japanese Precision Movement' : 'Japanese Precision Movement',
+    slug: 'olympianus',
+    name: 'Olympianus (Olym Pianus)',
+    origin: locale.value === 'th' ? '222 รุ่นทางการ · กระจกแซฟไฟร์แท้' : '222 Official Models · Sapphire Crystal',
     desc: locale.value === 'th'
-      ? 'ความเที่ยงตรงระดับกลไกญี่ปุ่น กระจกแซฟไฟร์กันรอย ดีไซน์ร่วมสมัยสำหรับทุกวัน'
-      : 'Reliable Japanese automatic & quartz calibers paired with scratch-resistant sapphire crystal.'
-  },
-  {
-    slug: 'olympinus',
-    name: 'Olym Pianus',
-    origin: locale.value === 'th' ? 'Olympic Spirit · Swiss Heritage' : 'Olympic Spirit · Swiss Heritage',
-    desc: locale.value === 'th'
-      ? 'แรงบันดาลใจจากจิตวิญญาณแห่งโอลิมปิก ผสานศาสตร์การประดิษฐ์เรือนเวลาสวิสอันประณีต'
-      : 'Inspired by the ultimate glory of the Olympic spirit, fusing Swiss watchmaking tradition and elegance.'
+      ? 'ครบทุกคอลเลกชันทางการจาก Olympianus ผสานดีไซน์สวิสคลาสสิกเข้ากับกลไกญี่ปุ่นแท้และกระจกแซฟไฟร์ทุกรุ่น'
+      : 'Complete official Olympianus collection combining Swiss-inspired design, Japanese movements, and sapphire crystal.'
   },
   {
     slug: 'ogival',
-    name: 'Ogival',
-    origin: locale.value === 'th' ? 'La Chaux-de-Fonds · Since 1903' : 'La Chaux-de-Fonds · Since 1903',
+    name: 'Ogival (Swiss 1903)',
+    origin: locale.value === 'th' ? '177 รุ่นทางการ · สวิสลักชัวรีตั้งแต่ปี 1903' : '177 Official Models · Swiss Luxury Since 1903',
     desc: locale.value === 'th'
-      ? 'เรือนเวลาสวิสระดับสูง สัญลักษณ์ปลาโดดมงคล โดดเด่นด้วยงานแกะสลักและเพชรแท้'
-      : 'Prestigious Swiss haute horlogerie emblem of blessing, skeleton artistry, and diamond-set mastery.'
+      ? 'ตำนานปลากระโดดแห่งความโชคดีจากเมือง La Chaux-de-Fonds ครบทั้งรุ่นออโตเมติก คามิลเลีย ดาวตก และเพชรแท้'
+      : 'Prestigious Swiss lucky-leaping-fish timepieces from La Chaux-de-Fonds: skeleton, Camellia, Meteor, and diamond series.'
+  },
+  {
+    slug: 'opwatch',
+    name: 'Opwatch Thailand',
+    origin: locale.value === 'th' ? 'รุ่นพิเศษประจำบูติกประเทศไทยเท่านั้น' : 'Exclusive Thailand Boutique Edition',
+    desc: locale.value === 'th'
+      ? 'เรือนเวลาคัดสรรพิเศษพร้อมการรับประกันศูนย์ไทย 2 ปีเต็ม และบริการจัดส่งฟรีครบทั้ง 77 จังหวัดในประเทศไทย'
+      : 'Curated sapphire timepieces backed by a 2-year Thailand service-center warranty and nationwide domestic delivery.'
   }
 ])
 
@@ -352,7 +356,7 @@ onBeforeUnmount(() => {
                 : 'High-luminosity markers, unidirectional diver bezel, and scratch-resistant sapphire crystal.'
             }}
           </p>
-          <NuxtLink :to="{ path: localePath('/products'), query: { category: 'men-diver' } }" class="btn btn--ghost-light">
+          <NuxtLink :to="{ path: localePath('/products'), query: { category: 'sport-watches' } }" class="btn btn--ghost-light">
             {{ locale === 'th' ? 'สำรวจคอลเลกชันสปอร์ต' : 'Explore Sport Watches' }}
           </NuxtLink>
         </div>

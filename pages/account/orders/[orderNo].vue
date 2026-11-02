@@ -66,7 +66,7 @@ definePageMeta({ middleware: 'auth' })
             <h2 class="blocktitle">{{ t('checkout.items') }}</h2>
             <div class="orderitems">
               <div v-for="it in items" :key="it.id" class="orderitem">
-                <div class="orderitem__img"><img :src="it.image || '/images/hero-watch.jpg'" :alt="it.name" loading="lazy" /></div>
+                <div class="orderitem__img"><img :src="it.image || '/images/op/watch-990-083-blue.png'" :alt="it.name" loading="lazy" referrerpolicy="no-referrer" /></div>
                 <div class="orderitem__info">
                   <span class="orderitem__name">{{ it.name }}</span>
                   <span class="tiny upper faint">{{ it.sku }}</span>

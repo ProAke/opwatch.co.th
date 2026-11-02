@@ -1,3 +1,30 @@
+const BRAND_ALIASES: Record<string, string> = {
+  olympinus: 'olympianus',
+  'olym-pianus': 'olympianus',
+  olympianus: 'olympianus',
+  ogival: 'ogival',
+  opwatch: 'opwatch'
+}
+
+const CATEGORY_ALIASES: Record<string, string | string[]> = {
+  men: 'men-watches',
+  'men-watch': 'men-watches',
+  women: 'women-watches',
+  ladies: 'women-watches',
+  'ladies-watch': 'women-watches',
+  sport: 'sport-watches',
+  'sport-watch': 'sport-watches',
+  'men-diver': 'sport-watches',
+  diver: 'sport-watches',
+  classic: 'classic-watches',
+  'men-dress': 'classic-watches',
+  dress: 'classic-watches',
+  pair: 'couple-watches',
+  couple: 'couple-watches',
+  limited: ['men-jewelry', 'women-jewelry'],
+  jewelry: ['men-jewelry', 'women-jewelry']
+}
+
 export default defineEventHandler(async (event) => {
   const q = getQuery(event)
   const store = useStore()
@@ -6,25 +33,41 @@ export default defineEventHandler(async (event) => {
   let categoryIds: number[] | null = null
 
   if (q.category) {
-    const cat = await store.findOne('categories', { where: { slug: String(q.category) } })
-    if (cat) {
-      const children = await store.find('categories', { where: { parentId: Number(cat.id) } })
-      if (children.length) {
-        categoryIds = [Number(cat.id), ...children.map((c) => Number(c.id))]
-      } else {
-        where.categoryId = Number(cat.id)
-      }
+    const rawCat = String(q.category).trim().toLowerCase()
+    const mapped = CATEGORY_ALIASES[rawCat] || rawCat
+    if (Array.isArray(mapped)) {
+      const matchedCats = await Promise.all(
+        mapped.map((slug) => store.findOne('categories', { where: { slug } }))
+      )
+      const ids = matchedCats.filter(Boolean).map((c: any) => Number(c.id))
+      if (!ids.length) return { items: [], total: 0, page: 1, limit: 36, totalPages: 0 }
+      categoryIds = ids
     } else {
-      return { items: [], total: 0 }
+      const cat = await store.findOne('categories', { where: { slug: mapped } })
+      if (cat) {
+        const children = await store.find('categories', { where: { parentId: Number(cat.id) } })
+        if (children.length) {
+          categoryIds = [Number(cat.id), ...children.map((c) => Number(c.id))]
+        } else {
+          where.categoryId = Number(cat.id)
+        }
+      } else {
+        return { items: [], total: 0, page: 1, limit: 36, totalPages: 0 }
+      }
     }
   }
 
   if (q.brand) {
-    const brand = await store.findOne('brands', { where: { slug: String(q.brand) } })
+    const rawBrand = String(q.brand).trim().toLowerCase()
+    const canonicalBrand = BRAND_ALIASES[rawBrand] || rawBrand
+    let brand = await store.findOne('brands', { where: { slug: canonicalBrand } })
+    if (!brand && rawBrand !== canonicalBrand) {
+      brand = await store.findOne('brands', { where: { slug: rawBrand } })
+    }
     if (brand) {
       where.brandId = Number(brand.id)
     } else {
-      return { items: [], total: 0 }
+      return { items: [], total: 0, page: 1, limit: 36, totalPages: 0 }
     }
   }
 
@@ -48,12 +91,10 @@ export default defineEventHandler(async (event) => {
     orderDir: order.orderDir
   })
 
-  // `featured` is normalised to boolean in shape().
   if (q.featured === 'true' || q.featured === '1') {
     items = items.filter((p) => p.featured === true || Number(p.featured) === 1)
   }
 
-  // Price band filter.
   const min = q.price_min !== undefined && q.price_min !== '' ? Number(q.price_min) : null
   const max = q.price_max !== undefined && q.price_max !== '' ? Number(q.price_max) : null
   if (min !== null || max !== null) {
@@ -63,7 +104,6 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  // Sort by discount depth or newest.
   if (sort === 'discount_percentage_desc' || sort === 'discount') {
     items = items
       .map((p) => ({ p, pct: discountPercent(p) }))
@@ -73,7 +113,6 @@ export default defineEventHandler(async (event) => {
     items = items.slice().sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')))
   }
 
-  // Attach owning brand + category name and normalise badges.
   const [allBrands, allCategories] = await Promise.all([
     store.all('brands'),
     store.all('categories')
@@ -99,9 +138,18 @@ export default defineEventHandler(async (event) => {
   })
 
   const total = items.length
-  const offset = q.offset !== undefined ? Number(q.offset) : 0
-  const limit = q.limit !== undefined ? Number(q.limit) : items.length
-  return { items: items.slice(offset, offset + limit), total }
+  const limit = q.limit !== undefined ? Math.max(1, Number(q.limit)) : items.length || 36
+  const page = q.page !== undefined ? Math.max(1, Number(q.page)) : 1
+  const offset = q.offset !== undefined ? Math.max(0, Number(q.offset)) : (page - 1) * limit
+  const totalPages = limit > 0 ? Math.max(1, Math.ceil(total / limit)) : 1
+
+  return {
+    items: items.slice(offset, offset + limit),
+    total,
+    page,
+    limit,
+    totalPages
+  }
 })
 
 function discountPercent(p: Record<string, any>): number {

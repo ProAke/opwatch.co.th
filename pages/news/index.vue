@@ -14,50 +14,50 @@ const { data: campaignsRes } = await useAsyncData('op-news-campaigns', () =>
 const editorialStories = computed(() => [
   {
     id: 'story-899832',
-    date: '2026 · NEW RELEASE',
+    date: '2026 · THAILAND OFFICIAL COLLECTION',
     image: '/images/op/hero-diver-dark.jpg',
     title: locale.value === 'th'
-      ? 'เปิดตัว Olym Pianus 899832AGS สปอร์ตไดเวอร์ขอบเซรามิกพรายน้ำสว่างพิเศษ'
-      : 'Introducing Olym Pianus 899832AGS Automatic Ceramic Bezel Diver',
+      ? 'เปิดตัว Olympianus 899832AGS สปอร์ตไดเวอร์ขอบเซรามิกพรายน้ำสว่างพิเศษ'
+      : 'Introducing Olympianus 899832AGS Automatic Ceramic Bezel Diver',
     excerpt: locale.value === 'th'
       ? 'สัมผัสความสมบูรณ์แบบของนาฬิกาสปอร์ตออโตเมติกที่มาพร้อมกระจกแซฟไฟร์แท้พร้อมเลนส์ขยายวันที่ และพรายน้ำสว่างคมชัดในที่มืด'
       : 'Engineered with a unidirectional ceramic bezel, cyclops sapphire crystal, and high-luminosity hands for effortless legibility.',
-    to: { path: localePath('/products'), query: { category: 'men-diver' } }
+    to: { path: localePath('/products/olympianus-899832ags-black') }
   },
   {
     id: 'story-openheart',
     date: '2026 · CRAFTSMANSHIP',
     image: '/images/op/hero-gold-stones.jpg',
     title: locale.value === 'th'
-      ? 'เสน่ห์หน้าปัด Open-Heart เผยจังหวะการทำงานของจักรกลออโตเมติก'
+      ? 'เสน่ห์หน้าปัด Open-Heart เผยจังหวะการทำงานของจักรกลออโตเมติกครบ 222 รุ่น'
       : 'The Art of Open-Heart Horology: 99141 & 990 Mechanical Series',
     excerpt: locale.value === 'th'
-      ? 'ชมความงดงามของบาลานซ์วีลที่เคลื่อนไหวอย่างเที่ยงตรงผ่านช่องหน้าปัด Open-Heart อันเป็นเอกลักษณ์ของ Olym Pianus'
+      ? 'ชมความงดงามของบาลานซ์วีลที่เคลื่อนไหวอย่างเที่ยงตรงผ่านช่องหน้าปัด Open-Heart อันเป็นเอกลักษณ์ของ Olympianus'
       : 'Peer directly into the oscillating balance wheel through a signature open-heart aperture framed in rose gold and steel.',
-    to: { path: localePath('/products'), query: { brand: 'olympinus' } }
+    to: { path: localePath('/brands/olympianus') }
   },
   {
     id: 'story-ladies',
     date: '2026 · LADIES ELEGANCE',
     image: '/images/op/lifestyle-lady.jpg',
     title: locale.value === 'th'
-      ? 'คอลเลกชันสุภาพสตรีประดับคริสตัลและหน้าปัดมุกธรรมชาติ'
-      : 'Timeless Grace: Ladies Mother-of-Pearl & Crystal Timepieces',
+      ? 'คอลเลกชันสุภาพสตรีประดับคริสตัล เพชรแท้ และไฮเทคเซรามิก'
+      : 'Timeless Grace: Ladies Diamond, Ceramic & Crystal Timepieces',
     excerpt: locale.value === 'th'
-      ? 'เรือนเวลาขนาดกะทัดรัดที่ออกแบบมาเพื่อข้อมือสุภาพสตรีโดยเฉพาะ โดดเด่นด้วยประกายมุกแท้และตัวเรือนบางสง่างาม'
-      : 'Delicate proportions meet radiant mother-of-pearl dials and faceted hour markers crafted for modern elegance.',
-    to: { path: localePath('/products'), query: { category: 'women' } }
+      ? 'เรือนเวลาขนาดกะทัดรัดที่ออกแบบมาเพื่อข้อมือสุภาพสตรีชาวไทย โดดเด่นด้วยกระจกแซฟไฟร์แท้และตัวเรือนบางสง่างาม'
+      : 'Delicate proportions meet scratch-resistant sapphire crystal and faceted hour markers crafted for modern elegance.',
+    to: { path: localePath('/products'), query: { category: 'women-watches' } }
   },
   {
     id: 'story-ogival',
-    date: '2026 · HAUTE HORLOGERIE',
+    date: '2026 · SWISS HAUTE HORLOGERIE',
     image: '/images/op/hero-ceramic-dark.jpg',
     title: locale.value === 'th'
-      ? 'Ogival 1903 และสัญลักษณ์ปลาโดดแห่งความโชคดีจากสวิตเซอร์แลนด์'
-      : 'Ogival La Chaux-de-Fonds: Over a Century of Swiss Blessing & Artistry',
+      ? 'Ogival 1903 ตำนานปลากระโดดแห่งความโชคดีจากสวิตเซอร์แลนด์ ครบทั้ง 177 รุ่น'
+      : 'Ogival La Chaux-de-Fonds: All 177 Swiss Timepieces Now at Opwatch Thailand',
     excerpt: locale.value === 'th'
-      ? 'เรื่องราวของแบรนด์นาฬิกาสวิสระดับสูงในเครือบูติก Opwatch ที่นักสะสมทั่วเอเชียให้ความไว้วางใจมายาวนานกว่าศตวรรษ'
-      : 'Discover the heritage of Ogival skeleton and diamond-set timepieces available exclusively at Opwatch Thailand.',
+      ? 'พบกับเรือนเวลาสวิสระดับสูง Ogival ครบทุกรุ่นทางการ ทั้งสเกลเลตัน คามิลเลีย ดาวตก และเพชรแท้ พร้อมใบรับประกันศูนย์ไทยโดย บริษัท อินเตอร์ ไทม์ส จำกัด'
+      : 'Explore all 177 official Swiss Ogival skeleton, Camellia, Meteor, and diamond timepieces exclusively warranted in Thailand by Inter Times Co., Ltd.',
     to: { path: localePath('/brands/ogival') }
   }
 ])

@@ -15,16 +15,41 @@ const title = computed(() =>
   locale.value === 'en' && props.product.nameEn ? props.product.nameEn : props.product.nameTh || props.product.nameEn || props.product.name
 )
 
-const primaryImg = computed(() => {
-  const imgs = Array.isArray(props.product.images) ? props.product.images : []
-  return props.product.image || imgs[0] || '/images/op/watch-990-083-blue.png'
+const FALLBACK_WATCH = '/images/op/watch-990-083-blue.png'
+
+const imageCandidates = computed<string[]>(() => {
+  const imgs = Array.isArray(props.product.images) ? props.product.images.filter(Boolean) : []
+  const list = props.product.image ? [props.product.image, ...imgs] : imgs
+  return Array.from(new Set([...list, FALLBACK_WATCH]))
 })
 
-const hoverImg = computed(() => {
-  const imgs = Array.isArray(props.product.images) ? props.product.images : []
-  if (props.product.hoverImage) return props.product.hoverImage
-  return imgs[1] || ''
+const frontIdx = ref(0)
+const hoverFailed = ref(false)
+
+watch(() => props.product.slug || props.product.id, () => {
+  frontIdx.value = 0
+  hoverFailed.value = false
 })
+
+const primaryImg = computed(() => imageCandidates.value[frontIdx.value] || FALLBACK_WATCH)
+
+const hoverImg = computed(() => {
+  if (hoverFailed.value) return ''
+  if (props.product.hoverImage) return props.product.hoverImage
+  const imgs = Array.isArray(props.product.images) ? props.product.images.filter(Boolean) : []
+  const candidate = imgs.find((u, idx) => idx > frontIdx.value && u !== primaryImg.value)
+  return candidate || ''
+})
+
+function onFrontError() {
+  if (frontIdx.value < imageCandidates.value.length - 1) {
+    frontIdx.value += 1
+  }
+}
+
+function onHoverError() {
+  hoverFailed.value = true
+}
 
 const compareAt = computed(() => Number(props.product.originalPrice ?? props.product.priceCompare ?? props.product.comparePrice ?? 0))
 
@@ -58,6 +83,8 @@ function addToBag(e: Event) {
           :alt="title"
           class="op-card__img op-card__img--front"
           loading="lazy"
+          referrerpolicy="no-referrer"
+          @error="onFrontError"
         />
         <img
           v-if="hoverImg"
@@ -65,6 +92,8 @@ function addToBag(e: Event) {
           :alt="title"
           class="op-card__img op-card__img--back"
           loading="lazy"
+          referrerpolicy="no-referrer"
+          @error="onHoverError"
         />
 
         <span v-if="product.brandName || product.brandSlug" class="op-card__brand">
@@ -142,8 +171,8 @@ function addToBag(e: Event) {
 }
 .op-card__img--back {
   opacity: 0;
-  object-fit: cover;
-  padding: 0;
+  object-fit: contain;
+  padding: 10px;
 }
 .op-card:hover .op-card__stage.has-hover .op-card__img--front {
   opacity: 0;

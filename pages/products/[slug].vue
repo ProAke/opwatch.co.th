@@ -46,22 +46,33 @@ const description = computed(() => {
     : product.value.descriptionTh || product.value.descriptionEn
 })
 
-/* Exact olympianus.com 2-Column Specification Table */
+/* Exact olympianus.com & ogival.com.tw 2-Column Specification Table */
 const specRows = computed(() => {
   const p = product.value || {}
   const specs = p.specs && typeof p.specs === 'object' ? p.specs : {}
-  const rows: Array<{ label: string; value: string }> = [
-    { label: 'Brand', value: p.brandName || p.brandSlug || 'Olym Pianus' },
+  const entries = Object.entries(specs).filter(([, v]) => v !== undefined && v !== null && String(v).trim() !== '')
+  if (entries.length > 0) {
+    return entries.map(([label, value]) => ({ label, value: String(value) }))
+  }
+  return [
+    { label: 'Brand', value: p.brandName || p.brandSlug || 'Olympianus' },
     { label: 'Model / Reference', value: p.sku || p.slug || '—' },
-    { label: 'Movement', value: specs.movement || p.movement || 'Automatic / Precision Caliber' },
-    { label: 'Crystal', value: specs.crystal || 'Sapphire Crystal' },
-    { label: 'Case Material', value: specs.caseMaterial || '316L Surgical Stainless Steel' },
-    { label: 'Case Diameter', value: specs.caseSize || specs.diameter || '40 mm' },
-    { label: 'Water Resistance', value: specs.waterResistance || '5 ATM / 10 ATM' },
-    { label: 'Warranty', value: specs.warranty || (locale.value === 'th' ? 'รับประกันศูนย์ไทย 2 ปีเต็ม' : '2-Year Official Warranty') }
+    { label: 'Movement', value: p.movement || 'Automatic / Precision Caliber' },
+    { label: 'Crystal', value: 'Sapphire Crystal' },
+    { label: 'Case Material', value: '316L Surgical Stainless Steel' },
+    { label: 'Warranty', value: locale.value === 'th' ? 'รับประกันศูนย์ไทย 2 ปีเต็ม (Inter Times Co., Ltd.)' : '2-Year Official Thailand Warranty (Inter Times Co., Ltd.)' }
   ]
-  return rows
 })
+
+function onDetailImgError(e: Event) {
+  const el = e.target as HTMLImageElement | null
+  if (!el) return
+  if (activeImg.value < images.value.length - 1) {
+    activeImg.value += 1
+  } else {
+    el.src = '/images/op/watch-990-083-blue.png'
+  }
+}
 
 const compareAt = computed(() => Number(product.value?.originalPrice ?? product.value?.priceCompare ?? product.value?.comparePrice ?? 0))
 
@@ -116,7 +127,13 @@ useHead(() => ({
           <!-- Left: Studio Watch Gallery -->
           <div class="op-detail__gallery">
             <div class="op-detail__stage">
-              <img :src="images[activeImg]" :alt="title" class="op-detail__main-img" />
+              <img
+                :src="images[activeImg]"
+                :alt="title"
+                class="op-detail__main-img"
+                referrerpolicy="no-referrer"
+                @error="onDetailImgError"
+              />
             </div>
 
             <div v-if="images.length > 1" class="op-detail__thumbs">
@@ -128,7 +145,12 @@ useHead(() => ({
                 :class="{ 'is-active': idx === activeImg }"
                 @click="activeImg = idx"
               >
-                <img :src="img" :alt="`${title} view ${idx + 1}`" />
+                <img
+                  :src="img"
+                  :alt="`${title} view ${idx + 1}`"
+                  referrerpolicy="no-referrer"
+                  @error="(e: any) => { if (e?.target) e.target.src = '/images/op/watch-990-083-blue.png' }"
+                />
               </button>
             </div>
           </div>
@@ -173,11 +195,11 @@ useHead(() => ({
               </button>
             </div>
 
-            <!-- Boutique Assurances -->
+            <!-- Boutique Assurances (Thailand Exclusive) -->
             <ul class="op-detail__trust">
-              <li>✓ {{ locale === 'th' ? 'ของแท้ 100% จากตัวแทนจำหน่ายทางการ Inter Times Co., Ltd.' : '100% Authentic from Official Distributor Inter Times Co., Ltd.' }}</li>
-              <li>✓ {{ locale === 'th' ? 'กระจกแซฟไฟร์แท้กันรอยขีดข่วน พร้อมกล่องและใบรับประกันศูนย์' : 'Scratch-Resistant Sapphire Crystal & Full Presentation Box' }}</li>
-              <li>✓ {{ locale === 'th' ? 'จัดส่งด่วนพร้อมประกันภัยสินค้าทั่วประเทศไทย' : 'Complimentary Insured Express Delivery Nationwide' }}</li>
+              <li>✓ {{ locale === 'th' ? 'ของแท้ 100% จากตัวแทนจำหน่ายทางการในประเทศไทย (บริษัท อินเตอร์ ไทม์ส จำกัด)' : '100% Authentic from Thailand Official Distributor (Inter Times Co., Ltd.)' }}</li>
+              <li>✓ {{ locale === 'th' ? 'กระจกแซฟไฟร์แท้กันรอยขีดข่วน พร้อมกล่องและใบรับประกันศูนย์ไทย 2 ปีเต็ม' : 'Scratch-Resistant Sapphire Crystal, Official Box & 2-Year Thailand Warranty' }}</li>
+              <li>✓ {{ locale === 'th' ? 'จัดส่งฟรีพร้อมประกันภัยเฉพาะภายในประเทศไทยครบทั้ง 77 จังหวัด (งดส่งต่างประเทศ)' : 'Complimentary Insured Delivery Exclusively Within Thailand (All 77 Provinces)' }}</li>
             </ul>
           </div>
         </div>

@@ -45,7 +45,13 @@ useHead({ title: `${t('cart.title')} — ${site.value.name}` })
 
           <div v-for="line in cart.items.value" :key="line.productId" class="cline">
             <NuxtLink :to="localePath('/products/' + line.slug)" class="cline__img">
-              <img :src="line.image" :alt="line.name" loading="lazy" />
+              <img
+                :src="line.image || '/images/op/watch-990-083-blue.png'"
+                :alt="line.name"
+                loading="lazy"
+                referrerpolicy="no-referrer"
+                @error="(e: any) => { if (e?.target) e.target.src = '/images/op/watch-990-083-blue.png' }"
+              />
             </NuxtLink>
             <div class="cline__info">
               <NuxtLink :to="localePath('/products/' + line.slug)" class="cline__name">
@@ -71,6 +77,7 @@ useHead({ title: `${t('cart.title')} — ${site.value.name}` })
           <div class="between summary__row"><span class="muted">{{ t('cart.subtotal') }}</span><span class="price">{{ fmt(totals.subtotal) }}</span></div>
           <div class="between summary__row"><span class="muted">{{ t('cart.shipping') }}</span><span class="price">{{ totals.fee > 0 ? fmt(totals.fee) : t('cart.free') }}</span></div>
           <div class="between summary__row summary__total"><span>{{ t('cart.grandTotal') }}</span><span class="price price--lg">{{ fmt(totals.total) }}</span></div>
+          <p class="tiny muted" style="margin-top: 10px">{{ t('checkout.thailandOnly') }}</p>
           <NuxtLink :to="localePath('/checkout')" class="btn btn--gold btn--block">{{ t('cart.checkout') }}</NuxtLink>
         </aside>
       </div>
