@@ -45,13 +45,14 @@ function prevHero() {
   activeHero.value = (activeHero.value - 1 + heroSlides.value.length) % heroSlides.value.length
 }
 
-/* 2. RECOMMEND — 6 Studio Cutout Timepieces (3 Olympianus + 3 Ogival) */
+/* 2. RECOMMEND — 6 Studio Cutout Timepieces (Olym Pianus + Olympia Star + Ogival) */
 const recommendedProducts = computed(() => {
   const list = homeData.value?.allProducts || []
   const op = list.filter((p: any) => p.brandSlug === 'olympianus')
+  const opa = list.filter((p: any) => p.brandSlug === 'olympia-star')
   const og = list.filter((p: any) => p.brandSlug === 'ogival')
-  if (op.length >= 3 && og.length >= 3) {
-    return [...op.slice(0, 3), ...og.slice(0, 3)]
+  if (op.length >= 2 && opa.length >= 2 && og.length >= 2) {
+    return [...op.slice(0, 2), ...opa.slice(0, 2), ...og.slice(0, 2)]
   }
   return list.slice(0, 6)
 })
@@ -161,31 +162,34 @@ const collectionEntries = computed(() => [
 ])
 const hoveredCollection = ref(0)
 
-/* Three Horological Houses under Opwatch Thailand Boutique */
+/* Three Official Watch Brands Distributed by บริษัท อินเตอร์ไทมส์ จำกัด */
 const brandCards = computed(() => [
   {
     slug: 'olympianus',
-    name: 'Olympianus (Olym Pianus)',
-    origin: locale.value === 'th' ? '222 รุ่นทางการ · กระจกแซฟไฟร์แท้' : '222 Official Models · Sapphire Crystal',
+    name: 'Olym Pianus',
+    logo: '/images/logos/olym-pianus.jpg',
+    origin: locale.value === 'th' ? 'JAPANESE MOVEMENT · SAPPHIRE CRYSTAL' : 'JAPANESE MOVEMENT · SAPPHIRE CRYSTAL',
     desc: locale.value === 'th'
-      ? 'ครบทุกคอลเลกชันทางการจาก Olympianus ผสานดีไซน์สวิสคลาสสิกเข้ากับกลไกญี่ปุ่นแท้และกระจกแซฟไฟร์ทุกรุ่น'
-      : 'Complete official Olympianus collection combining Swiss-inspired design, Japanese movements, and sapphire crystal.'
+      ? 'นาฬิกาข้อมือกลไกออโตเมติกและควอตซ์ต้นตำรับจากญี่ปุ่น พร้อมกระจกแซฟไฟร์แท้กันรอยขีดข่วนทุกรุ่น'
+      : 'Authentic Japanese automatic and precision quartz timepieces fitted with scratch-resistant sapphire crystal.'
+  },
+  {
+    slug: 'olympia-star',
+    name: 'Olympia Star',
+    logo: '/images/logos/olympia-star.jpg',
+    origin: locale.value === 'th' ? 'SWISS MOVEMENT · SAPPHIRE CRYSTAL' : 'SWISS MOVEMENT · SAPPHIRE CRYSTAL',
+    desc: locale.value === 'th'
+      ? 'สายผลิตภัณฑ์เครื่องสวิสแท้ภายใต้ตรามงกุฎและช่อมะกอกคู่แห่งชัยชนะ ผสานกระจกแซฟไฟร์และสแตนเลส 316L'
+      : 'Crowned OP shield with twin olive laurels powered by precision Swiss movements beneath sapphire crystal.'
   },
   {
     slug: 'ogival',
-    name: 'Ogival (Swiss 1903)',
-    origin: locale.value === 'th' ? '177 รุ่นทางการ · สวิสลักชัวรีตั้งแต่ปี 1903' : '177 Official Models · Swiss Luxury Since 1903',
+    name: 'Ogival',
+    logo: '/images/logos/ogival.jpg',
+    origin: locale.value === 'th' ? 'SWISS HAUTE HORLOGERIE · SINCE 1903' : 'SWISS HAUTE HORLOGERIE · SINCE 1903',
     desc: locale.value === 'th'
-      ? 'ตำนานปลากระโดดแห่งความโชคดีจากเมือง La Chaux-de-Fonds ครบทั้งรุ่นออโตเมติก คามิลเลีย ดาวตก และเพชรแท้'
-      : 'Prestigious Swiss lucky-leaping-fish timepieces from La Chaux-de-Fonds: skeleton, Camellia, Meteor, and diamond series.'
-  },
-  {
-    slug: 'opwatch',
-    name: 'Opwatch Thailand',
-    origin: locale.value === 'th' ? 'รุ่นพิเศษประจำบูติกประเทศไทยเท่านั้น' : 'Exclusive Thailand Boutique Edition',
-    desc: locale.value === 'th'
-      ? 'เรือนเวลาคัดสรรพิเศษพร้อมการรับประกันศูนย์ไทย 2 ปีเต็ม และบริการจัดส่งฟรีครบทั้ง 77 จังหวัดในประเทศไทย'
-      : 'Curated sapphire timepieces backed by a 2-year Thailand service-center warranty and nationwide domestic delivery.'
+      ? 'ตำนานปลากระโดดแห่งความโชคดีจากสวิตเซอร์แลนด์ตั้งแต่ปี 1903 ครบทั้งรุ่นออโตเมติก คามิลเลีย ดาวตก และเพชรแท้'
+      : 'Swiss lucky leaping fish watchmaking from La Chaux-de-Fonds since 1903 — mechanical, Camellia, and diamond series.'
   }
 ])
 
@@ -259,6 +263,43 @@ onBeforeUnmount(() => {
     </section>
 
     <!-- =====================================================================
+         SECTION 1B: 3 OFFICIAL PRODUCT BRANDS (Olym Pianus · Olympia Star · Ogival)
+         ===================================================================== -->
+    <section class="section op-houses">
+      <div class="container">
+        <div class="op-sec-head">
+          <h2 class="op-sec-title">{{ locale === 'th' ? 'OUR 3 WATCH BRANDS' : 'OUR 3 WATCH BRANDS' }}</h2>
+          <p class="op-sec-sub">
+            {{
+              locale === 'th'
+                ? 'เลือกชมประเภทสินค้าตาม 3 แบรนด์นาฬิกาชั้นนำของแท้ จัดจำหน่ายอย่างเป็นทางการในประเทศไทยโดย บริษัท อินเตอร์ไทมส์ จำกัด'
+                : 'Explore authentic timepieces across our three official watch brands distributed in Thailand by Inter Times Co., Ltd.'
+            }}
+          </p>
+        </div>
+
+        <div class="op-houses__grid">
+          <NuxtLink
+            v-for="b in brandCards"
+            :key="b.slug"
+            :to="localePath(`/brands/${b.slug}`)"
+            class="op-houses__card"
+          >
+            <div class="op-houses__logo-wrap">
+              <img :src="b.logo" :alt="b.name" class="op-houses__logo" loading="lazy" />
+            </div>
+            <span class="op-houses__origin">{{ b.origin }}</span>
+            <h3>{{ b.name }}</h3>
+            <p>{{ b.desc }}</p>
+            <span class="op-houses__cta">
+              {{ locale === 'th' ? 'เลือกชมสินค้าแบรนด์นี้ →' : 'Shop Brand →' }}
+            </span>
+          </NuxtLink>
+        </div>
+      </div>
+    </section>
+
+    <!-- =====================================================================
          SECTION 2: RECOMMEND — 3x2 Studio Cutout Grid on #f8f8f8 (main_color)
          ===================================================================== -->
     <section id="op-recommend" class="section op-recommend">
@@ -268,7 +309,7 @@ onBeforeUnmount(() => {
           <p class="op-sec-sub">
             {{
               locale === 'th'
-                ? 'คัดสรรเรือนเวลายอดนิยมจากบูติก Olym Pianus, Opwatch และ Ogival พร้อมสั่งซื้อออนไลน์ทันที'
+                ? 'คัดสรรเรือนเวลายอดนิยมจาก Olym Pianus, Olympia Star และ Ogival พร้อมสั่งซื้อออนไลน์ทันที'
                 : 'Curated signature timepieces crafted with sapphire crystal and enduring horological artistry.'
             }}
           </p>
@@ -484,40 +525,6 @@ onBeforeUnmount(() => {
 
       <div class="op-story__poster">
         <img src="/images/op/portrait-99141agnsk.jpg" alt="Olym Pianus Advertisement" loading="lazy" />
-      </div>
-    </section>
-
-    <!-- =====================================================================
-         SECTION 8: THREE HOROLOGICAL HOUSES (.TextIconBox on #f8f8f8)
-         ===================================================================== -->
-    <section class="section op-houses">
-      <div class="container">
-        <div class="op-sec-head">
-          <h2 class="op-sec-title">{{ locale === 'th' ? 'OUR WATCH HOUSES' : 'OUR WATCH HOUSES' }}</h2>
-          <p class="op-sec-sub">
-            {{
-              locale === 'th'
-                ? 'ศูนย์รวมเรือนเวลาของแท้จาก 3 แบรนด์ชั้นนำ พร้อมใบรับประกันศูนย์ไทยและบริการหลังการขายครบวงจร'
-                : 'Official Thailand boutique uniting three distinguished watchmaking houses under one roof.'
-            }}
-          </p>
-        </div>
-
-        <div class="op-houses__grid">
-          <NuxtLink
-            v-for="b in brandCards"
-            :key="b.slug"
-            :to="localePath(`/brands/${b.slug}`)"
-            class="op-houses__card"
-          >
-            <span class="op-houses__origin">{{ b.origin }}</span>
-            <h3>{{ b.name }}</h3>
-            <p>{{ b.desc }}</p>
-            <span class="op-houses__cta">
-              {{ locale === 'th' ? 'สำรวจคอลเลกชัน →' : 'Explore House →' }}
-            </span>
-          </NuxtLink>
-        </div>
       </div>
     </section>
   </div>
@@ -1069,9 +1076,10 @@ onBeforeUnmount(() => {
   object-fit: cover;
 }
 
-/* 8. THREE HOROLOGICAL HOUSES (olympianus.com .TextIconBox style) */
+/* 3 OFFICIAL WATCH BRANDS WITH WHITE-BG LOGOS */
 .op-houses {
   background: var(--paper);
+  border-bottom: 1px solid var(--sand);
 }
 .op-houses__grid {
   display: grid;
@@ -1079,21 +1087,41 @@ onBeforeUnmount(() => {
   gap: 28px;
 }
 .op-houses__card {
-  background: var(--ivory);
+  background: #ffffff;
   border: 1px solid var(--sand);
   border-bottom: 2px solid var(--sapphire);
-  padding: 42px 32px;
+  padding: 36px 28px 34px;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: 14px;
-  transition: transform 0.35s var(--ease), box-shadow 0.35s var(--ease), background 0.3s;
+  gap: 12px;
+  transition: transform 0.35s var(--ease), box-shadow 0.35s var(--ease), border-color 0.3s;
 }
 .op-houses__card:hover {
+  transform: translateY(-5px);
+  border-color: var(--sapphire);
+  box-shadow: 0 18px 42px rgba(25, 26, 53, 0.1);
+}
+.op-houses__logo-wrap {
+  width: 100%;
+  height: 128px;
   background: #ffffff;
-  transform: translateY(-4px);
-  box-shadow: var(--shadow);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+.op-houses__logo {
+  max-height: 122px;
+  max-width: 210px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  transition: transform 0.4s var(--ease);
+}
+.op-houses__card:hover .op-houses__logo {
+  transform: scale(1.05);
 }
 .op-houses__origin {
   font-family: var(--font-roman);

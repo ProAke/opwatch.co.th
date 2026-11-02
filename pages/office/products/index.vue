@@ -98,9 +98,9 @@ definePageMeta({ layout: 'office', middleware: 'office' })
         <input v-model="search" class="input" style="max-width: 300px" :placeholder="t('admin.searchPlaceholder')" />
         <select v-model="brandFilter" class="select" style="max-width: 220px">
           <option value="">{{ locale === 'th' ? 'ทุกแบรนด์' : 'All Brands' }}</option>
-          <option value="olympianus">Olympianus (Olym Pianus)</option>
-          <option value="ogival">Ogival (Swiss 1903)</option>
-          <option value="opwatch">Opwatch Thailand</option>
+          <option value="olympianus">Olym Pianus</option>
+          <option value="olympia-star">Olympia Star</option>
+          <option value="ogival">Ogival</option>
         </select>
       </div>
       <span class="small muted">{{ t('products.results', { count: filteredItems.length }) }}</span>

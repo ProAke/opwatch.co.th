@@ -102,15 +102,38 @@ function resetAll() {
       <img src="/images/op/lifestyle-men.jpg" alt="Olym Pianus Collections" class="op-cat__hero-img" />
       <div class="op-cat__hero-scrim" />
       <div class="container op-cat__hero-body">
-        <span class="op-cat__eyebrow">OLYM PIANUS · OPWATCH · OGIVAL</span>
+        <span class="op-cat__eyebrow">OLYM PIANUS · OLYMPIA STAR · OGIVAL</span>
         <h1 class="page-title">Collections</h1>
         <p>
           {{
             locale === 'th'
-              ? 'สำรวจคอลเลกชันเรือนเวลาแท้กระจกแซฟไฟร์จากทั้ง 3 แบรนด์ในเครือ พร้อมสั่งซื้อออนไลน์ได้ทันที'
-              : 'Explore authentic sapphire-crystal timepieces across our Men, Ladies, Sport, Classic & Limited series.'
+              ? 'สำรวจคอลเลกชันเรือนเวลาแท้กระจกแซฟไฟร์จากทั้ง 3 แบรนด์สินค้าทางการโดย บริษัท อินเตอร์ไทมส์ จำกัด'
+              : 'Explore authentic sapphire-crystal timepieces across Olym Pianus, Olympia Star, and Ogival.'
           }}
         </p>
+      </div>
+    </section>
+
+    <!-- 3 Official Brand Product Categories Selector -->
+    <section class="op-cat__brands-strip">
+      <div class="container op-cat__brand-cards">
+        <button
+          v-for="b in brands"
+          :key="b.slug"
+          type="button"
+          class="op-cat__brand-card"
+          :class="{ 'is-active': selectedBrand === b.slug }"
+          @click="applyFilter({ brand: selectedBrand === b.slug ? '' : b.slug })"
+        >
+          <img
+            v-if="b.logo"
+            :src="b.logo"
+            :alt="b.nameEn || b.name"
+            class="op-cat__brand-logo"
+            loading="lazy"
+          />
+          <span class="op-cat__brand-label">{{ b.nameEn || b.name }}</span>
+        </button>
       </div>
     </section>
 
@@ -282,6 +305,54 @@ function resetAll() {
   flex-direction: column;
   align-items: center;
   gap: 14px;
+}
+
+.op-cat__brands-strip {
+  background: var(--ivory);
+  border-bottom: 1px solid var(--sand);
+  padding-block: 22px;
+}
+.op-cat__brand-cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+.op-cat__brand-card {
+  background: #ffffff;
+  border: 1.5px solid var(--line-strong);
+  padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: border-color 0.25s var(--ease), box-shadow 0.25s var(--ease), transform 0.25s var(--ease);
+}
+.op-cat__brand-card:hover {
+  border-color: var(--sapphire);
+  transform: translateY(-2px);
+}
+.op-cat__brand-card.is-active {
+  border-color: var(--sapphire);
+  box-shadow: 0 0 0 2px var(--sapphire);
+}
+.op-cat__brand-logo {
+  height: 76px;
+  width: auto;
+  max-width: 170px;
+  object-fit: contain;
+}
+.op-cat__brand-label {
+  font-family: var(--font-roman);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--sapphire);
+}
+@media (max-width: 680px) {
+  .op-cat__brand-cards { grid-template-columns: 1fr; }
 }
 .op-cat__eyebrow {
   font-family: var(--font-roman);

@@ -47,9 +47,9 @@ const opCollections = computed(() => [
 ])
 
 const brandHouses = computed(() => [
-  { slug: 'olympianus', name: 'Olympianus (Olym Pianus)', tag: locale.value === 'th' ? '222 รุ่นทางการ · กระจกแซฟไฟร์' : '222 Official Models · Sapphire' },
-  { slug: 'ogival', name: 'Ogival (Swiss 1903)', tag: locale.value === 'th' ? '177 รุ่นทางการ · สวิสลักชัวรี' : '177 Official Models · Swiss Luxury' },
-  { slug: 'opwatch', name: 'Opwatch Thailand', tag: locale.value === 'th' ? 'รุ่นพิเศษบูติกประเทศไทย' : 'Thailand Boutique Edition' }
+  { slug: 'olympianus', name: 'Olym Pianus', logo: '/images/logos/olym-pianus.jpg', tag: locale.value === 'th' ? 'เครื่องญี่ปุ่น · กระจกแซฟไฟร์' : 'Japanese Movement · Sapphire' },
+  { slug: 'olympia-star', name: 'Olympia Star', logo: '/images/logos/olympia-star.jpg', tag: locale.value === 'th' ? 'เครื่องสวิส · กระจกแซฟไฟร์' : 'Swiss Movement · Sapphire' },
+  { slug: 'ogival', name: 'Ogival', logo: '/images/logos/ogival.jpg', tag: locale.value === 'th' ? 'สวิสลักชัวรีตั้งแต่ปี 1903' : 'Swiss Luxury Since 1903' }
 ])
 
 watch(() => route.fullPath, () => {
@@ -176,15 +176,18 @@ watch(() => route.fullPath, () => {
           </div>
 
           <div class="op-mega__brands">
-            <p class="op-mega__eyebrow">{{ locale === 'th' ? '3 แบรนด์ในเครือ OPWATCH' : 'THREE HOROLOGICAL HOUSES' }}</p>
+            <p class="op-mega__eyebrow">{{ locale === 'th' ? '3 แบรนด์สินค้าทางการ' : '3 OFFICIAL WATCH BRANDS' }}</p>
             <NuxtLink
               v-for="b in brandHouses"
               :key="b.slug"
               :to="localePath(`/brands/${b.slug}`)"
               class="op-mega__brand"
             >
-              <strong>{{ b.name }}</strong>
-              <span>{{ b.tag }}</span>
+              <img :src="b.logo" :alt="b.name" class="op-mega__brand-logo" loading="lazy" />
+              <div class="op-mega__brand-meta">
+                <strong>{{ b.name }}</strong>
+                <span>{{ b.tag }}</span>
+              </div>
             </NuxtLink>
             <NuxtLink :to="localePath('/products')" class="op-mega__all">
               {{ locale === 'th' ? 'ดูเรือนเวลาทั้งหมดในบูติก →' : 'View Full Boutique Catalogue →' }}
@@ -458,23 +461,35 @@ watch(() => route.fullPath, () => {
   gap: 10px;
 }
 .op-mega__brand {
-  padding: 11px 15px;
-  background: var(--ivory);
+  padding: 9px 14px;
+  background: #ffffff;
   border: 1px solid var(--sand);
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  transition: border-color 0.2s, background 0.2s;
+  gap: 14px;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 .op-mega__brand:hover {
   border-color: var(--sapphire);
-  background: var(--sapphire-tint);
+  box-shadow: 0 6px 16px rgba(29, 32, 136, 0.08);
+}
+.op-mega__brand-logo {
+  width: 56px;
+  height: 44px;
+  object-fit: contain;
+  background: #ffffff;
+  flex: none;
+}
+.op-mega__brand-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 .op-mega__brand strong {
   font-family: var(--font-display);
-  font-size: 17.5px;
+  font-size: 17px;
   font-weight: 600;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
   color: var(--ink);
 }
 .op-mega__brand span {

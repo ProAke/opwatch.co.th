@@ -81,16 +81,16 @@ const pillars = computed(() => [
           </p>
 
           <p v-if="locale === 'th'">
-            เว็บไซต์และบูติกทางการ <strong>Opwatch.co.th (บริษัท อินเตอร์ ไทม์ส จำกัด)</strong> ให้บริการจัดจำหน่ายและดูแลหลังการขาย<strong>เฉพาะในประเทศไทยเท่านั้น</strong>
-            โดยรวบรวมเรือนเวลาของแท้ครบทุกรุ่นจาก <strong>Olympianus (Olym Pianus)</strong>,
-            <strong>Ogival (สวิตเซอร์แลนด์ 1903)</strong> และ <strong>Opwatch Thailand</strong>
+            เว็บไซต์และบูติกทางการ <strong>Opwatch.co.th (บริษัท อินเตอร์ไทมส์ จำกัด)</strong> ให้บริการจัดจำหน่ายและดูแลหลังการขาย<strong>เฉพาะในประเทศไทยเท่านั้น</strong>
+            โดยรวบรวมเรือนเวลาของแท้ครบทั้ง 3 แบรนด์หลัก ได้แก่ <strong>Olym Pianus</strong>,
+            <strong>Olympia Star</strong> และ <strong>Ogival</strong>
             เพื่อให้ลูกค้าในประเทศไทยได้สัมผัสเรือนเวลาแท้พร้อมใบรับประกันศูนย์ไทยและบริการจัดส่งฟรีครบทั้ง 77 จังหวัด
           </p>
           <p v-else>
             Operating <strong>exclusively within Thailand</strong>, <strong>Opwatch.co.th (Inter Times Co., Ltd.)</strong>
-            is the official Thailand boutique and service center uniting the complete authentic collections of
-            <strong>Olympianus (Olym Pianus)</strong>, <strong>Ogival (Swiss 1903)</strong>, and
-            <strong>Opwatch Thailand</strong> — backed by official Thailand warranty and insured nationwide delivery across all 77 provinces.
+            is the official Thailand boutique and service center uniting the authentic collections of
+            <strong>Olym Pianus</strong>, <strong>Olympia Star</strong>, and <strong>Ogival</strong>
+            — backed by official Thailand warranty and insured nationwide delivery across all 77 provinces.
           </p>
         </div>
       </div>

@@ -56,7 +56,7 @@ const editorialStories = computed(() => [
       ? 'Ogival 1903 ตำนานปลากระโดดแห่งความโชคดีจากสวิตเซอร์แลนด์ ครบทั้ง 177 รุ่น'
       : 'Ogival La Chaux-de-Fonds: All 177 Swiss Timepieces Now at Opwatch Thailand',
     excerpt: locale.value === 'th'
-      ? 'พบกับเรือนเวลาสวิสระดับสูง Ogival ครบทุกรุ่นทางการ ทั้งสเกลเลตัน คามิลเลีย ดาวตก และเพชรแท้ พร้อมใบรับประกันศูนย์ไทยโดย บริษัท อินเตอร์ ไทม์ส จำกัด'
+      ? 'พบกับเรือนเวลาสวิสระดับสูง Ogival ครบทุกรุ่นทางการ ทั้งสเกลเลตัน คามิลเลีย ดาวตก และเพชรแท้ พร้อมใบรับประกันศูนย์ไทยโดย บริษัท อินเตอร์ไทมส์ จำกัด'
       : 'Explore all 177 official Swiss Ogival skeleton, Camellia, Meteor, and diamond timepieces exclusively warranted in Thailand by Inter Times Co., Ltd.',
     to: { path: localePath('/brands/ogival') }
   }

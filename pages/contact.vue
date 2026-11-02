@@ -1,42 +1,16 @@
 <script setup lang="ts">
 const { locale } = useI18n()
+const localePath = useLocalePath()
 
 useHead({
-  title: 'Contact Us — Opwatch.co.th Official Boutique Thailand'
+  title: 'ติดต่อเรา — บริษัท อินเตอร์ไทมส์ จำกัด (Opwatch.co.th)'
 })
 
-const thailandCenters = computed(() => [
-  {
-    region: locale.value === 'th'
-      ? 'สำนักงานใหญ่และผู้จัดจำหน่ายอย่างเป็นทางการแต่เพียงผู้เดียวในประเทศไทย'
-      : 'THAILAND SOLE AUTHORIZED DISTRIBUTOR & HEADQUARTERS',
-    company: 'บริษัท อินเตอร์ ไทม์ส จำกัด (Inter Times Co., Ltd.) · Opwatch.co.th',
-    detail: locale.value === 'th'
-      ? 'กรุงเทพมหานคร ประเทศไทย · ตัวแทนจำหน่ายเรือนเวลาของแท้ Olympianus (Olym Pianus), Ogival และ Opwatch เฉพาะภายในประเทศไทยเท่านั้น'
-      : 'Bangkok, Thailand · Official authorized distributor for authentic Olympianus, Ogival, and Opwatch timepieces exclusively within Thailand.',
-    featured: true
-  },
-  {
-    region: locale.value === 'th'
-      ? 'ศูนย์บริการซ่อมบำรุงและรับประกันศูนย์ไทย (THAILAND SERVICE CENTER)'
-      : 'OFFICIAL THAILAND HOROLOGICAL SERVICE CENTER',
-    company: locale.value === 'th' ? 'ศูนย์บริการมาตรฐานช่างผู้เชี่ยวชาญ อินเตอร์ ไทม์ส' : 'Inter Times Certified Watchmaking Atelier (Bangkok)',
-    detail: locale.value === 'th'
-      ? 'บริการตรวจเช็กความเที่ยงตรง ล้างเครื่องออโตเมติก ทดสอบแรงดันกันน้ำ เปลี่ยนแบตเตอรี่ และอะไหล่แท้ สำหรับเรือนเวลาที่สั่งซื้อในประเทศไทย'
-      : 'Movement regulation, automatic overhaul, pressure water-resistance testing, battery replacement, and genuine parts for Thailand-warranted watches.',
-    featured: false
-  },
-  {
-    region: locale.value === 'th'
-      ? 'ขอบเขตการจัดส่งสินค้า (จัดส่งเฉพาะในประเทศไทย 77 จังหวัดเท่านั้น)'
-      : 'DOMESTIC DELIVERY SCOPE (THAILAND ONLY — ALL 77 PROVINCES)',
-    company: locale.value === 'th' ? 'จัดส่งด่วนพร้อมประกันภัยเต็มมูลค่าทั่วประเทศไทย' : 'Complimentary Insured Domestic Express Delivery',
-    detail: locale.value === 'th'
-      ? 'เว็บไซต์ opwatch.co.th ให้บริการเฉพาะในประเทศไทยเท่านั้น (งดจัดส่งต่างประเทศ) กรุงเทพฯ และปริมณฑล 1–2 วันทำการ · ต่างจังหวัด 2–3 วันทำการ'
-      : 'Opwatch.co.th serves customers exclusively within Thailand (no international shipping). Bangkok & vicinity 1–2 business days · Provincial Thailand 2–3 business days.',
-    featured: false
-  }
-])
+const officialBrands = [
+  { slug: 'olympianus', name: 'Olym Pianus', logo: '/images/logos/olym-pianus.jpg' },
+  { slug: 'olympia-star', name: 'Olympia Star', logo: '/images/logos/olympia-star.jpg' },
+  { slug: 'ogival', name: 'Ogival', logo: '/images/logos/ogival.jpg' }
+]
 
 const form = reactive({
   name: '',
@@ -56,40 +30,91 @@ function submitInquiry() {
   <div class="op-contact">
     <!-- Hero -->
     <section class="op-contact__hero">
-      <img src="/images/op/hero-gold-stones.jpg" alt="Contact Opwatch Thailand" class="op-contact__hero-img" />
+      <img src="/images/op/hero-gold-stones.jpg" alt="Contact Inter Times Thailand" class="op-contact__hero-img" />
       <div class="op-contact__hero-scrim" />
       <div class="container op-contact__hero-body">
-        <span class="op-contact__eyebrow">THAILAND OFFICIAL BOUTIQUE & SERVICE CENTER</span>
-        <h1 class="page-title">{{ locale === 'th' ? 'ติดต่อเรา (ประเทศไทย)' : 'Contact Thailand Boutique' }}</h1>
+        <span class="op-contact__eyebrow">OFFICIAL THAILAND DISTRIBUTOR & SERVICE CENTER</span>
+        <h1 class="page-title">{{ locale === 'th' ? 'ติดต่อเรา' : 'Contact Us' }}</h1>
         <p>
           {{
             locale === 'th'
-              ? 'ติดต่อ บริษัท อินเตอร์ ไทม์ส จำกัด ผู้จัดจำหน่ายและศูนย์บริการอย่างเป็นทางการในประเทศไทย (ให้บริการเฉพาะในประเทศไทยเท่านั้น)'
-              : 'Connect with Inter Times Co., Ltd. — Official Authorized Distributor & Horological Service Center exclusively in Thailand.'
+              ? 'บริษัท อินเตอร์ไทมส์ จำกัด — ผู้จัดจำหน่ายและศูนย์บริการอย่างเป็นทางการในประเทศไทย สำหรับแบรนด์ Olym Pianus, Olympia Star และ Ogival'
+              : 'Inter Times Co., Ltd. — Official Thailand Distributor & Horological Service Center for Olym Pianus, Olympia Star, and Ogival.'
           }}
         </p>
       </div>
     </section>
 
-    <!-- Thailand Centers + Concierge Inquiry (#f8f8f8 main_color) -->
+    <!-- Official Company Info + Inquiry Form -->
     <section class="section section--pearl">
       <div class="container op-contact__grid">
         <div>
-          <span class="eyebrow">THAILAND EXCLUSIVE SERVICE</span>
+          <span class="eyebrow">HEADQUARTERS & SERVICE CENTER</span>
           <h2 class="op-contact__h2">
-            {{ locale === 'th' ? 'ศูนย์บริการและการจัดจำหน่ายในประเทศไทย' : 'Official Thailand Boutique & Service Network' }}
+            {{ locale === 'th' ? 'ข้อมูลติดต่อบริษัทและช่องทางทางการ' : 'Official Headquarters & Channels' }}
           </h2>
 
           <div class="op-contact__list">
-            <div
-              v-for="d in thailandCenters"
-              :key="d.region"
-              class="op-contact__card"
-              :class="{ 'is-featured': d.featured }"
-            >
-              <span class="op-contact__region">{{ d.region }}</span>
-              <h3>{{ d.company }}</h3>
-              <p>{{ d.detail }}</p>
+            <!-- Official Inter Times Card -->
+            <div class="op-contact__card is-featured">
+              <img
+                src="/images/logos/inter-times-blue.jpg"
+                alt="บริษัท อินเตอร์ไทมส์ จำกัด"
+                class="op-contact__company-logo"
+              />
+              <h3>{{ locale === 'th' ? 'บริษัท อินเตอร์ไทมส์ จำกัด' : 'Inter Times Co., Ltd. (บริษัท อินเตอร์ไทมส์ จำกัด)' }}</h3>
+              <p class="op-contact__addr">
+                <strong>{{ locale === 'th' ? 'ที่อยู่ :' : 'Address :' }}</strong>
+                {{
+                  locale === 'th'
+                    ? '1091/229 ซอย 35 ถนนเพชรบุรีตัดใหม่ แขวงมักกะสัน เขตราชเทวี กรุงเทพมหานคร 10400'
+                    : '1091/229 Soi 35, New Phetchaburi Rd., Makkasan, Ratchathewi, Bangkok 10400, Thailand'
+                }}
+              </p>
+              <p class="op-contact__tel">
+                <strong>{{ locale === 'th' ? 'โทรศัพท์ :' : 'Phone :' }}</strong>
+                <a href="tel:022515777">02 251 5777</a>
+              </p>
+            </div>
+
+            <!-- Official Social & Marketplace Channels -->
+            <div class="op-contact__card">
+              <span class="op-contact__region">OFFICIAL ONLINE CHANNELS</span>
+              <h3>{{ locale === 'th' ? 'ช่องทางติดต่อและร้านค้าออนไลน์ทางการ' : 'Official Social & Store Channels' }}</h3>
+              <ul class="op-contact__channels">
+                <li>
+                  <span>Line ID :</span>
+                  <a href="https://line.me/ti/p/~opwatch.th" target="_blank" rel="noopener noreferrer">opwatch.th</a>
+                </li>
+                <li>
+                  <span>Facebook Page :</span>
+                  <a href="https://www.facebook.com/OPwatchThailand" target="_blank" rel="noopener noreferrer">
+                    https://www.facebook.com/OPwatchThailand
+                  </a>
+                </li>
+                <li>
+                  <span>Shopee Official :</span>
+                  <a href="https://shopee.co.th/opwatchthailand" target="_blank" rel="noopener noreferrer">
+                    https://shopee.co.th/opwatchthailand
+                  </a>
+                </li>
+              </ul>
+            </div>
+
+            <!-- 3 Official Watch Brands -->
+            <div class="op-contact__card">
+              <span class="op-contact__region">3 OFFICIAL WATCH BRANDS</span>
+              <h3>{{ locale === 'th' ? 'แบรนด์นาฬิกาในเครือจัดจำหน่าย' : 'Authorized Watch Brands' }}</h3>
+              <div class="op-contact__brands-row">
+                <NuxtLink
+                  v-for="b in officialBrands"
+                  :key="b.slug"
+                  :to="localePath(`/brands/${b.slug}`)"
+                  class="op-contact__brand-box"
+                >
+                  <img :src="b.logo" :alt="b.name" loading="lazy" />
+                </NuxtLink>
+              </div>
             </div>
           </div>
         </div>
@@ -105,8 +130,8 @@ function submitInquiry() {
             <p>
               {{
                 locale === 'th'
-                  ? 'ทีมผู้เชี่ยวชาญของ Opwatch Thailand ได้รับข้อมูลของท่านแล้ว และจะติดต่อกลับโดยเร็วที่สุด'
-                  : 'Our Opwatch Thailand horological concierge has received your message and will respond shortly.'
+                  ? 'บริษัท อินเตอร์ไทมส์ จำกัด ได้รับข้อมูลของท่านแล้ว และจะติดต่อกลับโดยเร็วที่สุด'
+                  : 'Inter Times Co., Ltd. has received your message and will respond shortly.'
               }}
             </p>
             <button type="button" class="btn btn--sm" @click="sent = false">
@@ -126,19 +151,19 @@ function submitInquiry() {
               </div>
               <div class="field">
                 <label class="label">{{ locale === 'th' ? 'เบอร์โทรศัพท์' : 'Phone' }}</label>
-                <input v-model="form.phone" class="input" />
+                <input v-model="form.phone" class="input" placeholder="02 251 5777" />
               </div>
             </div>
             <div class="field">
-              <label class="label">{{ locale === 'th' ? 'รหัสรุ่นที่สนใจ (เช่น 899832AGS)' : 'Model Reference (Optional)' }}</label>
-              <input v-model="form.model" class="input" placeholder="899832AGS / Ogival / Opwatch" />
+              <label class="label">{{ locale === 'th' ? 'รหัสรุ่น / แบรนด์ที่สนใจ' : 'Model Reference / Brand (Optional)' }}</label>
+              <input v-model="form.model" class="input" placeholder="Olym Pianus / Olympia Star / Ogival" />
             </div>
             <div class="field">
               <label class="label">{{ locale === 'th' ? 'รายละเอียดข้อความ *' : 'Message *' }}</label>
               <textarea v-model="form.message" class="textarea" required />
             </div>
             <button type="submit" class="btn">
-              {{ locale === 'th' ? 'ส่งข้อความถึงที่ปรึกษาบูติก' : 'Send Inquiry' }}
+              {{ locale === 'th' ? 'ส่งข้อความถึงฝ่ายบริการลูกค้า' : 'Send Inquiry' }}
             </button>
           </form>
         </div>
@@ -190,7 +215,7 @@ function submitInquiry() {
 }
 .op-contact__hero-body h1 { color: #ffffff; }
 .op-contact__hero-body p {
-  max-width: 620px;
+  max-width: 660px;
   font-family: var(--font-display);
   font-size: 18.5px;
   color: rgba(255, 255, 255, 0.88);
@@ -206,48 +231,114 @@ function submitInquiry() {
   font-family: var(--font-display);
   font-size: 28px;
   font-weight: 500;
-  margin: 12px 0 28px;
+  color: var(--ink);
+  margin: 8px 0 24px;
 }
 .op-contact__list {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 16px;
 }
 .op-contact__card {
-  padding: 20px 24px;
-  border: 1px solid var(--line-strong);
   background: #ffffff;
+  border: 1px solid var(--sand);
+  padding: 24px 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 .op-contact__card.is-featured {
   border-color: var(--sapphire);
-  border-left: 3px solid var(--sapphire);
-  background: var(--sapphire-tint);
+  border-left: 4px solid var(--sapphire);
+}
+.op-contact__company-logo {
+  height: 46px;
+  width: fit-content;
+  max-width: 100%;
+  object-fit: contain;
+  margin-bottom: 6px;
 }
 .op-contact__region {
   font-family: var(--font-roman);
-  font-size: 10.5px;
+  font-size: 10px;
   font-weight: 600;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.22em;
   color: var(--sapphire);
 }
 .op-contact__card h3 {
   font-family: var(--font-display);
-  font-size: 19.5px;
+  font-size: 21px;
   font-weight: 600;
-  margin-top: 4px;
+  color: var(--ink);
 }
-.op-contact__card p {
-  font-size: 13.5px;
+.op-contact__addr,
+.op-contact__tel {
+  font-size: 14.5px;
   color: var(--ink-soft);
-  margin-top: 4px;
+  line-height: 1.7;
+}
+.op-contact__tel a {
+  color: var(--sapphire);
+  font-weight: 600;
+  margin-left: 6px;
+}
+.op-contact__channels {
+  list-style: none;
+  padding: 0;
+  margin: 6px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.op-contact__channels li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 14.5px;
+}
+.op-contact__channels span {
+  font-weight: 600;
+  color: var(--ink);
+  min-width: 120px;
+}
+.op-contact__channels a {
+  color: var(--sapphire);
+  word-break: break-all;
+}
+.op-contact__channels a:hover {
+  text-decoration: underline;
+}
+
+.op-contact__brands-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 8px;
+}
+.op-contact__brand-box {
+  background: #ffffff;
+  border: 1px solid var(--line-strong);
+  padding: 10px;
+  height: 82px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.2s, transform 0.2s;
+}
+.op-contact__brand-box:hover {
+  border-color: var(--sapphire);
+  transform: translateY(-2px);
+}
+.op-contact__brand-box img {
+  max-height: 64px;
+  max-width: 100%;
+  object-fit: contain;
 }
 
 .op-contact__form-box {
-  padding: 40px;
   background: #ffffff;
-  border: 1px solid var(--line-strong);
-  border-top: 3px solid var(--sapphire);
-  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--sand);
+  padding: 36px 34px;
 }
 .op-contact__two {
   display: grid;
@@ -256,17 +347,19 @@ function submitInquiry() {
 }
 .op-contact__sent {
   padding: 28px;
-  background: var(--sapphire-tint);
-  border: 1px solid var(--line-strong);
+  background: var(--ivory);
+  border: 1px solid var(--line);
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
   gap: 12px;
+  align-items: flex-start;
 }
 
-@media (max-width: 920px) {
-  .op-contact__grid { grid-template-columns: 1fr; }
+@media (max-width: 960px) {
+  .op-contact__grid { grid-template-columns: 1fr; gap: 36px; }
+}
+@media (max-width: 560px) {
   .op-contact__two { grid-template-columns: 1fr; }
-  .op-contact__form-box { padding: 26px; }
+  .op-contact__brands-row { grid-template-columns: 1fr; }
 }
 </style>
