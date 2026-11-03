@@ -1,160 +1,258 @@
 <script setup lang="ts">
-const { t, locale } = useI18n()
+definePageMeta({ layout: 'office', middleware: ['office'] })
+
 const localePath = useLocalePath()
 const { site } = useSite()
+const toast = useToast()
 
-const localeTag = computed(() => (locale.value === 'en' ? 'en-US' : 'th-TH'))
-const fmt = (v: number) => formatPrice(v, site.value.currencySymbol, localeTag.value)
+const { data: stats, refresh } = await useFetch<any>('/api/admin/stats')
+const { data: chatData, refresh: refreshChats } = await useFetch<any>('/api/admin/chats')
 
-const reqFetch = useRequestFetch()
-const { data, pending } = await useAsyncData('office-stats', () =>
-  reqFetch<{
-    totals: Record<string, number>
-    recentOrders: Record<string, any>[]
-    topProducts: Record<string, any>[]
-    lowStock: Record<string, any>[]
-    orderStatusCounts: Record<string, number>
-  }>('/api/admin/stats').catch(() => ({
-    totals: {},
-    recentOrders: [],
-    topProducts: [],
-    lowStock: [],
-    orderStatusCounts: {}
-  }))
-)
+const fmt = (v: number) =>
+  formatPrice(Number(v || 0), site.value.currencySymbol || '฿', 'th-TH')
 
-const stats = computed(() => data.value?.totals || {})
-const recentOrders = computed(() => data.value?.recentOrders || [])
-const topProducts = computed(() => data.value?.topProducts || [])
-const lowStock = computed(() => data.value?.lowStock || [])
+const daily = computed(() => stats.value?.dailySeries || [])
 
-const cards = computed(() => [
-  { key: 'sales', label: t('admin.sales'), value: fmt(Number(stats.value.revenue || 0)), to: localePath('/office/orders') },
-  { key: 'orders', label: t('admin.ordersCount'), value: String(stats.value.orders || 0), to: localePath('/office/orders') },
-  { key: 'customers', label: t('admin.customersCount'), value: String(stats.value.customers || 0), to: localePath('/office/customers') },
-  { key: 'products', label: t('admin.products'), value: String(stats.value.products || 0), to: localePath('/office/products') }
-])
+// Pure-SVG 14-day Area Path
+const areaChart = computed(() => {
+  const pts = daily.value
+  const w = 680
+  const h = 190
+  const pad = 20
+  if (!pts.length) return { line: '', area: '', dots: [] as any[], max: 0 }
+  const vals = pts.map((d: any) => Number(d.revenue || 0))
+  const max = Math.max(...vals, 1000)
+  const coords = pts.map((d: any, i: number) => {
+    const x = pad + (i / Math.max(1, pts.length - 1)) * (w - pad * 2)
+    const y = h - pad - (Number(d.revenue || 0) / max) * (h - pad * 2)
+    return { x, y, label: d.label, val: Number(d.revenue || 0), orders: d.orders }
+  })
+  const line = coords.map((c: any, i: number) => `${i === 0 ? 'M' : 'L'}${c.x.toFixed(1)},${c.y.toFixed(1)}`).join(' ')
+  const area = `${line} L${coords[coords.length - 1].x.toFixed(1)},${h - pad} L${coords[0].x.toFixed(1)},${h - pad} Z`
+  return { line, area, dots: coords, max }
+})
 
-useHead({ title: `${t('admin.dashboard')} — ${site.value.name}` })
-definePageMeta({ layout: 'office', middleware: 'office' })
+const replyDrafts = reactive<Record<number, string>>({})
+
+async function sendAdminReply(chatId: number) {
+  const txt = (replyDrafts[chatId] || '').trim()
+  if (!txt) return
+  try {
+    await $fetch(`/api/admin/chats/${chatId}`, {
+      method: 'PUT',
+      body: { reply: txt, status: 'answered' }
+    })
+    replyDrafts[chatId] = ''
+    toast.success('ส่งข้อความตอบกลับลูกค้าเรียบร้อย')
+    await refreshChats()
+  } catch {
+    toast.error('ส่งข้อความไม่สำเร็จ')
+  }
+}
+
+function statusChip(st: string) {
+  if (st === 'completed' || st === 'paid') return 'erp-chip--mint'
+  if (st === 'shipped') return 'erp-chip--cyan'
+  if (st === 'cancelled') return 'erp-chip--rose'
+  return 'erp-chip--amber'
+}
+
+useHead({ title: 'ภาพรวมเว็บไซต์ (ERP Overview) — OPWatch Office' })
 </script>
 
 <template>
   <div>
-    <div class="pagehead">
+    <!-- Header -->
+    <div class="erp-page-head">
       <div>
-        <p class="eyebrow">OPWATCH OFFICE</p>
-        <h1 class="page-title" style="font-size: 2rem; margin-top: 6px">{{ t('admin.dashboard') }}</h1>
+        <div class="erp-kicker">MODULE 7.1 · EXECUTIVE COMMAND CENTER</div>
+        <h1 class="erp-h1">รายงานภาพรวมของเว็บไซต์ (Website Overview)</h1>
+        <p class="erp-sub">
+          ติดตามยอดขาย คำสั่งซื้อ สต็อกนาฬิกา 405+ รุ่น โปรโมชั่น และแชทลูกค้าแบบเรียลไทม์ — บริษัท อินเตอร์ไทมส์ จำกัด
+        </p>
       </div>
-      <div class="row gap-8 wrap">
-        <NuxtLink :to="localePath('/office/brands')" class="btn btn--sm btn--ghost">{{ t('admin.brands') }}</NuxtLink>
-        <NuxtLink :to="localePath('/office/products/new')" class="btn btn--sm btn--gold">{{ t('admin.newProduct') }}</NuxtLink>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button type="button" class="erp-btn" @click="refresh(); refreshChats()">↻ รีเฟรชข้อมูลสด</button>
+        <NuxtLink :to="localePath('/office/reports')" class="erp-btn erp-btn--violet">📊 ดูกราฟรายงานเชิงลึก →</NuxtLink>
       </div>
     </div>
 
-    <!-- Stat cards -->
-    <div class="statcards">
-      <NuxtLink v-for="c in cards" :key="c.key" :to="c.to" class="statcard">
-        <p class="tiny upper faint">{{ c.label }}</p>
-        <p class="statcard__value">{{ c.value }}</p>
-      </NuxtLink>
+    <!-- 6 Executive KPIs -->
+    <div class="erp-kpis">
+      <div class="erp-kpi">
+        <div class="erp-kpi__label">ยอดขายสุทธิรวม (Total Revenue)</div>
+        <div class="erp-kpi__val">{{ fmt(stats?.totals?.revenue || 0) }}</div>
+        <div class="erp-kpi__meta">เดือนนี้: {{ fmt(stats?.totals?.monthRevenue || 0) }}</div>
+      </div>
+
+      <div class="erp-kpi">
+        <div class="erp-kpi__label">คำสั่งซื้อทั้งหมด (Orders)</div>
+        <div class="erp-kpi__val">{{ stats?.totals?.orders || 0 }}</div>
+        <div class="erp-kpi__meta">รอยืนยัน {{ stats?.totals?.pendingOrders || 0 }} · จัดส่งแล้ว {{ stats?.totals?.shippedOrders || 0 }}</div>
+      </div>
+
+      <div class="erp-kpi">
+        <div class="erp-kpi__label">สินค้าในแคตตาล็อก (Watches)</div>
+        <div class="erp-kpi__val">{{ stats?.totals?.products || 0 }}</div>
+        <div class="erp-kpi__meta">เปิดขาย {{ stats?.totals?.activeProducts || 0 }} รุ่น · 3 แบรนด์หลัก</div>
+      </div>
+
+      <div class="erp-kpi">
+        <div class="erp-kpi__label">แคมเปญ &amp; คูปอง (Promos)</div>
+        <div class="erp-kpi__val">{{ (stats?.totals?.promotions || 0) + (stats?.totals?.coupons || 0) }}</div>
+        <div class="erp-kpi__meta">แบนเนอร์ {{ stats?.totals?.promotions || 0 }} · คูปอง {{ stats?.totals?.coupons || 0 }}</div>
+      </div>
+
+      <div class="erp-kpi">
+        <div class="erp-kpi__label">สมาชิก &amp; เจ้าหน้าที่ (Users)</div>
+        <div class="erp-kpi__val">{{ (stats?.totals?.customers || 0) + (stats?.totals?.staffCount || 0) }}</div>
+        <div class="erp-kpi__meta">ลูกค้า {{ stats?.totals?.customers || 0 }} · เจ้าหน้าที่ {{ stats?.totals?.staffCount || 0 }}</div>
+      </div>
+
+      <div class="erp-kpi">
+        <div class="erp-kpi__label">แชทลูกค้าหน้าเว็บ (Live Chat)</div>
+        <div class="erp-kpi__val">{{ stats?.totals?.openChats || 0 }}</div>
+        <div class="erp-kpi__meta">หน้า CMS ทั้งหมด {{ stats?.totals?.pages || 0 }} หน้า</div>
+      </div>
     </div>
 
-    <div class="dashgrid">
-      <!-- Recent orders -->
-      <section class="panel">
-        <div class="between panel__head">
-          <h2 class="serif panel__title">{{ t('admin.recentOrders') }}</h2>
-          <NuxtLink :to="localePath('/office/orders')" class="link-underline">{{ t('common.viewAll') }}</NuxtLink>
+    <!-- Row 2: 14-Day Revenue SVG Chart + Fulfillment Pipeline -->
+    <div style="display:grid;grid-template-columns:1.6fr 1fr;gap:18px;margin-bottom:18px" class="erp-overview-split">
+      <div class="erp-panel" style="margin-bottom:0">
+        <div class="erp-panel__head">
+          <div>
+            <div class="erp-panel__title">กราฟแนวโน้มรายได้ 14 วันล่าสุด (Daily Revenue Pulse)</div>
+            <div style="font-size:12px;color:#7c8fb0">คำนวณจากคำสั่งซื้อจริงในระบบ (ไม่รวมรายการยกเลิก)</div>
+          </div>
+          <span class="erp-chip erp-chip--cyan">AOV เฉลี่ย {{ fmt(stats?.totals?.avgOrderValue || 0) }}</span>
         </div>
 
-        <div v-if="pending && !recentOrders.length" class="muted">{{ t('common.loading') }}</div>
-        <div v-else-if="!recentOrders.length" class="muted">{{ t('admin.noOrders') }}</div>
+        <svg viewBox="0 0 680 205" style="width:100%;height:auto;overflow:visible">
+          <defs>
+            <linearGradient id="erpRevGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#22d3ee" stop-opacity="0.38" />
+              <stop offset="100%" stop-color="#22d3ee" stop-opacity="0.0" />
+            </linearGradient>
+          </defs>
+          <line x1="20" y1="170" x2="660" y2="170" stroke="#1b2842" stroke-width="1" />
+          <path v-if="areaChart.area" :d="areaChart.area" fill="url(#erpRevGrad)" />
+          <path v-if="areaChart.line" :d="areaChart.line" fill="none" stroke="#22d3ee" stroke-width="2.5" />
+          <g v-for="(d, idx) in areaChart.dots" :key="idx">
+            <circle :cx="d.x" :cy="d.y" r="3.6" fill="#34d399" />
+            <text v-if="idx % 2 === 0" :x="d.x" y="192" text-anchor="middle" fill="#64748b" font-size="10">
+              {{ d.label }}
+            </text>
+          </g>
+        </svg>
+      </div>
 
-        <table v-else class="table">
-          <thead>
-            <tr>
-              <th>{{ t('account.orderNo') }}</th>
-              <th>{{ t('admin.customer') }}</th>
-              <th>{{ t('admin.date') }}</th>
-              <th>{{ t('admin.status') }}</th>
-              <th style="text-align: right">{{ t('admin.grandTotal') }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="o in recentOrders" :key="o.id">
-              <td><NuxtLink :to="localePath('/office/orders/' + o.id)" class="link">{{ o.orderNo }}</NuxtLink></td>
-              <td>{{ o.customerName }}<br /><span class="tiny upper faint">{{ o.customerEmail }}</span></td>
-              <td class="small">{{ formatDate(o.createdAt, localeTag) }}</td>
-              <td><span class="badge">{{ t('orderStatus.' + o.status, o.status) }}</span></td>
-              <td style="text-align: right" class="price">{{ fmt(Number(o.total)) }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </section>
-
-      <!-- Low stock -->
-      <section class="panel">
-        <div class="between panel__head">
-          <h2 class="serif panel__title">{{ t('admin.lowStock') }}</h2>
-          <NuxtLink :to="localePath('/office/products')" class="link-underline">{{ t('admin.products') }}</NuxtLink>
+      <!-- Quick Module Launchpad & Funnel -->
+      <div class="erp-panel" style="margin-bottom:0">
+        <div class="erp-panel__head">
+          <div class="erp-panel__title">สถานะการจัดการคำสั่งซื้อ (Order Pipeline)</div>
+          <NuxtLink :to="localePath('/office/orders')" class="erp-btn erp-btn--sm">จัดการทั้งหมด →</NuxtLink>
         </div>
 
-        <div v-if="!lowStock.length" class="muted">{{ t('admin.noProducts') }}</div>
-        <table v-else class="table">
-          <thead>
-            <tr><th>{{ t('admin.name') }}</th><th>{{ t('admin.sku') }}</th><th style="text-align:right">{{ t('admin.stock') }}</th></tr>
-          </thead>
-          <tbody>
-            <tr v-for="p in lowStock" :key="p.id">
-              <td><NuxtLink :to="localePath('/office/products/' + p.id)" class="link">{{ locale === 'en' ? p.nameEn || p.name : p.nameTh || p.name }}</NuxtLink></td>
-              <td class="small faint">{{ p.sku }}</td>
-              <td style="text-align: right">
-                <span class="badge" :class="Number(p.stock) <= 0 ? 'badge--danger' : 'badge--gold'">{{ p.stock }}</span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </section>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div v-for="f in stats?.funnel || []" :key="f.stage" style="display:grid;gap:4px">
+            <div style="display:flex;justify-content:space-between;font-size:12.5px">
+              <span>{{ f.label }}</span>
+              <strong>{{ f.count }} รายการ</strong>
+            </div>
+            <div style="height:8px;background:#091121;border-radius:999px;overflow:hidden;border:1px solid #192846">
+              <div
+                :style="{
+                  height: '100%',
+                  width: Math.min(100, (f.count / Math.max(1, stats?.totals?.orders || 1)) * 100) + '%',
+                  background: f.stage === 'cancelled' ? '#fb7185' : 'linear-gradient(90deg,#22d3ee,#34d399)'
+                }"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:18px;padding-top:14px;border-top:1px solid #1b2842">
+          <NuxtLink :to="localePath('/office/products/new')" class="erp-btn erp-btn--sm">🛍 ดึงสินค้าจาก Shopee</NuxtLink>
+          <NuxtLink :to="localePath('/office/promotions')" class="erp-btn erp-btn--sm">🎁 จัดการแบนเนอร์โปรฯ</NuxtLink>
+          <NuxtLink :to="localePath('/office/pages')" class="erp-btn erp-btn--sm">📄 แก้ไขหน้า PDPA/CMS</NuxtLink>
+          <NuxtLink :to="localePath('/office/staff')" class="erp-btn erp-btn--sm">👥 จัดการสิทธิ์ CEO/Staff</NuxtLink>
+        </div>
+      </div>
     </div>
 
-    <!-- Top products -->
-    <section class="panel" style="margin-top: 30px">
-      <div class="between panel__head">
-        <h2 class="serif panel__title">{{ t('admin.topProducts') }}</h2>
+    <!-- Row 3: Recent Orders + Low Stock Alerts -->
+    <div style="display:grid;grid-template-columns:1.5fr 1fr;gap:18px" class="erp-overview-split">
+      <div class="erp-panel">
+        <div class="erp-panel__head">
+          <div class="erp-panel__title">คำสั่งซื้อล่าสุด (Recent Orders)</div>
+          <NuxtLink :to="localePath('/office/orders')" class="erp-btn erp-btn--sm">ดูคำสั่งซื้อทั้งหมด</NuxtLink>
+        </div>
+        <div class="erp-table-wrap">
+          <table class="erp-table">
+            <thead>
+              <tr>
+                <th>เลขที่คำสั่งซื้อ</th>
+                <th>ลูกค้า</th>
+                <th>ยอดสุทธิ</th>
+                <th>สถานะ</th>
+                <th>จัดการ</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="o in stats?.recentOrders || []" :key="o.id">
+                <td style="font-family:monospace;color:#67e8f9">{{ o.orderNo }}</td>
+                <td>{{ o.customer?.name || 'ลูกค้าทั่วไป' }}</td>
+                <td>{{ fmt(o.total) }}</td>
+                <td><span class="erp-chip" :class="statusChip(o.status)">{{ o.status }}</span></td>
+                <td>
+                  <NuxtLink :to="localePath(`/office/orders/${o.id}`)" class="erp-btn erp-btn--sm">
+                    ยืนยัน / ใส่เลขพัสดุ
+                  </NuxtLink>
+                </td>
+              </tr>
+              <tr v-if="!(stats?.recentOrders || []).length">
+                <td colspan="5" style="text-align:center;color:#64748b;padding:24px">ยังไม่มีคำสั่งซื้อใหม่</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
-      <div v-if="!topProducts.length" class="muted">{{ t('admin.noProducts') }}</div>
-      <table v-else class="table">
-        <thead>
-          <tr><th>#</th><th>{{ t('admin.product') }}</th><th style="text-align:right">{{ t('admin.ordersCount') }}</th><th style="text-align:right">{{ t('admin.sales') }}</th></tr>
-        </thead>
-        <tbody>
-          <tr v-for="(p, i) in topProducts" :key="p.id">
-            <td class="faint">{{ i + 1 }}</td>
-            <td>{{ p.name }}</td>
-            <td style="text-align: right">{{ p.quantity }}</td>
-            <td style="text-align: right" class="price">{{ fmt(Number(p.revenue)) }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </section>
+
+      <!-- Live Web Chat Inbox + Low Stock -->
+      <div class="erp-panel">
+        <div class="erp-panel__head">
+          <div class="erp-panel__title">💬 แชทลูกค้าล่าสุดจากหน้าเว็บ (Live Concierge Inbox)</div>
+        </div>
+        <div v-if="(chatData?.items || []).length" style="display:flex;flex-direction:column;gap:10px;max-height:310px;overflow-y:auto">
+          <div
+            v-for="ch in (chatData?.items || []).slice(0, 5)"
+            :key="ch.id"
+            style="background:#081020;border:1px solid #1b2a48;border-radius:10px;padding:10px 12px"
+          >
+            <div style="display:flex;justify-content:space-between;font-size:12px">
+              <strong>{{ ch.customerName }} <span style="color:#64748b">{{ ch.customerContact }}</span></strong>
+              <span class="erp-chip" :class="ch.status === 'open' ? 'erp-chip--amber' : 'erp-chip--mint'">{{ ch.status }}</span>
+            </div>
+            <p style="font-size:12.5px;color:#cbd5e1;margin-top:4px">
+              {{ ch.message || (ch.messages || [])[ch.messages.length - 1]?.text }}
+            </p>
+            <p v-if="ch.reply" style="font-size:11.5px;color:#6ee7b7;margin-top:3px">
+              ↳ ตอบแล้ว: {{ ch.reply }}
+            </p>
+            <div style="display:flex;gap:6px;margin-top:8px">
+              <input v-model="replyDrafts[ch.id]" class="erp-input" style="padding:5px 8px;font-size:12px" placeholder="พิมพ์ตอบกลับลูกค้า..." />
+              <button type="button" class="erp-btn erp-btn--sm erp-btn--primary" @click="sendAdminReply(ch.id)">ตอบ</button>
+            </div>
+          </div>
+        </div>
+        <p v-else style="color:#64748b;font-size:13px">ยังไม่มีข้อความแชทใหม่จากหน้าเว็บ</p>
+      </div>
+    </div>
   </div>
 </template>
 
 <style scoped>
-.pagehead { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 30px; flex-wrap: wrap; }
-.statcards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px; }
-.statcard { border: 1px solid var(--line); background: var(--paper); border-radius: var(--radius-lg); padding: 22px 24px; transition: border-color 0.2s, transform 0.2s; }
-.statcard:hover { border-color: var(--gold); transform: translateY(-2px); }
-.statcard__value { font-family: var(--font-display); font-size: 30px; margin-top: 8px; }
-
-.dashgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
-.panel { border: 1px solid var(--line); background: var(--paper); border-radius: var(--radius-lg); padding: 26px 28px; }
-.panel__head { margin-bottom: 20px; }
-.panel__title { font-size: 20px; }
-.link { color: var(--ink); }
-.link:hover { color: var(--gold); }
-
-@media (max-width: 1000px) { .statcards { grid-template-columns: repeat(2, 1fr); } .dashgrid { grid-template-columns: 1fr; } }
-@media (max-width: 560px) { .statcards { grid-template-columns: 1fr; } }
+@media (max-width: 1024px) {
+  .erp-overview-split { grid-template-columns: 1fr !important; }
+}
 </style>

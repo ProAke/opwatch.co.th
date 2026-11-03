@@ -5,10 +5,12 @@ export interface CartLine {
   nameEn: string
   nameTh: string
   price: number
+  originalPrice?: number | null
   image: string
   quantity: number
   maxStock: number
   sku?: string
+  wristSize?: string
 }
 
 const STORAGE_KEY = 'opwatch_cart'

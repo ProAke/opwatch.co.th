@@ -1,14 +1,38 @@
 export interface SiteSettings {
   name: string
+  companyName?: string
   tagline: string
   email: string
   phone: string
+  address?: string
+  addressEn?: string
   currency: string
   currencySymbol: string
   defaultLocale: string
   announcement: string
   shippingFee: number
   freeShippingThreshold: number
+  lineId?: string
+  lineUrl?: string
+  facebookUrl?: string
+  messengerUrl?: string
+  tiktokUrl?: string
+  shopeeUrl?: string
+  instagramUrl?: string
+  chatEnabled?: boolean
+  chatGreetingTh?: string
+  chatGreetingEn?: string
+  giftWrapEnabled?: boolean
+  giftWrapFee?: number
+  pointsPerBaht?: number
+  bahtPerPoint?: number
+  returnWindowDays?: number
+  warrantyYears?: number
+  giftCardEnabled?: boolean
+  branchPickupEnabled?: boolean
+  promoHomeEnabled?: boolean
+  promoHomeColumns?: 3 | 4 | 6
+  promoHomeLimit?: number
 }
 
 export interface Category {

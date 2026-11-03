@@ -4,6 +4,7 @@ import type { H3Event } from 'h3'
 import { createError, getCookie, setCookie, deleteCookie } from 'h3'
 import { getConfig } from './config'
 import { useStore } from './store'
+import type { StaffRole } from '../db/types'
 
 export const SESSION_COOKIE = 'opwatch_session'
 const SESSION_DAYS = 30
@@ -11,10 +12,16 @@ const SESSION_DAYS = 30
 export interface SessionPayload {
   uid: number
   isAdmin: boolean
+  role?: StaffRole
   exp: number
 }
 
-/* ----------------------------- passwords ----------------------------- */
+export function isBackofficeUser(user: Record<string, any> | null | undefined): boolean {
+  if (!user) return false
+  if (user.status === 'suspended') return false
+  const role = String(user.role || '').toLowerCase()
+  return Boolean(user.isAdmin || role === 'ceo' || role === 'admin' || role === 'staff')
+}
 
 export async function hashPassword(password: string): Promise<string> {
   return bcrypt.hash(password, 10)
@@ -24,8 +31,6 @@ export async function verifyPassword(password: string, hash: string): Promise<bo
   if (!hash) return false
   return bcrypt.compare(password, hash)
 }
-
-/* ------------------------------- tokens ------------------------------- */
 
 export function signToken(payload: Record<string, any>, secret: string): string {
   const body = Buffer.from(JSON.stringify(payload)).toString('base64url')
@@ -54,12 +59,15 @@ export function newSecret(): string {
   return randomBytes(24).toString('hex')
 }
 
-/* ------------------------------ sessions ------------------------------ */
-
-export async function createSession(event: H3Event, customerId: number, isAdmin = false): Promise<string> {
+export async function createSession(
+  event: H3Event,
+  customerId: number,
+  isAdmin = false,
+  role: StaffRole = isAdmin ? 'ceo' : 'member'
+): Promise<string> {
   const cfg = getConfig()
   const token = signToken(
-    { uid: customerId, isAdmin, exp: Date.now() + SESSION_DAYS * 86400_000 },
+    { uid: customerId, isAdmin, role, exp: Date.now() + SESSION_DAYS * 86400_000 },
     cfg.secret
   )
   setCookie(event, SESSION_COOKIE, token, {
@@ -81,17 +89,18 @@ export async function currentUser(event: H3Event): Promise<Record<string, any> |
   const payload = verifyToken<SessionPayload>(token, cfg.secret)
   if (!payload?.uid) return null
   const user = await useStore().findById('customers', payload.uid)
-  if (!user) return null
+  if (!user || user.status === 'suspended') return null
+  if (isBackofficeUser(user) && !user.isAdmin) {
+    user.isAdmin = true
+  }
   return user
 }
 
 export async function currentAdmin(event: H3Event): Promise<Record<string, any> | null> {
   const user = await currentUser(event)
-  if (!user || !user.isAdmin) return null
+  if (!isBackofficeUser(user)) return null
   return user
 }
-
-/* -------------------------------- orders -------------------------------- */
 
 export function orderNo(): string {
   const d = new Date()
@@ -107,7 +116,12 @@ export function orderNo(): string {
 export function publicUser(user: Record<string, any>) {
   if (!user) return null
   const { passwordHash, ...rest } = user
-  return rest
+  const role = rest.role || (rest.isAdmin ? 'ceo' : 'member')
+  return {
+    ...rest,
+    role,
+    isAdmin: isBackofficeUser({ ...rest, role })
+  }
 }
 
 export async function requireUser(event: H3Event): Promise<Record<string, any>> {
@@ -122,6 +136,15 @@ export async function requireAdmin(event: H3Event): Promise<Record<string, any>>
   const admin = await currentAdmin(event)
   if (!admin) {
     throw createError({ statusCode: 401, statusMessage: 'admin.pleaseLogin' })
+  }
+  return admin
+}
+
+export async function requireRole(event: H3Event, allowed: StaffRole[]): Promise<Record<string, any>> {
+  const admin = await requireAdmin(event)
+  const role = (admin.role || (admin.isAdmin ? 'ceo' : 'member')) as StaffRole
+  if (!allowed.includes(role)) {
+    throw createError({ statusCode: 403, statusMessage: 'admin.notAllowed' })
   }
   return admin
 }

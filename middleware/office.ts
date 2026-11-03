@@ -7,7 +7,8 @@ export default defineNuxtRouteMiddleware(async (to) => {
   if (!auth.customer.value) {
     return navigateTo(localePath('/office/login'))
   }
-  if (!auth.customer.value.isAdmin) {
+  const role = String(auth.customer.value.role || '').toLowerCase()
+  if (!auth.customer.value.isAdmin && !['ceo', 'admin', 'staff'].includes(role)) {
     return navigateTo(localePath('/'))
   }
 })

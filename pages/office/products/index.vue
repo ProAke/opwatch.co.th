@@ -1,188 +1,198 @@
 <script setup lang="ts">
-const { t, locale } = useI18n()
+definePageMeta({ layout: 'office', middleware: ['office'] })
+
 const localePath = useLocalePath()
 const { site } = useSite()
-const localeTag = computed(() => (locale.value === 'en' ? 'en-US' : 'th-TH'))
-const fmt = (v: number) => formatPrice(v, site.value.currencySymbol, localeTag.value)
+const toast = useToast()
 
 const search = ref('')
 const brandFilter = ref('')
 const page = ref(1)
-const PAGE_SIZE = 50
-const items = ref<Record<string, any>[]>([])
-const loading = ref(true)
-const syncing = ref(false)
 
-async function load() {
-  loading.value = true
-  try {
-    const res = await $fetch<{ items: Record<string, any>[] }>('/api/admin/products', {
-      query: search.value ? { q: search.value } : {}
-    })
-    items.value = res.items
-    page.value = 1
-  } finally {
-    loading.value = false
-  }
-}
-
-watch(search, load)
-watch(brandFilter, () => { page.value = 1 })
-onMounted(load)
-
-const filteredItems = computed(() => {
-  if (!brandFilter.value) return items.value
-  return items.value.filter((p) => {
-    const bSlug = typeof p.brand === 'object' ? p.brand?.slug : String(p.brand || '').toLowerCase()
-    return bSlug === brandFilter.value
-  })
+const { data, refresh, pending } = await useFetch<any>('/api/admin/products', {
+  query: computed(() => ({
+    q: search.value || undefined,
+    brand: brandFilter.value || undefined,
+    page: page.value,
+    limit: 25
+  }))
 })
 
-const totalPages = computed(() => Math.max(1, Math.ceil(filteredItems.value.length / PAGE_SIZE)))
-const pagedItems = computed(() => {
-  const start = (page.value - 1) * PAGE_SIZE
-  return filteredItems.value.slice(start, start + PAGE_SIZE)
-})
+const items = computed(() => data.value?.items || data.value?.products || [])
+const total = computed(() => Number(data.value?.total || items.value.length))
 
-async function syncOfficial() {
-  syncing.value = true
+// Quick Shopee 1-Click Create Modal
+const quickShopeeOpen = ref(false)
+const quickShopeeUrl = ref('')
+const quickShopeeSaving = ref(false)
+
+async function quickImportAndCreate() {
+  if (!quickShopeeUrl.value.trim()) return
+  quickShopeeSaving.value = true
   try {
-    const res = await $fetch<{ synced: number; removedLegacy: number; total: number }>('/api/admin/products/sync', {
+    const res = await $fetch<any>('/api/admin/products/shopee-import', {
       method: 'POST',
-      body: { force: true }
+      body: { url: quickShopeeUrl.value.trim(), saveImmediately: true }
     })
-    await load()
-    useToast().success(
-      locale.value === 'th'
-        ? `ดึงข้อมูลสำเร็จ: สินค้าของแท้ครบ ${res.total} เรือน`
-        : `Catalog synced: ${res.total} official timepieces active`
-    )
-  } catch (err: any) {
-    useToast().error(err?.data?.statusMessage || err?.data?.message || t('errors.generic'))
+    toast.success('ดึงและบันทึกสินค้าจาก Shopee สำเร็จ!')
+    quickShopeeOpen.value = false
+    quickShopeeUrl.value = ''
+    await refresh()
+    if (res.product?.id) {
+      await navigateTo(localePath(`/office/products/${res.product.id}`))
+    }
+  } catch (e: any) {
+    toast.error(e?.data?.statusMessage || 'กรุณาเปิดหน้าเพิ่มสินค้าเพื่อวางข้อมูลเสริมจาก Shopee')
+    await navigateTo(localePath('/office/products/new'))
   } finally {
-    syncing.value = false
+    quickShopeeSaving.value = false
   }
 }
 
-async function remove(p: Record<string, any>) {
-  if (!confirm(t('admin.deleteConfirm'))) return
-  await $fetch(`/api/admin/products/${p.id}`, { method: 'DELETE' })
-  items.value = items.value.filter((i) => i.id !== p.id)
-  useToast().success(t('admin.updated'))
+async function removeProduct(p: any) {
+  if (!import.meta.client || !window.confirm(`ยืนยันการลบสินค้า "${p.nameTh || p.sku}"?`)) return
+  try {
+    await $fetch(`/api/admin/products/${p.id}`, { method: 'DELETE' })
+    toast.success('ลบสินค้าเรียบร้อย')
+    await refresh()
+  } catch {
+    toast.error('ลบสินค้าไม่สำเร็จ')
+  }
 }
 
-useHead({ title: `${t('admin.products')} — ${site.value.name}` })
-definePageMeta({ layout: 'office', middleware: 'office' })
+const fmt = (v: number) => formatPrice(Number(v || 0), site.value.currencySymbol || '฿', 'th-TH')
+
+useHead({ title: 'จัดการสินค้า 405+ รุ่น & ดึง Shopee — OPWatch Office' })
 </script>
 
 <template>
   <div>
-    <div class="pagehead">
-      <h1 class="page-title" style="font-size: 2rem">{{ t('admin.products') }}</h1>
-      <div class="row gap-8 wrap">
-        <button type="button" class="btn btn--sm btn--ghost" :disabled="syncing" @click="syncOfficial">
-          {{
-            syncing
-              ? t('common.loading')
-              : locale === 'th'
-                ? '↻ ดึงข้อมูลสินค้าทางการครบ 3 แบรนด์ (Olym Pianus · Olympia Star · Ogival)'
-                : '↻ Sync Official 3-Brand Catalog (Olym Pianus · Olympia Star · Ogival)'
-          }}
+    <div class="erp-page-head">
+      <div>
+        <div class="erp-kicker">MODULE 7.2 · CATALOGUE &amp; SHOPEE SYNC</div>
+        <h1 class="erp-h1">ระบบจัดการสินค้า (ทั้งหมด {{ total }} รุ่น)</h1>
+        <p class="erp-sub">
+          ดึงสินค้าจาก Shopee, จัดเรียงรูปภาพแบบลากวาง, แก้ไขเนื้อหาด้วย CKEditor ฟรี พร้อม SEO + ASEO และ AI Automation
+        </p>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button type="button" class="erp-btn erp-btn--violet" @click="quickShopeeOpen = !quickShopeeOpen">
+          🛍 ดึงสินค้าด่วนจากลิงก์ Shopee
         </button>
-        <NuxtLink :to="localePath('/office/products/new')" class="btn btn--sm btn--gold">{{ t('admin.newProduct') }}</NuxtLink>
+        <NuxtLink :to="localePath('/office/products/new')" class="erp-btn erp-btn--primary">
+          + เพิ่มสินค้าใหม่
+        </NuxtLink>
       </div>
     </div>
 
-    <div class="toolbar">
-      <div class="row gap-12 wrap" style="flex: 1">
-        <input v-model="search" class="input" style="max-width: 300px" :placeholder="t('admin.searchPlaceholder')" />
-        <select v-model="brandFilter" class="select" style="max-width: 220px">
-          <option value="">{{ locale === 'th' ? 'ทุกแบรนด์' : 'All Brands' }}</option>
+    <!-- Quick Shopee Bar -->
+    <div v-if="quickShopeeOpen" class="erp-panel" style="border-color:#f97316">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+        <strong style="color:#fdba74">🛍 Quick Shopee Import:</strong>
+        <input
+          v-model="quickShopeeUrl"
+          class="erp-input"
+          style="flex:1;min-width:260px"
+          placeholder="วางลิงก์สินค้า Shopee เช่น https://shopee.co.th/...-i.12345.67890"
+        />
+        <button type="button" class="erp-btn erp-btn--primary" :disabled="quickShopeeSaving" @click="quickImportAndCreate">
+          {{ quickShopeeSaving ? 'กำลังดึงข้อมูล...' : 'ดึงและเปิดหน้าแก้ไขทันที →' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Search & Brand Filter -->
+    <div class="erp-panel">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px">
+        <input
+          v-model="search"
+          class="erp-input"
+          style="flex:1;min-width:240px"
+          placeholder="ค้นหาชื่อรุ่น รหัส SKU หรือคำสำคัญ..."
+        />
+        <select v-model="brandFilter" class="erp-select" style="width:210px">
+          <option value="">ทุกแบรนด์ (Olym Pianus / Olympia Star / Ogival)</option>
           <option value="olympianus">Olym Pianus</option>
           <option value="olympia-star">Olympia Star</option>
           <option value="ogival">Ogival</option>
         </select>
+        <button type="button" class="erp-btn" @click="page = 1; refresh()">ค้นหา</button>
       </div>
-      <span class="small muted">{{ t('products.results', { count: filteredItems.length }) }}</span>
-    </div>
 
-    <div class="panel" style="padding: 0; overflow: hidden">
-      <div v-if="loading" class="muted panel-pad">{{ t('common.loading') }}</div>
-      <div v-else-if="!filteredItems.length" class="muted panel-pad">{{ t('admin.noProducts') }}</div>
-
-      <table v-else class="table">
-        <thead>
-          <tr>
-            <th>{{ t('admin.product') }}</th>
-            <th>{{ t('admin.sku') }}</th>
-            <th>{{ t('products.category') }}</th>
-            <th style="text-align:right">{{ t('admin.price') }}</th>
-            <th style="text-align:right">{{ t('admin.stock') }}</th>
-            <th>{{ t('admin.status') }}</th>
-            <th style="text-align:right">{{ t('admin.actions') }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="p in pagedItems" :key="p.id">
-            <td>
-              <div class="prodcell">
-                <div class="prodcell__img">
-                  <img
-                    :src="(Array.isArray(p.images) ? p.images[0] : p.images) || '/images/op/watch-990-083-blue.png'"
-                    :alt="locale === 'en' ? p.nameEn : p.nameTh"
-                    loading="lazy"
-                    referrerpolicy="no-referrer"
-                    @error="(e: any) => { if (e?.target) e.target.src = '/images/op/watch-990-083-blue.png' }"
-                  />
+      <div class="erp-table-wrap">
+        <table class="erp-table">
+          <thead>
+            <tr>
+              <th>รูป</th>
+              <th>รหัส SKU / ชื่อรุ่น</th>
+              <th>แบรนด์</th>
+              <th>ราคาขาย</th>
+              <th>สต็อก</th>
+              <th>SEO/ASEO</th>
+              <th>สถานะ</th>
+              <th>จัดการ</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="p in items" :key="p.id">
+              <td>
+                <img
+                  :src="(p.images && p.images[0]) || p.image || '/images/op/watch-990-083-blue.png'"
+                  alt=""
+                  style="width:46px;height:46px;object-fit:contain;background:#fff;border-radius:7px;padding:3px"
+                  referrerpolicy="no-referrer"
+                  @error="(e: any) => { if (e?.target) e.target.src = '/images/op/watch-990-083-blue.png' }"
+                />
+              </td>
+              <td>
+                <div style="font-family:monospace;font-size:11.5px;color:#67e8f9">{{ p.sku }}</div>
+                <div style="font-weight:600">{{ p.nameTh || p.nameEn }}</div>
+              </td>
+              <td><span class="erp-chip">{{ p.brandSlug }}</span></td>
+              <td>
+                <strong>{{ fmt(p.price) }}</strong>
+                <div v-if="p.originalPrice > p.price" style="font-size:11px;color:#94a3b8;text-decoration:line-through">
+                  {{ fmt(p.originalPrice) }}
                 </div>
-                <div>
-                  <div class="prodcell__name">{{ locale === 'en' ? p.nameEn || p.name : p.nameTh || p.name }}</div>
-                  <div class="tiny upper faint">{{ typeof p.brand === 'object' ? p.brand?.name : p.brand }}</div>
+              </td>
+              <td>
+                <span :style="{ color: Number(p.stock) <= 3 ? '#fda4af' : '#6ee7b7', fontWeight: 700 }">
+                  {{ p.stock }}
+                </span>
+              </td>
+              <td>
+                <span class="erp-chip" :class="p.seoTitle || p.aseoSummary ? 'erp-chip--violet' : ''">
+                  {{ p.seoTitle || p.aseoSummary ? '✓ SEO/ASEO' : 'Auto' }}
+                </span>
+              </td>
+              <td>
+                <span class="erp-chip" :class="p.active !== false ? 'erp-chip--mint' : 'erp-chip--rose'">
+                  {{ p.active !== false ? 'เปิดขาย' : 'ซ่อน' }}
+                </span>
+              </td>
+              <td>
+                <div style="display:flex;gap:6px">
+                  <NuxtLink :to="localePath(`/office/products/${p.id}`)" class="erp-btn erp-btn--sm">แก้ไข / AI</NuxtLink>
+                  <NuxtLink :to="localePath(`/products/${p.slug}`)" target="_blank" class="erp-btn erp-btn--sm">ดูหน้าเว็บ</NuxtLink>
+                  <button type="button" class="erp-btn erp-btn--sm erp-btn--danger" @click="removeProduct(p)">ลบ</button>
                 </div>
-              </div>
-            </td>
-            <td class="small faint">{{ p.sku }}</td>
-            <td class="small">{{ p.categoryName || t('common.none') }}</td>
-            <td style="text-align: right" class="price">{{ fmt(Number(p.price)) }}</td>
-            <td style="text-align: right">
-              <span class="badge" :class="Number(p.stock) <= 10 ? 'badge--gold' : ''">{{ p.stock }}</span>
-            </td>
-            <td>
-              <span class="badge" :class="p.status === 'active' ? 'badge--new' : ''">
-                {{ p.status === 'active' ? t('admin.published') : t('admin.draft') }}
-              </span>
-            </td>
-            <td style="text-align: right">
-              <div class="row gap-8" style="justify-content: flex-end">
-                <NuxtLink :to="localePath('/office/products/' + p.id)" class="btn btn--sm btn--ghost">{{ t('common.edit') }}</NuxtLink>
-                <button class="btn btn--sm btn--ghost danger" @click="remove(p)">{{ t('common.delete') }}</button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+              </td>
+            </tr>
+            <tr v-if="!pending && !items.length">
+              <td colspan="8" style="text-align:center;padding:28px;color:#64748b">ไม่พบรายการสินค้าตามเงื่อนไข</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
-    <div v-if="totalPages > 1" class="between wrap gap-12" style="margin-top: 18px">
-      <button type="button" class="btn btn--sm btn--ghost" :disabled="page <= 1" @click="page--">
-        ‹ {{ locale === 'th' ? 'ก่อนหน้า' : 'Previous' }}
-      </button>
-      <span class="small muted">{{ locale === 'th' ? `หน้า ${page} จาก ${totalPages}` : `Page ${page} of ${totalPages}` }}</span>
-      <button type="button" class="btn btn--sm btn--ghost" :disabled="page >= totalPages" @click="page++">
-        {{ locale === 'th' ? 'ถัดไป' : 'Next' }} ›
-      </button>
+      <!-- Pagination -->
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px">
+        <span style="font-size:12.5px;color:#94a3b8">หน้า {{ page }} · ทั้งหมด {{ total }} รายการ</span>
+        <div style="display:flex;gap:6px">
+          <button type="button" class="erp-btn erp-btn--sm" :disabled="page <= 1" @click="page--">◀ ก่อนหน้า</button>
+          <button type="button" class="erp-btn erp-btn--sm" :disabled="page * 25 >= total" @click="page++">ถัดไป ▶</button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
-
-<style scoped>
-.pagehead { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
-.toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 18px; flex-wrap: wrap; }
-.panel { border: 1px solid var(--line); background: var(--paper); border-radius: var(--radius-lg); }
-.panel-pad { padding: 26px 28px; }
-.prodcell { display: flex; align-items: center; gap: 14px; }
-.prodcell__img { width: 44px; height: 44px; background: #ffffff; border: 1px solid var(--line); padding: 2px; border-radius: var(--radius); overflow: hidden; flex: none; }
-.prodcell__img img { width: 100%; height: 100%; object-fit: contain; }
-.prodcell__name { font-family: var(--font-display); font-size: 16px; }
-.danger:hover { color: var(--danger) !important; border-color: var(--danger) !important; }
-</style>

@@ -8,6 +8,10 @@ export interface Customer {
   postalCode?: string | null
   country?: string | null
   isAdmin: boolean
+  role?: 'ceo' | 'admin' | 'staff' | 'member'
+  department?: string | null
+  position?: string | null
+  status?: string | null
   points: number
   totalSpent: number
   createdAt?: string

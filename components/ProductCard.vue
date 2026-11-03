@@ -52,6 +52,15 @@ function onHoverError() {
 }
 
 const compareAt = computed(() => Number(props.product.originalPrice ?? props.product.priceCompare ?? props.product.comparePrice ?? 0))
+const discountPct = computed(() => {
+  const cur = Number(props.product.price || 0)
+  if (compareAt.value > cur && cur > 0) {
+    return Math.round(((compareAt.value - cur) / compareAt.value) * 100)
+  }
+  return 0
+})
+const savingsAmt = computed(() => (discountPct.value > 0 ? compareAt.value - Number(props.product.price || 0) : 0))
+const pointsEarn = computed(() => Math.floor(Number(props.product.price || 0) / Number(site.value.bahtPerPoint || 25)))
 
 function addToBag(e: Event) {
   e.preventDefault()
@@ -99,9 +108,10 @@ function addToBag(e: Event) {
         <span v-if="product.brandName || product.brandSlug" class="op-card__brand">
           {{ product.brandName || product.brandSlug }}
         </span>
+        <span v-if="discountPct > 0" class="op-card__disc">-{{ discountPct }}%</span>
       </div>
 
-      <!-- Luxury Serif Caption + E-Commerce Price & Quick Add -->
+      <!-- Luxury Serif Caption + Central-Grade Savings & Points -->
       <div class="op-card__body">
         <p v-if="product.sku" class="op-card__sku">{{ product.sku }}</p>
         <h3 class="op-card__title">{{ title }}</h3>
@@ -110,6 +120,15 @@ function addToBag(e: Event) {
           <span class="price">{{ fmt(product.price) }}</span>
           <span v-if="compareAt > Number(product.price || 0)" class="price-compare">
             {{ fmt(compareAt) }}
+          </span>
+        </div>
+
+        <div class="op-card__perks">
+          <span v-if="savingsAmt > 0" class="op-card__save">
+            {{ locale === 'th' ? `ประหยัด ${fmt(savingsAmt)}` : `Save ${fmt(savingsAmt)}` }}
+          </span>
+          <span v-if="pointsEarn > 0" class="op-card__pts">
+            +{{ pointsEarn }} pts
           </span>
         </div>
 
@@ -200,6 +219,43 @@ function addToBag(e: Event) {
   background: rgba(255, 255, 255, 0.94);
   color: var(--sapphire);
   border: 1px solid var(--sand);
+}
+.op-card__disc {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  background: #c81e1e;
+  color: #ffffff;
+  border-radius: 4px;
+  letter-spacing: 0.03em;
+}
+.op-card__perks {
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+.op-card__save {
+  font-size: 11px;
+  font-weight: 600;
+  color: #b91c1c;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  padding: 1px 7px;
+  border-radius: 999px;
+}
+.op-card__pts {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--sapphire);
+  background: #eef0ff;
+  padding: 1px 7px;
+  border-radius: 999px;
 }
 
 .op-card__body {

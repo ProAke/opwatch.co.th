@@ -9,8 +9,9 @@ dist/
 .nitro/
 .cache/
 
-# Local store data (JSON adapter)
+# Local store data (JSON adapter & runtime uploads)
 data/*.json
+data/uploads/
 
 # Local runtime configuration (created by the installer)
 config/site.config.json

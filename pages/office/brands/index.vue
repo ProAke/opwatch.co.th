@@ -1,233 +1,140 @@
 <script setup lang="ts">
-const { t, locale } = useI18n()
-const { site } = useSite()
+definePageMeta({ layout: 'office', middleware: ['office'] })
 
-const items = ref<Record<string, any>[]>([])
-const showForm = ref(false)
-const editingId = ref<number | null>(null)
-const saving = ref(false)
+const toast = useToast()
+const tab = ref<'brands' | 'categories'>('brands')
 
-const form = reactive({
+const { data: brandData, refresh: refreshBrands } = await useFetch<any>('/api/admin/brands')
+const { data: catData, refresh: refreshCats } = await useFetch<any>('/api/admin/categories')
+
+const brands = computed(() => brandData.value?.items || [])
+const categories = computed(() => catData.value?.items || [])
+
+const brandForm = reactive({
+  id: 0,
   name: '',
-  nameEn: '',
-  nameTh: '',
   slug: '',
-  country: 'สวิตเซอร์แลนด์',
-  countryEn: 'Switzerland',
-  movement: 'เครื่องสวิส',
-  movementEn: 'Swiss movement',
-  positioning: 'mid',
-  tagline: '',
-  taglineEn: '',
-  story: '',
-  storyEn: '',
-  accentColor: '#b08d57',
-  heroImage: '/images/op/hero-gold-stones.jpg',
-  sortOrder: 1,
-  active: true
+  country: 'ญี่ปุ่น / สวิตเซอร์แลนด์',
+  movement: 'Japanese / Swiss Movement',
+  tagline: ''
 })
 
-async function load() {
-  const res = await $fetch<{ items: Record<string, any>[] }>('/api/admin/brands').catch(() => ({ items: [] }))
-  items.value = res.items || []
-}
-onMounted(load)
-
-function openNew() {
-  editingId.value = null
-  Object.assign(form, {
-    name: '',
-    nameEn: '',
-    nameTh: '',
-    slug: '',
-    country: 'สวิตเซอร์แลนด์',
-    countryEn: 'Switzerland',
-    movement: 'เครื่องสวิส',
-    movementEn: 'Swiss movement',
-    positioning: 'mid',
-    tagline: '',
-    taglineEn: '',
-    story: '',
-    storyEn: '',
-    accentColor: '#b08d57',
-    heroImage: '/images/op/hero-gold-stones.jpg',
-    sortOrder: items.value.length + 1,
-    active: true
-  })
-  showForm.value = true
-}
-
-function openEdit(b: Record<string, any>) {
-  editingId.value = Number(b.id)
-  Object.assign(form, {
-    name: b.name || '',
-    nameEn: b.nameEn || b.name || '',
-    nameTh: b.nameTh || b.name || '',
-    slug: b.slug || '',
-    country: b.country || '',
-    countryEn: b.countryEn || '',
-    movement: b.movement || '',
-    movementEn: b.movementEn || '',
-    positioning: b.positioning || 'mid',
-    tagline: b.tagline || '',
-    taglineEn: b.taglineEn || '',
-    story: b.story || '',
-    storyEn: b.storyEn || '',
-    accentColor: b.accentColor || '#b08d57',
-    heroImage: b.heroImage || '/images/op/hero-gold-stones.jpg',
-    sortOrder: Number(b.sortOrder || 1),
-    active: b.active !== false
-  })
-  showForm.value = true
-}
-
-async function save() {
-  if (!form.name.trim()) return
-  saving.value = true
-  try {
-    if (editingId.value) {
-      await $fetch(`/api/admin/brands/${editingId.value}`, { method: 'PUT', body: { ...form } })
-    } else {
-      await $fetch('/api/admin/brands', { method: 'POST', body: { ...form } })
-    }
-    showForm.value = false
-    useToast().success(t('admin.updated'))
-    await load()
-  } catch (err: any) {
-    useToast().error(err?.data?.statusMessage || t('errors.generic'))
-  } finally {
-    saving.value = false
+async function saveBrand() {
+  if (!brandForm.name.trim()) return
+  if (brandForm.id) {
+    await $fetch(`/api/admin/brands/${brandForm.id}`, { method: 'PUT', body: brandForm })
+  } else {
+    await $fetch('/api/admin/brands', { method: 'POST', body: brandForm })
   }
+  toast.success('บันทึกแบรนด์เรียบร้อย')
+  brandForm.id = 0
+  brandForm.name = ''
+  brandForm.slug = ''
+  brandForm.tagline = ''
+  await refreshBrands()
 }
 
-async function remove(b: Record<string, any>) {
-  if (!confirm(t('admin.deleteConfirm'))) return
-  await $fetch(`/api/admin/brands/${b.id}`, { method: 'DELETE' })
-  items.value = items.value.filter((i) => i.id !== b.id)
-  useToast().success(t('admin.updated'))
+const catForm = reactive({
+  id: 0,
+  nameTh: '',
+  nameEn: '',
+  slug: ''
+})
+
+async function saveCategory() {
+  if (!catForm.nameTh.trim()) return
+  if (catForm.id) {
+    await $fetch(`/api/admin/categories/${catForm.id}`, { method: 'PUT', body: catForm })
+  } else {
+    await $fetch('/api/admin/categories', { method: 'POST', body: catForm })
+  }
+  toast.success('บันทึกหมวดหมู่เรียบร้อย')
+  catForm.id = 0
+  catForm.nameTh = ''
+  catForm.nameEn = ''
+  catForm.slug = ''
+  await refreshCats()
 }
 
-useHead({ title: `${t('admin.brands')} — ${site.value.name}` })
-definePageMeta({ layout: 'office', middleware: 'office' })
+useHead({ title: 'จัดการแบรนด์ & หมวดหมู่สินค้า — OPWatch Office' })
 </script>
 
 <template>
   <div>
-    <div class="pagehead">
-      <h1 class="page-title" style="font-size: 2rem">{{ t('admin.brands') }}</h1>
-      <button class="btn btn--sm btn--gold" @click="openNew">+ {{ t('admin.add') }} {{ t('admin.brands') }}</button>
-    </div>
-
-    <div v-if="showForm" class="panel formpanel">
-      <h2 class="serif panel__title">{{ editingId ? t('common.edit') : t('admin.add') }} {{ t('admin.brands') }}</h2>
-      <div class="formgrid">
-        <div class="field">
-          <label class="label">Brand Name</label>
-          <input v-model="form.name" class="input" />
-        </div>
-        <div class="field">
-          <label class="label">Slug</label>
-          <input v-model="form.slug" class="input" placeholder="olympianus" />
-        </div>
-        <div class="field">
-          <label class="label">Movement (TH)</label>
-          <input v-model="form.movement" class="input" />
-        </div>
-        <div class="field">
-          <label class="label">Movement (EN)</label>
-          <input v-model="form.movementEn" class="input" />
-        </div>
-        <div class="field">
-          <label class="label">Origin (TH)</label>
-          <input v-model="form.country" class="input" />
-        </div>
-        <div class="field">
-          <label class="label">Origin (EN)</label>
-          <input v-model="form.countryEn" class="input" />
-        </div>
-        <div class="field">
-          <label class="label">Tagline (TH)</label>
-          <input v-model="form.tagline" class="input" />
-        </div>
-        <div class="field">
-          <label class="label">Tagline (EN)</label>
-          <input v-model="form.taglineEn" class="input" />
-        </div>
-        <div class="field">
-          <label class="label">Hero Image</label>
-          <input v-model="form.heroImage" class="input" />
-        </div>
-        <div class="field">
-          <label class="label">Tier</label>
-          <select v-model="form.positioning" class="select">
-            <option value="entry">Entry / Everyday</option>
-            <option value="mid">Mid-Luxury / Swiss</option>
-            <option value="premium">Haute Horlogerie / Premium</option>
-          </select>
-        </div>
-      </div>
-      <div class="field" style="margin-top: 16px">
-        <label class="label">Brand Story (TH)</label>
-        <textarea v-model="form.story" class="textarea" style="min-height: 70px" />
-      </div>
-      <div class="field" style="margin-top: 12px">
-        <label class="label">Brand Story (EN)</label>
-        <textarea v-model="form.storyEn" class="textarea" style="min-height: 70px" />
-      </div>
-      <div class="row gap-8" style="margin-top: 18px">
-        <button class="btn btn--sm btn--gold" :disabled="saving" @click="save">{{ t('admin.save') }}</button>
-        <button class="btn btn--sm btn--ghost" @click="showForm = false">{{ t('common.cancel') }}</button>
+    <div class="erp-page-head">
+      <div>
+        <div class="erp-kicker">TAXONOMY &amp; BRAND HOUSES</div>
+        <h1 class="erp-h1">จัดการแบรนด์ทางการ (3 แบรนด์หลัก) &amp; หมวดหมู่สินค้า</h1>
       </div>
     </div>
 
-    <div class="panel" style="padding: 0; overflow: hidden">
-      <div v-if="!items.length" class="muted panel-pad">{{ t('admin.noResults') }}</div>
-      <table v-else class="table">
-        <thead>
-          <tr>
-            <th>{{ t('products.brand') }}</th>
-            <th>Slug</th>
-            <th>{{ t('products.movement') }}</th>
-            <th>{{ t('admin.products') }}</th>
-            <th style="text-align:right">{{ t('admin.actions') }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="b in items" :key="b.id">
-            <td>
-              <div class="row gap-12">
-                <div class="bimg"><img :src="b.logo || b.heroImage || '/images/op/hero-gold-stones.jpg'" alt="" loading="lazy" referrerpolicy="no-referrer" /></div>
-                <div>
-                  <div class="serif" style="font-size: 17px">{{ b.name }}</div>
-                  <div class="tiny upper faint">{{ locale === 'en' ? b.taglineEn || b.tagline : b.tagline }}</div>
-                </div>
-              </div>
-            </td>
-            <td class="small faint">{{ b.slug }}</td>
-            <td class="small">{{ locale === 'en' ? b.movementEn || b.movement : b.movement }}</td>
-            <td><span class="badge">{{ b.productCount ?? 0 }}</span></td>
-            <td style="text-align: right">
-              <div class="row gap-8" style="justify-content: flex-end">
-                <button class="btn btn--sm btn--ghost" @click="openEdit(b)">{{ t('common.edit') }}</button>
-                <button class="btn btn--sm btn--ghost danger" @click="remove(b)">{{ t('common.delete') }}</button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+    <div class="erp-tabs">
+      <button type="button" class="erp-tab" :class="{ 'is-active': tab === 'brands' }" @click="tab = 'brands'">
+        🏷 แบรนด์นาฬิกา ({{ brands.length }})
+      </button>
+      <button type="button" class="erp-tab" :class="{ 'is-active': tab === 'categories' }" @click="tab = 'categories'">
+        📂 หมวดหมู่สินค้า ({{ categories.length }})
+      </button>
     </div>
+
+    <template v-if="tab === 'brands'">
+      <div class="erp-panel">
+        <div class="erp-form-grid erp-form-grid--3">
+          <div class="erp-field"><label class="erp-label">ชื่อแบรนด์</label><input v-model="brandForm.name" class="erp-input" /></div>
+          <div class="erp-field"><label class="erp-label">Slug</label><input v-model="brandForm.slug" class="erp-input" /></div>
+          <div class="erp-field"><label class="erp-label">คำขวัญ / จุดเด่น</label><input v-model="brandForm.tagline" class="erp-input" /></div>
+        </div>
+        <div style="display:flex;justify-content:flex-end;margin-top:12px">
+          <button type="button" class="erp-btn erp-btn--primary" @click="saveBrand">💾 บันทึกแบรนด์</button>
+        </div>
+      </div>
+
+      <div class="erp-panel">
+        <div class="erp-table-wrap">
+          <table class="erp-table">
+            <thead><tr><th>แบรนด์</th><th>Slug</th><th>แหล่งกำเนิด / กลไก</th><th>จัดการ</th></tr></thead>
+            <tbody>
+              <tr v-for="b in brands" :key="b.id">
+                <td><strong>{{ b.name }}</strong></td>
+                <td style="font-family:monospace;color:#67e8f9">{{ b.slug }}</td>
+                <td>{{ b.country }} · {{ b.movement }}</td>
+                <td>
+                  <button type="button" class="erp-btn erp-btn--sm" @click="Object.assign(brandForm, b)">แก้ไข</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </template>
+
+    <template v-else>
+      <div class="erp-panel">
+        <div class="erp-form-grid erp-form-grid--3">
+          <div class="erp-field"><label class="erp-label">ชื่อหมวดหมู่ (ไทย)</label><input v-model="catForm.nameTh" class="erp-input" /></div>
+          <div class="erp-field"><label class="erp-label">ชื่อหมวดหมู่ (EN)</label><input v-model="catForm.nameEn" class="erp-input" /></div>
+          <div class="erp-field"><label class="erp-label">Slug</label><input v-model="catForm.slug" class="erp-input" /></div>
+        </div>
+        <div style="display:flex;justify-content:flex-end;margin-top:12px">
+          <button type="button" class="erp-btn erp-btn--primary" @click="saveCategory">💾 บันทึกหมวดหมู่</button>
+        </div>
+      </div>
+
+      <div class="erp-panel">
+        <div class="erp-table-wrap">
+          <table class="erp-table">
+            <thead><tr><th>หมวดหมู่ (ไทย)</th><th>English</th><th>Slug</th><th>จัดการ</th></tr></thead>
+            <tbody>
+              <tr v-for="c in categories" :key="c.id">
+                <td><strong>{{ c.nameTh }}</strong></td>
+                <td>{{ c.nameEn }}</td>
+                <td style="font-family:monospace;color:#67e8f9">{{ c.slug }}</td>
+                <td><button type="button" class="erp-btn erp-btn--sm" @click="Object.assign(catForm, c)">แก้ไข</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </template>
   </div>
 </template>
-
-<style scoped>
-.pagehead { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
-.panel { border: 1px solid var(--line); background: var(--paper); border-radius: var(--radius-lg); }
-.formpanel { padding: 26px 28px; margin-bottom: 26px; }
-.panel__title { font-size: 20px; margin-bottom: 20px; }
-.panel-pad { padding: 26px 28px; }
-.formgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.bimg { width: 56px; height: 44px; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; background: #ffffff; padding: 2px; flex: none; }
-.bimg img { width: 100%; height: 100%; object-fit: contain; }
-.danger:hover { color: var(--danger) !important; border-color: var(--danger) !important; }
-@media (max-width: 620px) { .formgrid { grid-template-columns: 1fr; } }
-</style>

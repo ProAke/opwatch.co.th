@@ -1,156 +1,202 @@
 <script setup lang="ts">
+definePageMeta({ layout: 'office', middleware: ['office'] })
+
 const route = useRoute()
-const { t, locale} = useI18n()
 const localePath = useLocalePath()
 const { site } = useSite()
+const toast = useToast()
 
-const localeTag = computed(() => (locale.value === 'en' ? 'en-US' : 'th-TH'))
-const fmt = (v: number) => formatPrice(v, site.value.currencySymbol, localeTag.value)
+const id = computed(() => Number(route.params.id))
+const { data, refresh } = await useFetch<any>(() => `/api/admin/orders/${id.value}`)
+const order = computed(() => data.value?.order || data.value)
 
-const id = computed(() => String(route.params.id))
+const form = reactive({
+  status: 'pending',
+  carrier: 'Kerry Express',
+  trackingNo: '',
+  adminNote: ''
+})
 
-const reqFetch = useRequestFetch()
-const { data, error, refresh } = await useAsyncData(
-  () => 'office-order-' + id.value,
-  () => reqFetch<{ order: Record<string, any>; items?: Record<string, any>[] }>(`/api/orders/${id.value}`)
+watch(
+  order,
+  (o) => {
+    if (!o) return
+    form.status = o.status || 'pending'
+    form.carrier = o.carrier || 'Kerry Express'
+    form.trackingNo = o.trackingNo || ''
+    form.adminNote = o.adminNote || ''
+  },
+  { immediate: true }
 )
 
-const order = computed(() => data.value?.order)
-const items = computed(() => data.value?.items || order.value?.items || [])
-
-const statusOptions = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded']
-
-async function setStatus(next: string) {
-  await $fetch(`/api/admin/orders/${id.value}`, { method: 'PUT', body: { status: next } })
-  await refresh()
-  useToast().success(t('admin.updated'))
+const saving = ref(false)
+async function saveOrder(presetStatus?: string) {
+  if (presetStatus) form.status = presetStatus
+  saving.value = true
+  try {
+    await $fetch(`/api/admin/orders/${id.value}`, {
+      method: 'PUT',
+      body: form
+    })
+    toast.success('อัปเดตสถานะและข้อมูลจัดส่งเรียบร้อย!')
+    await refresh()
+  } catch {
+    toast.error('บันทึกข้อมูลไม่สำเร็จ')
+  } finally {
+    saving.value = false
+  }
 }
 
-async function saveNote() {
-  const note = (document.querySelector('.ordernote') as HTMLTextAreaElement)?.value || ''
-  await $fetch(`/api/admin/orders/${id.value}`, { method: 'PUT', body: { note } })
-  useToast().success(t('admin.updated'))
+function printPackingSlip() {
+  if (import.meta.client) window.print()
 }
 
-useHead({ title: `${t('admin.order')} — ${site.value.name}` })
-definePageMeta({ layout: 'office', middleware: 'office' })
+const fmt = (v: number) => formatPrice(Number(v || 0), site.value.currencySymbol || '฿', 'th-TH')
+
+useHead({ title: 'รายละเอียดคำสั่งซื้อ & ติดตามการจัดส่ง — OPWatch Office' })
 </script>
 
 <template>
-  <div>
-    <div class="pagehead">
+  <div v-if="order">
+    <div class="erp-page-head">
       <div>
-        <NuxtLink :to="localePath('/office/orders')" class="link-underline" style="margin-bottom: 12px">{{ t('common.back') }} ←</NuxtLink>
-        <h1 class="page-title" style="font-size: 2rem">{{ order?.orderNo || t('admin.order') }}</h1>
-        <p class="tiny upper faint" v-if="order">{{ formatDateTime(order.createdAt, localeTag) }}</p>
+        <div class="erp-kicker">MODULE 7.4 · ORDER TIMELINE &amp; DISPATCH</div>
+        <h1 class="erp-h1">คำสั่งซื้อ {{ order.orderNo }}</h1>
+        <p class="erp-sub">สั่งซื้อเมื่อ {{ new Date(order.createdAt).toLocaleString('th-TH') }}</p>
       </div>
-      <span v-if="order" class="badge" :class="order.status === 'cancelled' ? 'badge--danger' : ''">{{ t('orderStatus.' + order.status, order.status) }}</span>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <NuxtLink :to="localePath('/office/orders')" class="erp-btn">← กลับหน้ารวมออเดอร์</NuxtLink>
+        <button type="button" class="erp-btn" @click="printPackingSlip">🖨 พิมพ์ใบปะหน้าพัสดุ</button>
+        <button v-if="order.status === 'pending'" type="button" class="erp-btn erp-btn--violet" @click="saveOrder('paid')">
+          ✓ ยืนยันคำสั่งซื้อทันที
+        </button>
+        <button v-if="order.status !== 'completed'" type="button" class="erp-btn erp-btn--primary" @click="saveOrder('completed')">
+          ★ ปิดงานส่งมอบสำเร็จ
+        </button>
+      </div>
     </div>
 
-    <div v-if="error || !order" class="muted">{{ t('errors.notFound') }}</div>
+    <!-- Visual Status Stepper -->
+    <div class="erp-panel">
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+        <div style="padding:12px;border-radius:10px;border:1px solid #22d3ee;background:rgba(34,211,238,0.08)">
+          <div style="font-size:11px;color:#67e8f9">1. สั่งซื้อสำเร็จ</div>
+          <strong style="font-size:13px">{{ new Date(order.createdAt).toLocaleString('th-TH') }}</strong>
+        </div>
+        <div :style="{ padding: '12px', borderRadius: '10px', border: '1px solid #1e2f4f', opacity: order.confirmedAt || order.status !== 'pending' ? 1 : 0.45 }">
+          <div style="font-size:11px;color:#a78bfa">2. ยืนยันคำสั่งซื้อ</div>
+          <strong style="font-size:13px">{{ order.confirmedAt ? new Date(order.confirmedAt).toLocaleString('th-TH') : 'รอยืนยัน' }}</strong>
+        </div>
+        <div :style="{ padding: '12px', borderRadius: '10px', border: '1px solid #1e2f4f', opacity: order.shippedAt || order.trackingNo ? 1 : 0.45 }">
+          <div style="font-size:11px;color:#22d3ee">3. ส่งมอบขนส่ง</div>
+          <strong style="font-size:13px">{{ order.trackingNo || 'รอกรอกเลขพัสดุ' }}</strong>
+        </div>
+        <div :style="{ padding: '12px', borderRadius: '10px', border: '1px solid #1e2f4f', opacity: order.status === 'completed' ? 1 : 0.45 }">
+          <div style="font-size:11px;color:#34d399">4. จัดส่งถึงลูกค้า</div>
+          <strong style="font-size:13px">{{ order.deliveredAt ? new Date(order.deliveredAt).toLocaleString('th-TH') : 'รอนำจ่าย' }}</strong>
+        </div>
+      </div>
+    </div>
 
-    <div v-else class="ordergrid">
-      <div class="ordermain">
-        <section class="panel">
-          <h2 class="serif panel__title">{{ t('admin.customer') }}</h2>
-          <div class="infolines">
-            <div><span class="tiny upper faint">{{ t('auth.name') }}</span><span>{{ order.customerName }}</span></div>
-            <div><span class="tiny upper faint">{{ t('auth.email') }}</span><span>{{ order.customerEmail }}</span></div>
-            <div><span class="tiny upper faint">{{ t('checkout.phone') }}</span><span>{{ order.phone || '—' }}</span></div>
+    <div style="display:grid;grid-template-columns:1.35fr 1fr;gap:18px" class="ord-split">
+      <!-- Left: Items & Customer -->
+      <div>
+        <div class="erp-panel">
+          <div class="erp-panel__title" style="margin-bottom:12px">รายการสินค้าที่สั่งซื้อ</div>
+          <div class="erp-table-wrap">
+            <table class="erp-table">
+              <thead>
+                <tr>
+                  <th>สินค้า</th>
+                  <th>จำนวน</th>
+                  <th>ราคาต่อเรือน</th>
+                  <th>รวม</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(it, idx) in order.items || []" :key="idx">
+                  <td>
+                    <strong>{{ it.name }}</strong>
+                    <div style="font-size:11.5px;color:#67e8f9">SKU: {{ it.sku || '-' }} <span v-if="it.wristSize">· ขนาดข้อมือ: {{ it.wristSize }}</span></div>
+                  </td>
+                  <td>{{ it.quantity }}</td>
+                  <td>{{ fmt(it.price) }}</td>
+                  <td><strong>{{ fmt(Number(it.price) * Number(it.quantity)) }}</strong></td>
+                </tr>
+              </tbody>
+            </table>
           </div>
-        </section>
 
-        <section class="panel">
-          <h2 class="serif panel__title">{{ t('checkout.shippingAddress') }}</h2>
-          <div class="infolines">
-            <div><span class="tiny upper faint">{{ t('checkout.address') }}</span><span>{{ order.address || '—' }}</span></div>
-            <div><span class="tiny upper faint">{{ t('checkout.city') }}</span><span>{{ order.city || '—' }} {{ order.postalCode || '' }}</span></div>
-            <div><span class="tiny upper faint">{{ t('checkout.country') }}</span><span>{{ order.country || '—' }}</span></div>
+          <div style="margin-top:14px;display:grid;gap:6px;max-width:340px;margin-left:auto;font-size:13.5px">
+            <div style="display:flex;justify-content:space-between"><span>ยอดรวมสินค้า</span><span>{{ fmt(order.subtotal) }}</span></div>
+            <div v-if="order.discount > 0" style="display:flex;justify-content:space-between;color:#34d399"><span>ส่วนลดรวม ({{ order.couponCode || 'Member/Points' }})</span><span>-{{ fmt(order.discount) }}</span></div>
+            <div style="display:flex;justify-content:space-between"><span>ค่าจัดส่ง</span><span>{{ fmt(order.shippingFee) }}</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:17px;font-weight:700;color:#67e8f9;border-top:1px solid #1b2842;padding-top:8px">
+              <span>ยอดชำระสุทธิ</span><span>{{ fmt(order.total) }}</span>
+            </div>
           </div>
-        </section>
+        </div>
 
-        <section class="panel">
-          <h2 class="serif panel__title">{{ t('checkout.items') }}</h2>
-          <table class="table">
-            <thead>
-              <tr><th>{{ t('admin.product') }}</th><th style="text-align:right">{{ t('admin.price') }}</th><th style="text-align:right">{{ t('admin.stock') }}</th><th style="text-align:right">{{ t('admin.grandTotal') }}</th></tr>
-            </thead>
-            <tbody>
-              <tr v-for="it in items" :key="it.id">
-                <td>
-                  <div class="prodcell">
-                    <div class="prodcell__img"><img :src="it.image || '/images/op/watch-990-083-blue.png'" alt="" loading="lazy" referrerpolicy="no-referrer" /></div>
-                    <div>
-                      <div>{{ it.name }}</div>
-                      <div class="tiny upper faint">{{ it.sku }}</div>
-                    </div>
-                  </div>
-                </td>
-                <td style="text-align: right">{{ fmt(Number(it.price)) }}</td>
-                <td style="text-align: right">{{ it.quantity }}</td>
-                <td style="text-align: right" class="price">{{ fmt(Number(it.price) * Number(it.quantity)) }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </section>
-
-        <section class="panel">
-          <h2 class="serif panel__title">{{ t('checkout.note') }}</h2>
-          <textarea class="textarea ordernote">{{ order.note || '' }}</textarea>
-          <button class="btn btn--sm" style="margin-top: 14px" @click="saveNote">{{ t('admin.save') }}</button>
-        </section>
+        <div class="erp-panel">
+          <div class="erp-panel__title" style="margin-bottom:10px">ข้อมูลผู้รับและสิทธิพิเศษ</div>
+          <div style="font-size:13.5px;line-height:1.8;color:#cbd5e1">
+            <div><strong>ชื่อผู้รับ:</strong> {{ order.customer?.name }}</div>
+            <div><strong>เบอร์โทร / อีเมล:</strong> {{ order.customer?.phone }} · {{ order.customer?.email }}</div>
+            <div><strong>ที่อยู่จัดส่ง:</strong> {{ order.customer?.address }} {{ order.customer?.city }} {{ order.customer?.postalCode }}</div>
+            <div v-if="order.branchSlug" style="color:#6ee7b7"><strong>📍 รับสินค้าที่สาขา (Click &amp; Collect):</strong> {{ order.branchSlug }}</div>
+            <div v-if="order.giftWrap" style="color:#ddd6fe"><strong>🎁 บริการห่อของขวัญ:</strong> ต้องการห่อของขวัญ · การ์ด: "{{ order.giftMessage || '-' }}"</div>
+            <div v-if="order.note"><strong>หมายเหตุจากลูกค้า:</strong> {{ order.note }}</div>
+          </div>
+        </div>
       </div>
 
-      <aside class="orderside">
-        <section class="panel">
-          <h2 class="serif panel__title">{{ t('checkout.orderSummary') }}</h2>
-          <div class="between sumrow"><span class="muted">{{ t('cart.subtotal') }}</span><span class="price">{{ fmt(Number(order.subtotal)) }}</span></div>
-          <div class="between sumrow"><span class="muted">{{ t('cart.shipping') }}</span><span class="price">{{ order.shippingFee > 0 ? fmt(Number(order.shippingFee)) : t('cart.free') }}</span></div>
-          <div class="between sumrow"><span class="muted">{{ t('cart.discount') }}</span><span class="price" style="color: var(--success)">-{{ fmt(Number(order.discount)) }}</span></div>
-          <div class="between sumrow sumtotal"><span>{{ t('cart.grandTotal') }}</span><span class="price price--lg">{{ fmt(Number(order.total)) }}</span></div>
-          <p class="tiny upper faint" style="margin-top: 14px">{{ t('checkout.payment') }}: {{ order.paymentMethod }}</p>
-        </section>
+      <!-- Right: Confirm & Carrier Dispatch Form -->
+      <div class="erp-panel" style="height:fit-content">
+        <div class="erp-panel__title" style="margin-bottom:14px">จัดการสถานะ &amp; บันทึกเลขพัสดุจัดส่ง</div>
 
-        <section class="panel">
-          <h2 class="serif panel__title">{{ t('admin.changeStatus') }}</h2>
-          <div class="statusopts">
-            <button
-              v-for="s in statusOptions"
-              :key="s"
-              class="statusopt"
-              :class="{ 'is-active': order.status === s }"
-              @click="setStatus(s)"
-            >
-              {{ t('orderStatus.' + s, s) }}
-            </button>
-          </div>
-        </section>
-      </aside>
+        <div class="erp-field" style="margin-bottom:12px">
+          <label class="erp-label">สถานะคำสั่งซื้อ</label>
+          <select v-model="form.status" class="erp-select">
+            <option value="pending">pending — รอยืนยันคำสั่งซื้อ</option>
+            <option value="paid">paid — ยืนยันคำสั่งซื้อ / ชำระเงินแล้ว</option>
+            <option value="shipped">shipped — จัดส่งสินค้าออกแล้ว</option>
+            <option value="completed">completed — ลูกค้าได้รับสินค้าเรียบร้อย</option>
+            <option value="cancelled">cancelled — ยกเลิกรายการ</option>
+          </select>
+        </div>
+
+        <div class="erp-field" style="margin-bottom:12px">
+          <label class="erp-label">บริษัทขนส่ง (Carrier)</label>
+          <select v-model="form.carrier" class="erp-select">
+            <option value="Kerry Express">Kerry Express</option>
+            <option value="Thailand Post EMS">ไปรษณีย์ไทย EMS</option>
+            <option value="Flash Express">Flash Express</option>
+            <option value="J&T Express">J&amp;T Express</option>
+            <option value="DHL Domestic">DHL eCommerce Thailand</option>
+            <option value="รับที่สาขา (Click & Collect)">รับที่สาขา (Click &amp; Collect)</option>
+          </select>
+        </div>
+
+        <div class="erp-field" style="margin-bottom:12px">
+          <label class="erp-label">หมายเลขพัสดุ (Tracking Number)</label>
+          <input v-model="form.trackingNo" class="erp-input" placeholder="เช่น KEX2026998877TH" />
+        </div>
+
+        <div class="erp-field" style="margin-bottom:16px">
+          <label class="erp-label">บันทึกภายในสำหรับเจ้าหน้าที่ (Admin Note)</label>
+          <textarea v-model="form.adminNote" class="erp-textarea" rows="3" placeholder="บันทึกการตรวจเช็คเวลา กันน้ำ หรือการตัดสายก่อนจัดส่ง..." />
+        </div>
+
+        <button type="button" class="erp-btn erp-btn--primary" style="width:100%;justify-content:center" :disabled="saving" @click="saveOrder()">
+          {{ saving ? 'กำลังบันทึก...' : '💾 บันทึกสถานะและเลขพัสดุ' }}
+        </button>
+      </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-.pagehead { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 26px; flex-wrap: wrap; }
-.ordergrid { display: grid; grid-template-columns: 1fr 340px; gap: 30px; align-items: start; }
-.ordermain { display: flex; flex-direction: column; gap: 24px; }
-.panel { border: 1px solid var(--line); background: var(--paper); border-radius: var(--radius-lg); padding: 24px 26px; }
-.panel__title { font-size: 19px; margin-bottom: 18px; }
-.infolines { display: flex; flex-direction: column; gap: 12px; }
-.infolines > div { display: grid; grid-template-columns: 120px 1fr; gap: 14px; align-items: baseline; }
-.prodcell { display: flex; align-items: center; gap: 12px; }
-.prodcell__img { width: 40px; height: 40px; background: var(--sand); border-radius: var(--radius); overflow: hidden; flex: none; }
-.prodcell__img img { width: 100%; height: 100%; object-fit: cover; }
-.orderside { position: sticky; top: 96px; display: flex; flex-direction: column; gap: 24px; }
-.sumrow { padding: 9px 0; font-size: 15px; }
-.sumtotal { border-top: 1px solid var(--line); margin-top: 8px; padding-top: 16px; letter-spacing: 0.08em; text-transform: uppercase; font-size: 13px; }
-.statusopts { display: flex; flex-direction: column; gap: 8px; }
-.statusopt { border: 1px solid var(--line-strong); background: var(--paper); border-radius: var(--radius); padding: 11px 14px; text-align: left; font-size: 13px; transition: all 0.18s; }
-.statusopt:hover { border-color: var(--ink); }
-.statusopt.is-active { background: var(--ink); border-color: var(--ink); color: #f7f4ee; }
-
-@media (max-width: 900px) {
-  .ordergrid { grid-template-columns: 1fr; }
-  .orderside { position: static; }
+@media (max-width: 980px) {
+  .ord-split { grid-template-columns: 1fr !important; }
 }
 </style>

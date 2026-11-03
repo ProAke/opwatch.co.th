@@ -6,15 +6,18 @@ export default defineEventHandler(async (event) => {
   const order = await store.findById('orders', id)
   if (!order) throw createError({ statusCode: 404, statusMessage: 'order.notFound' })
 
-  const patch: Record<string, any> = {}
-  if (body?.status) patch.status = String(body.status)
-  if (body?.paymentMethod !== undefined) patch.paymentMethod = String(body.paymentMethod)
-  if (body?.note !== undefined) patch.note = String(body.note)
-  if (body?.customerName !== undefined) patch.customerName = String(body.customerName)
-  if (body?.phone !== undefined) patch.phone = String(body.phone)
-  if (body?.address !== undefined) patch.address = String(body.address)
-  if (body?.city !== undefined) patch.city = String(body.city)
-  if (body?.postalCode !== undefined) patch.postalCode = String(body.postalCode)
+  const now = new Date().toISOString()
+  const patch: Record<string, any> = { updatedAt: now }
+  if (body?.status) {
+    patch.status = String(body.status)
+    if (patch.status === 'confirmed' && !order.confirmedAt) patch.confirmedAt = now
+    if (patch.status === 'shipped' && !order.shippedAt) patch.shippedAt = now
+    if (patch.status === 'delivered' && !order.deliveredAt) patch.deliveredAt = now
+  }
+  for (const k of ['paymentMethod', 'note', 'customerName', 'phone', 'address', 'city', 'postalCode', 'carrier', 'trackingNo', 'branchSlug', 'giftMessage']) {
+    if (body?.[k] !== undefined) patch[k] = String(body[k] ?? '')
+  }
+  if (body?.giftWrap !== undefined) patch.giftWrap = Boolean(body.giftWrap)
 
   const updated = await store.update('orders', id, patch)
   return { order: updated }

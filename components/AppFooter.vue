@@ -69,6 +69,16 @@ function scrollToTop() {
           </a>
 
           <a
+            href="https://www.tiktok.com/@opwatchthailand"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="op-ftr__channel op-ftr__channel--tiktok"
+          >
+            <span class="op-ftr__channel-badge" style="background:#111111;color:#fff">TT</span>
+            <span>TikTok : <strong>@opwatchthailand</strong></span>
+          </a>
+
+          <a
             href="https://shopee.co.th/opwatchthailand"
             target="_blank"
             rel="noopener noreferrer"
@@ -80,23 +90,36 @@ function scrollToTop() {
         </div>
 
         <div class="op-ftr__cta">
-          <NuxtLink :to="localePath('/contact')" class="op-ftr__contact-btn">
-            {{ locale === 'th' ? 'ติดต่อเรา & ศูนย์บริการประเทศไทย · Contact Us' : 'Contact Official Thailand Service Center' }}
+          <NuxtLink :to="localePath('/promotions')" class="op-ftr__contact-btn" style="margin-right:8px;margin-bottom:8px">
+            {{ locale === 'th' ? '🎁 รวมโปรโมชั่น & เก็บคูปองส่วนลด' : '🎁 Promotions & Vouchers' }}
+          </NuxtLink>
+          <NuxtLink :to="localePath('/services')" class="op-ftr__contact-btn" style="margin-bottom:8px">
+            {{ locale === 'th' ? '✦ ห่อของขวัญ · เช็คสาขาใกล้บ้าน · ประกันแท้ 2 ปี' : '✦ Gift Wrap · Branches · 2-Yr Warranty' }}
           </NuxtLink>
         </div>
 
         <!-- Quick Navigation Links -->
         <nav class="op-ftr__quick" aria-label="Boutique links">
           <NuxtLink :to="localePath('/')">{{ locale === 'th' ? 'หน้าแรก' : 'Home' }}</NuxtLink>
-          <NuxtLink :to="localePath('/about')">About</NuxtLink>
+          <NuxtLink :to="localePath('/promotions')">{{ locale === 'th' ? 'โปรโมชั่น' : 'Promotions' }}</NuxtLink>
           <NuxtLink :to="localePath('/products')">Collections</NuxtLink>
           <NuxtLink :to="localePath('/brands/olympianus')">Olym Pianus</NuxtLink>
           <NuxtLink :to="localePath('/brands/olympia-star')">Olympia Star</NuxtLink>
           <NuxtLink :to="localePath('/brands/ogival')">Ogival</NuxtLink>
-          <NuxtLink :to="localePath('/news')">News</NuxtLink>
-          <NuxtLink :to="localePath('/cart')">{{ locale === 'th' ? 'ตะกร้าสินค้า' : 'Cart' }}</NuxtLink>
-          <NuxtLink :to="localePath('/account')">{{ locale === 'th' ? 'บัญชีสมาชิก' : 'Account' }}</NuxtLink>
-          <NuxtLink :to="localePath('/office')">{{ locale === 'th' ? 'ระบบหลังบ้าน' : 'Back Office' }}</NuxtLink>
+          <NuxtLink :to="localePath('/services')">{{ locale === 'th' ? 'บริการพิเศษ & บัตรของขวัญ' : 'Services & Gift Cards' }}</NuxtLink>
+          <NuxtLink :to="localePath('/branches')">{{ locale === 'th' ? 'สาขาใกล้บ้าน' : 'Branches' }}</NuxtLink>
+          <NuxtLink :to="localePath('/track')">{{ locale === 'th' ? 'เช็คสถานะพัสดุ' : 'Track Order' }}</NuxtLink>
+          <NuxtLink :to="localePath('/contact')">{{ locale === 'th' ? 'ติดต่อเรา' : 'Contact' }}</NuxtLink>
+          <NuxtLink :to="localePath('/office')">{{ locale === 'th' ? 'ระบบหลังบ้าน ERP' : 'ERP Office' }}</NuxtLink>
+        </nav>
+
+        <!-- Legal & Policy Links (PDPA, Cookie, Terms, Return, Warranty) -->
+        <nav class="op-ftr__quick" style="margin-top: 8px; opacity: 0.85; font-size: 12px" aria-label="Legal policies">
+          <NuxtLink :to="localePath('/pages/privacy-policy')">{{ locale === 'th' ? 'นโยบายความเป็นส่วนตัว (PDPA)' : 'Privacy Policy' }}</NuxtLink>
+          <NuxtLink :to="localePath('/pages/cookie-policy')">{{ locale === 'th' ? 'นโยบายคุกกี้' : 'Cookie Policy' }}</NuxtLink>
+          <NuxtLink :to="localePath('/pages/terms-conditions')">{{ locale === 'th' ? 'ข้อตกลงและเงื่อนไข' : 'Terms & Conditions' }}</NuxtLink>
+          <NuxtLink :to="localePath('/pages/return-policy')">{{ locale === 'th' ? 'เปลี่ยนและคืนสินค้า' : 'Exchange & Return' }}</NuxtLink>
+          <NuxtLink :to="localePath('/pages/warranty-authenticity')">{{ locale === 'th' ? 'รับประกันสินค้าของแท้' : 'Authenticity Warranty' }}</NuxtLink>
         </nav>
       </div>
     </div>

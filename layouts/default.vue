@@ -29,6 +29,8 @@ watch(
     <AppFooter />
 
     <CartDrawer />
+    <FloatingChatHub />
+    <CookieConsentBanner />
     <ToastHost />
   </div>
 </template>

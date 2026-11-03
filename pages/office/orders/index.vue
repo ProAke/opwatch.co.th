@@ -1,98 +1,214 @@
 <script setup lang="ts">
-const { t, locale} = useI18n()
+definePageMeta({ layout: 'office', middleware: ['office'] })
+
 const localePath = useLocalePath()
 const { site } = useSite()
+const toast = useToast()
 
-const localeTag = computed(() => (locale.value === 'en' ? 'en-US' : 'th-TH'))
-const fmt = (v: number) => formatPrice(v, site.value.currencySymbol, localeTag.value)
-
+const statusFilter = ref('')
 const search = ref('')
-const status = ref('')
-const items = ref<Record<string, any>[]>([])
 
-const statusOptions = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded']
+const { data, refresh } = await useFetch<any>('/api/admin/orders', {
+  query: computed(() => ({
+    status: statusFilter.value || undefined,
+    q: search.value || undefined
+  }))
+})
 
-async function load() {
-  const res = await $fetch<{ items: Record<string, any>[] }>('/api/admin/orders', {
-    query: {
-      q: search.value || undefined,
-      status: status.value || undefined
-    }
-  })
-  items.value = res.items
+const orders = computed(() => data.value?.items || data.value?.orders || [])
+
+const summary = computed(() => {
+  const all = orders.value
+  const valid = all.filter((o: any) => o.status !== 'cancelled')
+  return {
+    totalCount: all.length,
+    revenue: valid.reduce((s: number, o: any) => s + Number(o.total || 0), 0),
+    pending: all.filter((o: any) => o.status === 'pending').length,
+    confirmed: all.filter((o: any) => o.status === 'paid').length,
+    shipped: all.filter((o: any) => o.status === 'shipped').length,
+    completed: all.filter((o: any) => o.status === 'completed').length
+  }
+})
+
+// Quick inline confirm or tracking dispatch
+const quickTracking = reactive<Record<number, string>>({})
+const quickCarrier = reactive<Record<number, string>>({})
+
+async function quickConfirm(o: any) {
+  try {
+    await $fetch(`/api/admin/orders/${o.id}`, {
+      method: 'PUT',
+      body: { status: 'paid' }
+    })
+    toast.success(`ยืนยันคำสั่งซื้อ ${o.orderNo} เรียบร้อย`)
+    await refresh()
+  } catch {
+    toast.error('อัปเดตสถานะไม่สำเร็จ')
+  }
 }
 
-watch([search, status], load, { deep: true })
-onMounted(load)
-
-async function setStatus(order: Record<string, any>, next: string) {
-  await $fetch(`/api/admin/orders/${order.id}`, { method: 'PUT', body: { status: next } })
-  order.status = next
-  useToast().success(t('admin.updated'))
+async function quickDispatch(o: any) {
+  const trk = (quickTracking[o.id] || o.trackingNo || '').trim()
+  const car = quickCarrier[o.id] || o.carrier || 'Kerry Express'
+  if (!trk) {
+    toast.error('กรุณากรอกเลขพัสดุก่อนกดจัดส่ง')
+    return
+  }
+  try {
+    await $fetch(`/api/admin/orders/${o.id}`, {
+      method: 'PUT',
+      body: { status: 'shipped', carrier: car, trackingNo: trk }
+    })
+    toast.success(`บันทึกการจัดส่ง ${o.orderNo} (${car}: ${trk}) เรียบร้อย!`)
+    await refresh()
+  } catch {
+    toast.error('บันทึกเลขพัสดุไม่สำเร็จ')
+  }
 }
 
-useHead({ title: `${t('admin.orders')} — ${site.value.name}` })
-definePageMeta({ layout: 'office', middleware: 'office' })
+function statusChip(st: string) {
+  if (st === 'completed') return 'erp-chip--mint'
+  if (st === 'paid') return 'erp-chip--violet'
+  if (st === 'shipped') return 'erp-chip--cyan'
+  if (st === 'cancelled') return 'erp-chip--rose'
+  return 'erp-chip--amber'
+}
+
+const fmt = (v: number) => formatPrice(Number(v || 0), site.value.currencySymbol || '฿', 'th-TH')
+
+useHead({ title: 'บริหารจัดการคำสั่งซื้อ & จัดส่งพัสดุ — OPWatch Office' })
 </script>
 
 <template>
   <div>
-    <div class="pagehead">
-      <h1 class="page-title" style="font-size: 2rem">{{ t('admin.orders') }}</h1>
-      <span class="small muted">{{ items.length }} {{ t('admin.ordersCount') }}</span>
+    <div class="erp-page-head">
+      <div>
+        <div class="erp-kicker">MODULE 7.4 · ORDER FULFILLMENT &amp; LOGISTICS</div>
+        <h1 class="erp-h1">บริหารจัดการสั่งสินค้า (Order &amp; Dispatch Center)</h1>
+        <p class="erp-sub">
+          ภาพรวมยอดขาย ยืนยันคำสั่งซื้อ บันทึกขนส่งและเลขพัสดุจัดส่ง พร้อมติดตามสถานะคำสั่งซื้อแบบครบวงจร
+        </p>
+      </div>
+      <button type="button" class="erp-btn" @click="refresh()">↻ รีเฟรชคำสั่งซื้อ</button>
     </div>
 
-    <div class="toolbar">
-      <input v-model="search" class="input" style="max-width: 320px" :placeholder="t('admin.searchPlaceholder')" />
-      <select v-model="status" class="select" style="max-width: 220px">
-        <option value="">{{ t('common.all') }} {{ t('admin.status') }}</option>
-        <option v-for="s in statusOptions" :key="s" :value="s">{{ t('orderStatus.' + s, s) }}</option>
-      </select>
+    <!-- Sales & Fulfillment KPIs -->
+    <div class="erp-kpis">
+      <div class="erp-kpi">
+        <div class="erp-kpi__label">ยอดขายตามตัวกรอง</div>
+        <div class="erp-kpi__val">{{ fmt(summary.revenue) }}</div>
+        <div class="erp-kpi__meta">ทั้งหมด {{ summary.totalCount }} คำสั่งซื้อ</div>
+      </div>
+      <div class="erp-kpi">
+        <div class="erp-kpi__label">1. รอยืนยันคำสั่งซื้อ</div>
+        <div class="erp-kpi__val" style="color:#fbbf24">{{ summary.pending }}</div>
+        <div class="erp-kpi__meta">รอตรวจสอบยอด / ยืนยัน</div>
+      </div>
+      <div class="erp-kpi">
+        <div class="erp-kpi__label">2. ยืนยันแล้ว / รอแพ็กส่ง</div>
+        <div class="erp-kpi__val" style="color:#a78bfa">{{ summary.confirmed }}</div>
+        <div class="erp-kpi__meta">พร้อมบรรจุและออกเลขพัสดุ</div>
+      </div>
+      <div class="erp-kpi">
+        <div class="erp-kpi__label">3. จัดส่งแล้ว (Shipped)</div>
+        <div class="erp-kpi__val" style="color:#22d3ee">{{ summary.shipped }}</div>
+        <div class="erp-kpi__meta">อยู่ระหว่างขนส่งถึงลูกค้า</div>
+      </div>
+      <div class="erp-kpi">
+        <div class="erp-kpi__label">4. สำเร็จสมบูรณ์</div>
+        <div class="erp-kpi__val" style="color:#34d399">{{ summary.completed }}</div>
+        <div class="erp-kpi__meta">ส่งมอบเรียบร้อย</div>
+      </div>
     </div>
 
-    <div class="panel" style="padding: 0; overflow: hidden">
-      <div v-if="!items.length" class="muted panel-pad">{{ t('admin.noOrders') }}</div>
+    <!-- Filter Bar -->
+    <div class="erp-panel">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px">
+        <input v-model="search" class="erp-input" style="flex:1;min-width:220px" placeholder="ค้นหาเลขที่คำสั่งซื้อ ชื่อลูกค้า เบอร์โทร..." />
+        <select v-model="statusFilter" class="erp-select" style="width:220px">
+          <option value="">ทุกสถานะคำสั่งซื้อ</option>
+          <option value="pending">รอยืนยัน (pending)</option>
+          <option value="paid">ยืนยันแล้ว / ชำระแล้ว (paid)</option>
+          <option value="shipped">จัดส่งแล้ว (shipped)</option>
+          <option value="completed">สำเร็จ (completed)</option>
+          <option value="cancelled">ยกเลิก (cancelled)</option>
+        </select>
+      </div>
 
-      <table v-else class="table">
-        <thead>
-          <tr>
-            <th>{{ t('account.orderNo') }}</th>
-            <th>{{ t('admin.customer') }}</th>
-            <th>{{ t('admin.date') }}</th>
-            <th>{{ t('admin.items') }}</th>
-            <th style="text-align:right">{{ t('admin.grandTotal') }}</th>
-            <th>{{ t('admin.status') }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="o in items" :key="o.id">
-            <td><NuxtLink :to="localePath('/office/orders/' + o.id)" class="link">{{ o.orderNo }}</NuxtLink></td>
-            <td>
-              <div>{{ o.customerName }}</div>
-              <div class="tiny upper faint">{{ o.customerEmail }}</div>
-              <div class="tiny upper faint">{{ o.phone }}</div>
-            </td>
-            <td class="small">{{ formatDate(o.createdAt, localeTag) }}</td>
-            <td class="small">{{ o.items.length }} {{ t('admin.items') }}</td>
-            <td style="text-align: right" class="price">{{ fmt(Number(o.total)) }}</td>
-            <td>
-              <select class="select select--sm" :value="o.status" @change="setStatus(o, ($event.target as HTMLSelectElement).value)">
-                <option v-for="s in statusOptions" :key="s" :value="s">{{ t('orderStatus.' + s, s) }}</option>
-              </select>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="erp-table-wrap">
+        <table class="erp-table">
+          <thead>
+            <tr>
+              <th>เลขคำสั่งซื้อ / วันที่</th>
+              <th>ลูกค้า &amp; รูปแบบรับสินค้า</th>
+              <th>ยอดสุทธิ</th>
+              <th>สถานะ</th>
+              <th>จัดส่งด่วน (ขนส่ง + เลขพัสดุ)</th>
+              <th>จัดการ</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="o in orders" :key="o.id">
+              <td>
+                <div style="font-family:monospace;font-weight:700;color:#67e8f9">{{ o.orderNo }}</div>
+                <div style="font-size:11px;color:#94a3b8">{{ new Date(o.createdAt).toLocaleString('th-TH') }}</div>
+                <span v-if="o.giftWrap" class="erp-chip erp-chip--violet" style="margin-top:4px">🎁 ห่อของขวัญ</span>
+              </td>
+              <td>
+                <strong>{{ o.customer?.name }}</strong>
+                <div style="font-size:11.5px;color:#94a3b8">{{ o.customer?.phone }} · {{ o.customer?.city }}</div>
+                <span v-if="o.branchSlug" class="erp-chip erp-chip--mint">📍 รับที่สาขา: {{ o.branchSlug }}</span>
+              </td>
+              <td>
+                <strong>{{ fmt(o.total) }}</strong>
+                <div style="font-size:11px;color:#64748b">{{ o.paymentMethod }}</div>
+              </td>
+              <td>
+                <span class="erp-chip" :class="statusChip(o.status)">{{ o.status }}</span>
+              </td>
+              <td>
+                <div v-if="o.trackingNo" style="font-size:12px">
+                  <strong style="color:#6ee7b7">{{ o.carrier || 'Express' }}:</strong>
+                  <code style="margin-left:4px;color:#67e8f9">{{ o.trackingNo }}</code>
+                </div>
+                <div v-else style="display:flex;gap:5px;align-items:center">
+                  <select v-model="quickCarrier[o.id]" class="erp-select" style="width:118px;padding:4px 6px;font-size:11.5px">
+                    <option value="Kerry Express">Kerry Express</option>
+                    <option value="Thailand Post EMS">ไปรษณีย์ EMS</option>
+                    <option value="Flash Express">Flash Express</option>
+                    <option value="DHL Thailand">DHL Thailand</option>
+                  </select>
+                  <input
+                    v-model="quickTracking[o.id]"
+                    class="erp-input"
+                    style="width:130px;padding:4px 7px;font-size:11.5px"
+                    placeholder="เลขพัสดุ..."
+                  />
+                  <button type="button" class="erp-btn erp-btn--sm erp-btn--primary" @click="quickDispatch(o)">ส่ง</button>
+                </div>
+              </td>
+              <td>
+                <div style="display:flex;gap:6px;flex-wrap:wrap">
+                  <button
+                    v-if="o.status === 'pending'"
+                    type="button"
+                    class="erp-btn erp-btn--sm erp-btn--primary"
+                    @click="quickConfirm(o)"
+                  >
+                    ✓ ยืนยันออเดอร์
+                  </button>
+                  <NuxtLink :to="localePath(`/office/orders/${o.id}`)" class="erp-btn erp-btn--sm">
+                    รายละเอียด / ติดตาม
+                  </NuxtLink>
+                </div>
+              </td>
+            </tr>
+            <tr v-if="!orders.length">
+              <td colspan="6" style="text-align:center;padding:30px;color:#64748b">ยังไม่มีรายการคำสั่งซื้อ</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 </template>
-
-<style scoped>
-.pagehead { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
-.toolbar { display: flex; gap: 14px; margin-bottom: 18px; flex-wrap: wrap; }
-.panel { border: 1px solid var(--line); background: var(--paper); border-radius: var(--radius-lg); }
-.panel-pad { padding: 26px 28px; }
-.link { color: var(--ink); }
-.link:hover { color: var(--gold); }
-.select--sm { padding: 7px 10px; font-size: 12px; max-width: 140px; }
-</style>
