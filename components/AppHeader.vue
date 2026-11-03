@@ -96,8 +96,16 @@ watch(() => route.fullPath, () => {
           </NuxtLink>
         </div>
 
-        <NuxtLink :to="localePath('/news')" class="op-hdr__link">
-          {{ locale === 'th' ? 'News' : 'News' }}
+        <NuxtLink :to="localePath('/promotions')" class="op-hdr__link op-hdr__link--promo">
+          {{ locale === 'th' ? 'โปรโมชั่น' : 'Promotions' }}
+        </NuxtLink>
+
+        <NuxtLink :to="localePath('/services')" class="op-hdr__link">
+          {{ locale === 'th' ? 'สิทธิพิเศษ & สาขา' : 'Services & Branches' }}
+        </NuxtLink>
+
+        <NuxtLink :to="localePath('/track')" class="op-hdr__link">
+          {{ locale === 'th' ? 'เช็คพัสดุ' : 'Track Order' }}
         </NuxtLink>
 
         <NuxtLink :to="localePath('/contact')" class="op-hdr__link">
@@ -240,6 +248,9 @@ watch(() => route.fullPath, () => {
             <NuxtLink v-for="b in brandHouses" :key="b.slug" :to="localePath(`/brands/${b.slug}`)" class="op-mobile__sub">
               ✦ {{ b.name }} ({{ b.tag }})
             </NuxtLink>
+            <NuxtLink :to="localePath('/promotions')">{{ locale === 'th' ? 'โปรโมชั่น & คูปองส่วนลด' : 'Promotions & Vouchers' }}</NuxtLink>
+            <NuxtLink :to="localePath('/services')">{{ locale === 'th' ? 'บริการพิเศษ & เช็คสาขาใกล้บ้าน' : 'Boutique Services & Branches' }}</NuxtLink>
+            <NuxtLink :to="localePath('/track')">{{ locale === 'th' ? 'ติดตามสถานะคำสั่งซื้อ' : 'Track Order' }}</NuxtLink>
             <NuxtLink :to="localePath('/news')">News</NuxtLink>
             <NuxtLink :to="localePath('/contact')">Contact</NuxtLink>
             <NuxtLink :to="localePath(isAuthenticated ? '/account' : '/account/login')">

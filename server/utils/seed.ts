@@ -2,6 +2,7 @@ import type { Store } from '../db/types'
 import { olympianusOfficialProducts } from './catalog-olympianus'
 import { ogivalOfficialProducts } from './catalog-ogival'
 import { isInstalled, loadConfig, saveConfig } from './config'
+import { defaultPromotions, defaultCoupons, defaultBranches, defaultPages } from './seed-extras'
 
 export interface SeedBrand {
   slug: string
@@ -589,15 +590,23 @@ export async function syncOfficialCatalog(
         const existingAdmin = await store.findOne('customers', { where: { email: adminEmail } })
         if (!existingAdmin) {
           await store.create('customers', {
-            name: 'Administrator',
+            name: 'CEO · Administrator',
             email: adminEmail,
             passwordHash: cfg.admin.passwordHash,
             isAdmin: true,
+            role: 'ceo',
+            department: 'Executive Management',
+            position: 'Chief Executive Officer',
+            status: 'active',
             points: 0,
             totalSpent: 0
           })
-        } else if (!existingAdmin.isAdmin) {
-          await store.update('customers', Number(existingAdmin.id), { isAdmin: true })
+        } else if (!existingAdmin.isAdmin || !existingAdmin.role || existingAdmin.role === 'member') {
+          await store.update('customers', Number(existingAdmin.id), {
+            isAdmin: true,
+            role: existingAdmin.role && existingAdmin.role !== 'member' ? existingAdmin.role : 'ceo',
+            status: existingAdmin.status || 'active'
+          })
         }
       }
 
@@ -871,6 +880,45 @@ export async function syncOfficialCatalog(
         }
       }
 
+      // 7. Seed Promotions, Coupons, Branches & CMS Pages if missing
+      const existingPromos = await store.all('promotions')
+      if (existingPromos.length === 0) {
+        const currentProds = await store.find('products', {
+          where: { status: 'active' },
+          orderBy: 'sortOrder',
+          orderDir: 'asc'
+        })
+        const opPick = currentProds.filter((p) => p.brand === 'olympianus').slice(0, 3)
+        const opaPick = currentProds.filter((p) => p.brand === 'olympia-star').slice(0, 2)
+        const ogPick = currentProds.filter((p) => p.brand === 'ogival').slice(0, 3)
+        const featuredIds = [...opPick, ...opaPick, ...ogPick].map((p) => Number(p.id))
+        for (const pr of defaultPromotions(featuredIds)) {
+          await store.create('promotions', pr)
+        }
+      }
+
+      const existingCoupons = await store.all('coupons')
+      if (existingCoupons.length === 0) {
+        for (const cp of defaultCoupons()) {
+          await store.create('coupons', cp)
+        }
+      }
+
+      const existingBranches = await store.all('branches')
+      if (existingBranches.length === 0) {
+        for (const br of defaultBranches()) {
+          await store.create('branches', br)
+        }
+      }
+
+      const existingPages = await store.all('pages')
+      const pageSlugs = new Set(existingPages.map((pg) => String(pg.slug)))
+      for (const pg of defaultPages()) {
+        if (!pageSlugs.has(pg.slug)) {
+          await store.create('pages', pg)
+        }
+      }
+
       const finalCount = await store.count('products', { where: { status: 'active' } })
       return { synced, removedLegacy, total: finalCount }
     }
@@ -893,8 +941,12 @@ export async function syncOfficialCatalog(
  */
 export async function ensureCatalogReady(store: Store): Promise<void> {
   if (!isInstalled()) return
-  const count = await store.count('products')
-  if (count === 0) {
+  const [prodCount, promoCount, pageCount] = await Promise.all([
+    store.count('products'),
+    store.count('promotions').catch(() => 1),
+    store.count('pages').catch(() => 1)
+  ])
+  if (prodCount === 0 || promoCount === 0 || pageCount === 0) {
     await syncOfficialCatalog(store)
   }
 }

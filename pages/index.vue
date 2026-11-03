@@ -3,15 +3,46 @@ const { locale, t } = useI18n()
 const localePath = useLocalePath()
 const reqFetch = useRequestFetch()
 
+const toast = useToast()
+
 const { data: homeData } = await useAsyncData('op-home-data', async () => {
-  const [prodRes, brandRes] = await Promise.all([
+  const [prodRes, brandRes, promoRes] = await Promise.all([
     reqFetch<{ items?: any[]; products?: any[]; total?: number }>('/api/products?featured=true&limit=24'),
-    reqFetch<{ items?: any[]; brands?: any[] }>('/api/brands')
+    reqFetch<{ items?: any[]; brands?: any[] }>('/api/brands'),
+    reqFetch<any>('/api/promotions?home=1').catch(() => ({ items: [], promoProducts: [], coupons: [], promoHomeEnabled: true, promoHomeColumns: 4 }))
   ])
   const allProducts = prodRes?.items || prodRes?.products || []
   const allBrands = brandRes?.items || brandRes?.brands || []
-  return { allProducts, allBrands }
+  return { allProducts, allBrands, promoRes }
 })
+
+const promoBanners = computed(() => homeData.value?.promoRes?.items || [])
+const promoProducts = computed(() => homeData.value?.promoRes?.promoProducts || [])
+const promoCoupons = computed(() => (homeData.value?.promoRes?.coupons || []).slice(0, 3))
+const promoHomeEnabled = computed(() => homeData.value?.promoRes?.promoHomeEnabled !== false)
+const promoCols = ref<3 | 4 | 6>(
+  [3, 4, 6].includes(Number(homeData.value?.promoRes?.promoHomeColumns))
+    ? (Number(homeData.value?.promoRes?.promoHomeColumns) as 3 | 4 | 6)
+    : 4
+)
+watch(
+  () => homeData.value?.promoRes?.promoHomeColumns,
+  (v) => {
+    if ([3, 4, 6].includes(Number(v))) promoCols.value = Number(v) as 3 | 4 | 6
+  }
+)
+
+function collectCoupon(code: string) {
+  if (!import.meta.client || !code) return
+  try {
+    const raw = localStorage.getItem('opwatch_saved_coupons')
+    const arr = raw ? JSON.parse(raw) : []
+    if (!arr.includes(code)) arr.push(code)
+    localStorage.setItem('opwatch_saved_coupons', JSON.stringify(arr))
+    navigator.clipboard?.writeText(code).catch(() => {})
+    toast.success(locale.value === 'th' ? `เก็บคูปอง ${code} เรียบร้อย ใช้ลดหน้าชำระเงินได้ทันที` : `Saved voucher ${code}!`)
+  } catch {}
+}
 
 /* 1. Full-Viewport Hero Slides (exact olympianus.com Banner01 / Banner02 / Banner03) */
 const heroSlides = computed(() => [
@@ -295,6 +326,109 @@ onBeforeUnmount(() => {
               {{ locale === 'th' ? 'เลือกชมสินค้าแบรนด์นี้ →' : 'Shop Brand →' }}
             </span>
           </NuxtLink>
+        </div>
+      </div>
+    </section>
+
+    <!-- =====================================================================
+         SECTION 1C: OFFICIAL PROMOTIONS & SPECIAL PRIVILEGES (Right below 3 Brand Logos)
+         Graphic Campaign Banner + 3 | 4 | 6 Column Promo Watch Grid
+         ===================================================================== -->
+    <section v-if="promoHomeEnabled && (promoBanners.length || promoProducts.length)" class="section op-home-promo">
+      <div class="container">
+        <div class="op-home-promo__head">
+          <div>
+            <span class="op-home-promo__eyebrow">
+              {{ locale === 'th' ? 'EXCLUSIVE CAMPAIGN & SPECIAL OFFERS' : 'EXCLUSIVE CAMPAIGN & SPECIAL OFFERS' }}
+            </span>
+            <h2 class="op-sec-title" style="text-align:left;margin-top:4px">
+              {{ locale === 'th' ? 'โปรโมชั่นพิเศษประจำเดือน' : 'FEATURED PROMOTIONS' }}
+            </h2>
+          </div>
+
+          <div class="op-home-promo__controls">
+            <div class="op-home-promo__cols" role="group" aria-label="Grid columns">
+              <span>{{ locale === 'th' ? 'แสดงผลต่อแถว:' : 'Per Row:' }}</span>
+              <button type="button" :class="{ 'is-active': promoCols === 3 }" @click="promoCols = 3">3</button>
+              <button type="button" :class="{ 'is-active': promoCols === 4 }" @click="promoCols = 4">4</button>
+              <button type="button" :class="{ 'is-active': promoCols === 6 }" @click="promoCols = 6">6</button>
+            </div>
+            <NuxtLink :to="localePath('/promotions')" class="btn btn--sm">
+              {{ locale === 'th' ? 'ดูโปรโมชั่นทุกช่องทาง →' : 'All Channel Deals →' }}
+            </NuxtLink>
+          </div>
+        </div>
+
+        <!-- Graphic Campaign Banner(s) -->
+        <div v-if="promoBanners.length" class="op-home-promo__banners">
+          <div
+            v-for="b in promoBanners.slice(0, 2)"
+            :key="b.id || b.slug"
+            class="op-promo-hero-card"
+            :class="{ 'is-full': promoBanners.length === 1 }"
+          >
+            <img :src="b.bannerImage" :alt="b.titleTh" class="op-promo-hero-card__img" loading="lazy" />
+            <div class="op-promo-hero-card__overlay">
+              <span v-if="b.badgeText" class="op-promo-hero-card__badge">{{ b.badgeText }}</span>
+              <h3>{{ locale === 'en' && b.titleEn ? b.titleEn : b.titleTh }}</h3>
+              <p>{{ locale === 'en' && b.subtitleEn ? b.subtitleEn : b.subtitleTh }}</p>
+              <div class="op-promo-hero-card__actions">
+                <a
+                  v-if="b.targetUrl && b.targetUrl.startsWith('http')"
+                  :href="b.targetUrl"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="btn btn--sm op-promo-hero-card__cta"
+                >
+                  {{ locale === 'en' && b.ctaEn ? b.ctaEn : b.ctaTh || 'รับสิทธิ์โปรโมชั่น' }} ↗
+                </a>
+                <NuxtLink
+                  v-else
+                  :to="localePath(b.targetUrl || '/promotions')"
+                  class="btn btn--sm op-promo-hero-card__cta"
+                >
+                  {{ locale === 'en' && b.ctaEn ? b.ctaEn : b.ctaTh || 'ช้อปโปรโมชั่นนี้' }} →
+                </NuxtLink>
+
+                <button
+                  v-if="b.couponCode"
+                  type="button"
+                  class="op-promo-hero-card__code"
+                  @click="collectCoupon(b.couponCode)"
+                >
+                  🎟 {{ locale === 'th' ? `เก็บโค้ด ${b.couponCode}` : `Collect ${b.couponCode}` }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Collectible Quick Voucher Strip (Central Style) -->
+        <div v-if="promoCoupons.length" class="op-home-vouchers">
+          <div v-for="cp in promoCoupons" :key="cp.code" class="op-home-voucher">
+            <div class="op-home-voucher__left">
+              <strong>{{ cp.type === 'percent' ? `ลด ${cp.value}%` : `ลด ฿${Number(cp.value).toLocaleString()}` }}</strong>
+              <span>{{ locale === 'en' && cp.titleEn ? cp.titleEn : cp.titleTh }}</span>
+              <small v-if="cp.minSpend">ขั้นต่ำ ฿{{ Number(cp.minSpend).toLocaleString() }}</small>
+            </div>
+            <button type="button" class="op-home-voucher__btn" @click="collectCoupon(cp.code)">
+              {{ locale === 'th' ? 'เก็บคูปอง' : 'Collect' }}
+              <code>{{ cp.code }}</code>
+            </button>
+          </div>
+        </div>
+
+        <!-- Promotional Watch Grid: 3, 4, or 6 Columns per Row -->
+        <div
+          v-if="promoProducts.length"
+          class="op-home-promo__grid"
+          :class="`cols-${promoCols}`"
+        >
+          <ProductCard
+            v-for="item in promoProducts.slice(0, promoCols === 6 ? 12 : promoCols === 4 ? 8 : 6)"
+            :key="'promo-' + (item.id || item.slug)"
+            :product="item"
+          />
         </div>
       </div>
     </section>
@@ -1152,6 +1286,199 @@ onBeforeUnmount(() => {
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--sapphire);
+}
+
+/* Homepage Promotions Section (Directly below 3 Brand Logos) */
+.op-home-promo {
+  background: linear-gradient(180deg, #ffffff 0%, #f3f5fc 100%);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.op-home-promo__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+.op-home-promo__eyebrow {
+  font-family: var(--font-roman);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.24em;
+  color: var(--sapphire);
+  text-transform: uppercase;
+}
+.op-home-promo__controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.op-home-promo__cols {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #ffffff;
+  border: 1px solid var(--line-strong);
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.op-home-promo__cols button {
+  border: 1px solid transparent;
+  background: transparent;
+  padding: 3px 9px;
+  font-weight: 700;
+  font-size: 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--ink);
+}
+.op-home-promo__cols button.is-active {
+  background: var(--sapphire);
+  color: #ffffff;
+}
+.op-home-promo__banners {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  margin-bottom: 22px;
+}
+.op-promo-hero-card {
+  position: relative;
+  min-height: 290px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--line-strong);
+  display: flex;
+  align-items: flex-end;
+}
+.op-promo-hero-card.is-full {
+  grid-column: 1 / -1;
+  min-height: 340px;
+}
+.op-promo-hero-card__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.65s var(--ease);
+}
+.op-promo-hero-card:hover .op-promo-hero-card__img {
+  transform: scale(1.04);
+}
+.op-promo-hero-card__overlay {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  padding: 28px;
+  background: linear-gradient(0deg, rgba(11, 14, 42, 0.92) 0%, rgba(11, 14, 42, 0.55) 65%, rgba(11, 14, 42, 0.1) 100%);
+  color: #ffffff;
+}
+.op-promo-hero-card__badge {
+  display: inline-block;
+  padding: 4px 10px;
+  background: #c81e1e;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+.op-promo-hero-card__overlay h3 {
+  font-family: var(--font-display);
+  font-size: clamp(1.35rem, 2.2vw, 1.85rem);
+  font-weight: 600;
+  line-height: 1.28;
+}
+.op-promo-hero-card__overlay p {
+  font-size: 13.5px;
+  opacity: 0.9;
+  margin-top: 6px;
+  max-width: 620px;
+}
+.op-promo-hero-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+}
+.op-promo-hero-card__cta {
+  background: #ffffff !important;
+  color: var(--sapphire) !important;
+  border-color: #ffffff !important;
+}
+.op-promo-hero-card__code {
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px dashed rgba(255, 255, 255, 0.65);
+  color: #ffffff;
+  padding: 7px 14px;
+  border-radius: 4px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.op-home-vouchers {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 24px;
+}
+.op-home-voucher {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  background: #ffffff;
+  border: 1px solid #d5daf2;
+  border-left: 4px solid var(--sapphire);
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+.op-home-voucher__left strong { display: block; font-size: 16px; color: #b91c1c; }
+.op-home-voucher__left span { display: block; font-size: 12.5px; color: var(--ink); }
+.op-home-voucher__left small { font-size: 11px; color: var(--muted); }
+.op-home-voucher__btn {
+  background: var(--sapphire);
+  color: #ffffff;
+  border: 0;
+  border-radius: 6px;
+  padding: 7px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.op-home-voucher__btn code { font-size: 10px; opacity: 0.9; }
+
+.op-home-promo__grid {
+  display: grid;
+  gap: 18px;
+}
+.op-home-promo__grid.cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.op-home-promo__grid.cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.op-home-promo__grid.cols-6 { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; }
+.op-home-promo__grid.cols-6 :deep(.op-card__title) { font-size: 15px; }
+.op-home-promo__grid.cols-6 :deep(.op-card__link) { padding: 12px 10px 16px; }
+
+@media (max-width: 1100px) {
+  .op-home-promo__grid.cols-6 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .op-home-promo__grid.cols-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .op-home-vouchers { grid-template-columns: 1fr; }
+  .op-home-promo__banners { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .op-home-promo__grid.cols-3,
+  .op-home-promo__grid.cols-4,
+  .op-home-promo__grid.cols-6 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 @media (max-width: 1024px) {
