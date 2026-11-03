@@ -40,14 +40,32 @@ export interface SiteConfigBlock {
   promoHomeEnabled?: boolean
   promoHomeColumns?: 3 | 4 | 6
   promoHomeLimit?: number
+  // MNG ERP Office Theme & Studio Preferences
+  erpThemeColor?: string
+  autoImageEnhance?: boolean
+  driveFolder?: string
+}
+
+export interface HermesSlotToken {
+  slot: number
+  token: string
+  preview: string
+  useCount: number
+  revoked: boolean
+  createdAt: string
+  lastUsedAt?: string
 }
 
 export interface AiConfigBlock {
-  provider: 'auto' | 'openai' | 'google' | 'anthropic' | 'custom'
+  provider: 'auto' | 'openai' | 'openrouter' | 'google' | 'anthropic' | 'custom'
   model: string
   apiKey: string
   baseUrl: string
   brandVoice: string
+  webhookUrl?: string
+  webhookSecret?: string
+  strictDualAuth?: boolean
+  hermesTokens?: HermesSlotToken[]
 }
 
 export interface StoreConfig {
@@ -96,7 +114,10 @@ export const DEFAULT_SITE_EXTRAS: Partial<SiteConfigBlock> = {
   branchPickupEnabled: true,
   promoHomeEnabled: true,
   promoHomeColumns: 4,
-  promoHomeLimit: 8
+  promoHomeLimit: 8,
+  erpThemeColor: '#6C5CE7',
+  autoImageEnhance: true,
+  driveFolder: 'https://drive.google.com/drive/u/0/my-drive'
 }
 
 export const DEFAULT_AI_CONFIG: AiConfigBlock = {

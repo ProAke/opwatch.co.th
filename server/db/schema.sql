@@ -345,4 +345,38 @@ CREATE TABLE `chats` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE `events` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `title` VARCHAR(260) NOT NULL,
+  `cat` VARCHAR(40) NOT NULL DEFAULT 'campaign',
+  `date` VARCHAR(20) NOT NULL,
+  `end_date` VARCHAR(20) NULL,
+  `start_time` VARCHAR(12) NULL DEFAULT '09:00',
+  `end_time` VARCHAR(12) NULL DEFAULT '10:00',
+  `allday` TINYINT(1) NOT NULL DEFAULT 0,
+  `location` VARCHAR(240) NULL,
+  `notes` TEXT NULL,
+  `ref_code` VARCHAR(80) NULL,
+  `assignee` VARCHAR(120) NULL,
+  `status` VARCHAR(24) NOT NULL DEFAULT 'active',
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `ai_runs` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `agent_code` VARCHAR(40) NOT NULL DEFAULT 'OP-COPY',
+  `task` VARCHAR(80) NOT NULL,
+  `model` VARCHAR(120) NULL,
+  `provider` VARCHAR(60) NULL,
+  `prompt_summary` VARCHAR(320) NULL,
+  `output_preview` TEXT NULL,
+  `tokens` INT NOT NULL DEFAULT 0,
+  `duration_ms` INT NOT NULL DEFAULT 0,
+  `status` VARCHAR(24) NOT NULL DEFAULT 'done',
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 SET FOREIGN_KEY_CHECKS = 1;

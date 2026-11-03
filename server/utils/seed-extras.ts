@@ -638,3 +638,165 @@ export function defaultPages() {
     }
   ]
 }
+
+export function defaultCalendarEvents() {
+  const now = new Date()
+  const fmt = (offsetDays: number) => {
+    const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() + offsetDays)
+    const y = d.getFullYear()
+    const m = String(d.getMonth() + 1).padStart(2, '0')
+    const day = String(d.getDate()).padStart(2, '0')
+    return `${y}-${m}-${day}`
+  }
+  const ym = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+  return [
+    {
+      title: 'ตรวจเช็คสต็อก Olym Pianus & Ogival ประจำสัปดาห์',
+      cat: 'deadline',
+      date: fmt(-1),
+      startTime: '09:30',
+      endTime: '11:00',
+      allday: false,
+      location: 'คลังสินค้าสำนักงานใหญ่ อินเตอร์ไทมส์ (เพชรบุรีตัดใหม่)',
+      notes: 'ตรวจสอบซีเรียลนัมเบอร์ ใบรับประกันศูนย์ไทย 2 ปี และกล่องของขวัญก่อนจัดส่งคำสั่งซื้อออนไลน์',
+      refCode: 'QC-WK01',
+      assignee: 'ฝ่ายคลังสินค้า & QC',
+      status: 'active'
+    },
+    {
+      title: 'ประชุมทีมการตลาด & วางแคมเปญหน้าแรก OPWatch',
+      cat: 'meeting',
+      date: fmt(0),
+      startTime: '10:30',
+      endTime: '12:00',
+      allday: false,
+      location: 'ห้องประชุมชั้น 3 อินเตอร์ไทมส์ / Google Meet',
+      notes: 'อัปเดตแบนเนอร์โปรโมชั่นประจำเดือน คูปองส่วนลดสมาชิก และยอดคลิกจาก Shopee Official Mall',
+      refCode: 'MKT-SYNC',
+      assignee: 'ทีมการตลาด & อีคอมเมิร์ซ',
+      status: 'active'
+    },
+    {
+      title: 'AI Content & ปรับภาพสตูดิโอคอลเลกชันใหม่ 20 รุ่น',
+      cat: 'ai',
+      date: fmt(0),
+      startTime: '14:00',
+      endTime: '16:00',
+      allday: false,
+      location: 'OPWatch AI Studio (/office/ai)',
+      notes: 'ใช้ OP-COPY และระบบปรับภาพอัตโนมัติ (Studio White 1:1) อัปเดตรูปสินค้าและ SEO/ASEO',
+      refCode: 'AI-STUDIO',
+      assignee: 'OP-COPY + OP-VISION',
+      status: 'active'
+    },
+    {
+      title: 'รอบจัดส่งด่วน EMS / Kerry รอบบ่าย & แจ้งเลขพัสดุ',
+      cat: 'order',
+      date: fmt(1),
+      startTime: '13:30',
+      endTime: '15:30',
+      allday: false,
+      location: 'จุดแพ็กสินค้า OPWatch Boutique',
+      notes: 'แพ็กกันกระแทก 3 ชั้น พร้อมผูกริบบิ้น Gift Wrap สำหรับออร์เดอร์ของขวัญ',
+      refCode: 'SHIP-PM',
+      assignee: 'ฝ่ายจัดส่ง',
+      status: 'active'
+    },
+    {
+      title: 'ถ่ายทำวิดีโอรีวิว Ogival Lucky Fish Swiss Automatic',
+      cat: 'campaign',
+      date: fmt(3),
+      startTime: '11:00',
+      endTime: '15:00',
+      allday: false,
+      location: 'โชว์รูมอินเตอร์ไทมส์ มักกะสัน',
+      notes: 'ถ่ายภาพ Macro หน้าปัดแกะสลักและคลิป TikTok / Facebook Reels',
+      refCode: 'CONTENT-OGV',
+      assignee: 'ทีมคอนเทนต์',
+      status: 'active'
+    },
+    {
+      title: 'แคมเปญ Mega Watch Days ลดสูงสุด 35% + คูปอง OPWELCOME500',
+      cat: 'campaign',
+      date: `${ym}-11`,
+      startTime: '00:00',
+      endTime: '23:59',
+      allday: true,
+      location: 'opwatch.co.th & Shopee Official',
+      notes: 'เปิดแบนเนอร์หลักหน้าเว็บไซต์ + ส่งบรอดแคสต์ LINE @opwatch.th',
+      refCode: 'MEGA-11',
+      assignee: 'ทีมอีคอมเมิร์ซ',
+      status: 'active'
+    },
+    {
+      title: 'เติมสต็อกเคาน์เตอร์ เซ็นทรัลเวิลด์ & เซ็นทรัล ลาดพร้าว',
+      cat: 'order',
+      date: fmt(5),
+      startTime: '10:00',
+      endTime: '16:00',
+      allday: false,
+      location: 'เซ็นทรัลเวิลด์ / เซ็นทรัล ลาดพร้าว',
+      notes: 'จัดส่งรุ่นขายดี Sportmaster Automatic และ Lady Jewelry รองรับบริการ Click & Collect',
+      refCode: 'BR-RESTOCK',
+      assignee: 'ทีมดูแลสาขา',
+      status: 'active'
+    },
+    {
+      title: 'สรุปยอดขายผู้บริหาร & รายงานภาษีมูลค่าเพิ่มประจำเดือน',
+      cat: 'deadline',
+      date: `${ym}-28`,
+      startTime: '15:00',
+      endTime: '17:00',
+      allday: false,
+      location: 'ฝ่ายบัญชีและการเงิน อินเตอร์ไทมส์',
+      notes: 'Export CSV รายงานคำสั่งซื้อและตรวจสอบยอดโอนทุกช่องทางในหน้า /office/reports',
+      refCode: 'FIN-CLOSE',
+      assignee: 'ผู้บริหาร & บัญชี',
+      status: 'active'
+    }
+  ]
+}
+
+export function defaultAiRuns() {
+  const now = new Date()
+  const iso = (minsAgo: number) => new Date(now.getTime() - minsAgo * 60000).toISOString()
+  return [
+    {
+      agentCode: 'OP-COPY',
+      task: 'product_full',
+      model: 'Horology Thai AI Studio',
+      provider: 'OPWatch Built-in + LLM Ready',
+      promptSummary: 'เขียนคำบรรยายไทย/อังกฤษ Olym Pianus Sportmaster Automatic Sapphire',
+      outputPreview: 'เรือนเวลาสปอร์ตหรูกระจกแซฟไฟร์แท้ กลไกออโตเมติกญี่ปุ่น รับประกันศูนย์ไทย 2 ปี โดย บริษัท อินเตอร์ไทมส์ จำกัด',
+      tokens: 640,
+      durationMs: 420,
+      status: 'done',
+      createdAt: iso(18)
+    },
+    {
+      agentCode: 'OP-SEO',
+      task: 'product_seo',
+      model: 'Horology Thai AI Studio',
+      provider: 'OPWatch Built-in + LLM Ready',
+      promptSummary: 'สร้าง Meta Title, Description & ASEO FAQ สำหรับ Ogival Swiss Automatic',
+      outputPreview: 'Ogival นาฬิกาสวิสแท้ สัญลักษณ์ปลาโชคดี รับประกันศูนย์ไทย 2 ปี ส่งฟรีทั่วประเทศ พร้อม FAQ 3 ข้อสำหรับ AI Search',
+      tokens: 510,
+      durationMs: 360,
+      status: 'done',
+      createdAt: iso(47)
+    },
+    {
+      agentCode: 'OP-PROMO',
+      task: 'promo_copy',
+      model: 'Horology Thai AI Studio',
+      provider: 'OPWatch Built-in + LLM Ready',
+      promptSummary: 'ร่างแคมเปญโปรโมชั่นประจำเดือน + ข้อความบรอดแคสต์ LINE @opwatch.th',
+      outputPreview: 'แคมเปญ Exclusive Timepiece Privilege ลดสูงสุด 30% พร้อมบริการห่อของขวัญฟรีและรับสินค้าที่สาขา',
+      tokens: 485,
+      durationMs: 310,
+      status: 'done',
+      createdAt: iso(95)
+    }
+  ]
+}
+

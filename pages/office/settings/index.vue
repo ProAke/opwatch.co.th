@@ -3,9 +3,12 @@ definePageMeta({ layout: 'office', middleware: ['office'] })
 
 const toast = useToast()
 const { refresh: refreshPublicSite } = useSite()
-const tab = ref<'company' | 'social' | 'promo' | 'ai'>('company')
+const tab = ref<'company' | 'social' | 'promo' | 'ai' | 'workspace'>('company')
 
-const { data, refresh } = await useFetch<any>('/api/admin/settings')
+const [{ data, refresh }, { data: dbAudit, refresh: refreshAudit }] = await Promise.all([
+  useFetch<any>('/api/admin/settings'),
+  useFetch<any>('/api/admin/db-audit')
+])
 
 const siteForm = reactive({
   name: 'OPWatch Thailand',
@@ -35,14 +38,17 @@ const siteForm = reactive({
   returnWindowDays: 14,
   warrantyYears: 2,
   giftCardEnabled: true,
-  branchPickupEnabled: true
+  branchPickupEnabled: true,
+  erpThemeColor: '#6C5CE7',
+  autoImageEnhance: true,
+  driveFolder: 'https://drive.google.com/drive/u/0/my-drive'
 })
 
 const aiForm = reactive({
   enabled: true,
-  provider: 'openai' as 'openai' | 'gemini' | 'anthropic' | 'custom',
+  provider: 'auto' as 'auto' | 'openai' | 'openrouter' | 'google' | 'gemini' | 'anthropic' | 'custom',
   apiKey: '',
-  baseUrl: 'https://api.openai.com/v1',
+  baseUrl: 'https://openrouter.ai/api/v1',
   model: 'gpt-4o-mini'
 })
 
@@ -63,6 +69,30 @@ watch(
 const saving = ref(false)
 const testingAi = ref(false)
 const aiTestOutput = ref('')
+const aiSiteCopyBusy = ref(false)
+
+async function generateSiteCopyWithAi() {
+  aiSiteCopyBusy.value = true
+  try {
+    const res = await $fetch<any>('/api/admin/ai/generate', {
+      method: 'POST',
+      body: {
+        task: 'site_copy',
+        input: { focus: siteForm.announcement || 'นาฬิกาของแท้ศูนย์ไทย 2 ปี ส่งฟรีทั่วประเทศ' }
+      }
+    })
+    if (res?.result) {
+      if (res.result.announcement) siteForm.announcement = res.result.announcement
+      if (res.result.tagline) siteForm.tagline = res.result.tagline
+      if (res.result.chatGreetingTh) siteForm.chatGreetingTh = res.result.chatGreetingTh
+      toast.success('✨ AI ร่างข้อความประกาศและคำทักทายแชทให้เรียบร้อยแล้ว')
+    }
+  } catch {
+    toast.error('เรียก AI ไม่สำเร็จ')
+  } finally {
+    aiSiteCopyBusy.value = false
+  }
+}
 
 async function saveAllSettings() {
   saving.value = true
@@ -143,6 +173,9 @@ useHead({ title: 'ตั้งค่าทั้งหมด (Unified Master Set
       <button type="button" class="erp-tab" :class="{ 'is-active': tab === 'ai' }" @click="tab = 'ai'">
         ✨ 4. ตั้งค่า AI Engine &amp; API Key
       </button>
+      <button type="button" class="erp-tab" :class="{ 'is-active': tab === 'workspace' }" @click="tab = 'workspace'">
+        🎨 5. ธีมสีหลังบ้าน &amp; ฐานข้อมูลสด
+      </button>
     </div>
 
     <!-- TAB 1: COMPANY & SHIPPING -->
@@ -172,7 +205,12 @@ useHead({ title: 'ตั้งค่าทั้งหมด (Unified Master Set
       </div>
 
       <div class="erp-field" style="margin-top:12px">
-        <label class="erp-label">ข้อความประกาศแถบด้านบนเว็บไซต์ (Announcement)</label>
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:4px">
+          <label class="erp-label">ข้อความประกาศแถบด้านบนเว็บไซต์ (Announcement)</label>
+          <button type="button" class="erp-btn erp-btn--violet erp-btn--sm" :disabled="aiSiteCopyBusy" @click="generateSiteCopyWithAi">
+            {{ aiSiteCopyBusy ? 'กำลังเขียน...' : '✨ ให้ AI ช่วยแต่งข้อความประกาศ & คำทักทายแชท' }}
+          </button>
+        </div>
         <input v-model="siteForm.announcement" class="erp-input" />
       </div>
 
@@ -247,7 +285,7 @@ useHead({ title: 'ตั้งค่าทั้งหมด (Unified Master Set
         </div>
       </div>
 
-      <hr style="border:0;border-top:1px solid #1b2842;margin:20px 0" />
+      <hr style="border:0;border-top:1px solid #e9ebf6;margin:20px 0" />
 
       <div class="erp-panel__title" style="margin-bottom:14px">บริการเสริมพิเศษ คะแนนสะสม OP Points &amp; การรับประกัน</div>
       <div class="erp-form-grid erp-form-grid--3">
@@ -271,40 +309,45 @@ useHead({ title: 'ตั้งค่าทั้งหมด (Unified Master Set
     </div>
 
     <!-- TAB 4: AI ENGINE & API -->
-    <div v-else class="erp-panel">
+    <div v-else-if="tab === 'ai'" class="erp-panel">
       <div class="erp-panel__head">
         <div>
           <div class="erp-panel__title">ตั้งค่า AI Engine &amp; API Key สำหรับเขียนสินค้า, หน้า CMS และ SEO + ASEO</div>
-          <div style="font-size:12px;color:#94a3b8;margin-top:3px">
-            รองรับ OpenAI, Google Gemini, Anthropic Claude หรือ OpenAI-compatible API — และหากยังไม่ใส่ API Key ระบบมี Built-in Horology AI Engine ภาษาไทยพร้อมใช้งานทันที!
+          <div style="font-size:12px;color:#8a8fb1;margin-top:3px">
+            รองรับ OpenRouter, OpenAI, Google Gemini, Anthropic Claude หรือ Custom Endpoint — และมี Built-in Horology AI Engine ภาษาไทยพร้อมใช้งานทันที!
           </div>
         </div>
-        <span class="erp-chip" :class="data?.ai?.hasApiKey ? 'erp-chip--mint' : 'erp-chip--cyan'">
-          {{ data?.ai?.hasApiKey ? `✓ เชื่อมต่อ API Key แล้ว (${data?.ai?.maskedKey})` : '⚡ โหมด Built-in Horology AI พร้อมใช้งาน' }}
-        </span>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <span class="erp-chip" :class="data?.ai?.hasApiKey ? 'erp-chip--mint' : 'erp-chip--violet'">
+            {{ data?.ai?.hasApiKey ? `✓ เชื่อมต่อ API Key แล้ว (${data?.ai?.maskedKey})` : '⚡ โหมด Built-in Horology AI พร้อมใช้งาน' }}
+          </span>
+          <NuxtLink to="/office/ai" class="erp-btn erp-btn--primary erp-btn--sm">เปิดศูนย์ AI Hub &amp; Hermes 20-Tokens →</NuxtLink>
+        </div>
       </div>
 
       <div class="erp-form-grid">
         <div class="erp-field">
           <label class="erp-label">ผู้ให้บริการ AI (Provider)</label>
           <select v-model="aiForm.provider" class="erp-select">
+            <option value="auto">Auto (ตรวจจับอัตโนมัติ / Built-in AI)</option>
+            <option value="openrouter">OpenRouter (รองรับทุกรุ่น GPT / Claude / Gemini / DeepSeek)</option>
             <option value="openai">OpenAI (GPT-4o / GPT-4o-mini)</option>
-            <option value="gemini">Google Gemini (gemini-2.0-flash)</option>
+            <option value="google">Google Gemini (gemini-2.0-flash)</option>
             <option value="anthropic">Anthropic Claude (claude-3-5-sonnet)</option>
-            <option value="custom">Custom OpenAI-Compatible Endpoint (DeepSeek / OpenRouter / Ollama)</option>
+            <option value="custom">Custom OpenAI-Compatible Endpoint (MNG Flow / Ollama)</option>
           </select>
         </div>
         <div class="erp-field">
           <label class="erp-label">ชื่อโมเดล (Model Name)</label>
-          <input v-model="aiForm.model" class="erp-input" placeholder="เช่น gpt-4o-mini หรือ gemini-2.0-flash" />
+          <input v-model="aiForm.model" class="erp-input" placeholder="เช่น openai/gpt-4o-mini หรือ gemini-2.0-flash" />
         </div>
         <div class="erp-field">
           <label class="erp-label">API Key ใหม่ (เว้นว่างได้หากไม่ต้องการเปลี่ยน หรือใช้ Built-in AI)</label>
-          <input v-model="aiForm.apiKey" type="password" class="erp-input" placeholder="sk-..." />
+          <input v-model="aiForm.apiKey" type="password" class="erp-input" placeholder="sk-or-v1-... / sk-..." />
         </div>
         <div class="erp-field">
-          <label class="erp-label">Base URL (สำหรับ OpenAI / Custom Endpoint)</label>
-          <input v-model="aiForm.baseUrl" class="erp-input" placeholder="https://api.openai.com/v1" />
+          <label class="erp-label">Base URL (สำหรับ OpenRouter / OpenAI / Custom Endpoint)</label>
+          <input v-model="aiForm.baseUrl" class="erp-input" placeholder="https://openrouter.ai/api/v1" />
         </div>
       </div>
 
@@ -312,7 +355,72 @@ useHead({ title: 'ตั้งค่าทั้งหมด (Unified Master Set
         <button type="button" class="erp-btn erp-btn--violet" :disabled="testingAi" @click="testAiEngine">
           {{ testingAi ? 'กำลังทดสอบ AI...' : '⚡ ทดสอบการสร้างเนื้อหาด้วย AI ทันที' }}
         </button>
-        <span v-if="aiTestOutput" style="font-size:12px;color:#6ee7b7">{{ aiTestOutput }}</span>
+        <span v-if="aiTestOutput" style="font-size:12px;color:#0e9f6e;font-weight:600">{{ aiTestOutput }}</span>
+      </div>
+    </div>
+
+    <!-- TAB 5: MNG WORKSPACE THEME COLOR DOTS & LIVE DB AUDIT -->
+    <div v-else class="erp-panel">
+      <div class="erp-panel__head">
+        <div>
+          <div class="erp-panel__title">🎨 ธีมสีหลักของระบบหลังบ้าน (PlayDigital Accent Theme)</div>
+          <div style="font-size:12px;color:#8a8fb1">เลือกสีหลักสำหรับปุ่ม เมนูที่เลือก และปฏิทิน "วันนี้" ตามสไตล์ MNG Workspace</div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px">
+        <button
+          v-for="[hex, name] in [
+            ['#6C5CE7', 'ม่วง MNG (ค่าเริ่มต้น)'],
+            ['#3BA7FF', 'ฟ้าคราม'],
+            ['#FF6B9D', 'ชมพูโรส'],
+            ['#14B890', 'เขียวมิ้นท์'],
+            ['#FF8A3B', 'ส้มอำพัน'],
+            ['#4B5ED9', 'น้ำเงินอินดิโก']
+          ]"
+          :key="hex"
+          type="button"
+          style="display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;border:2px solid;background:#ffffff;cursor:pointer;font-family:inherit;font-weight:600;font-size:12.5px"
+          :style="{ borderColor: siteForm.erpThemeColor === hex ? hex : '#e9ebf6', color: '#23264d' }"
+          @click="siteForm.erpThemeColor = hex"
+        >
+          <span :style="{ width: '16px', height: '16px', borderRadius: '50%', background: hex, display: 'inline-block' }" />
+          <span>{{ name }}</span>
+        </button>
+      </div>
+
+      <div style="padding:14px 16px;border-radius:14px;background:#f6f7fc;border:1px solid #e9ebf6;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+        <div>
+          <strong>📸 เปิดโหมดปรับภาพสตูดิโออัตโนมัติเป็นค่าเริ่มต้น</strong>
+          <div style="font-size:12px;color:#8a8fb1">ปรับพื้นขาวคลีน 1:1 และเพิ่มความคมชัดกระจกแซฟไฟร์อัตโนมัติทุกครั้งที่อัปโหลดรูปสินค้า</div>
+        </div>
+        <button
+          type="button"
+          class="switch"
+          :class="{ on: siteForm.autoImageEnhance }"
+          @click="siteForm.autoImageEnhance = !siteForm.autoImageEnhance"
+        />
+      </div>
+
+      <div class="erp-panel__head">
+        <div>
+          <div class="erp-panel__title">🗄 สถานะการเชื่อมต่อฐานข้อมูลสด (Live Database Table Audit)</div>
+          <div style="font-size:12px;color:#8a8fb1">
+            Driver ปัจจุบัน: <b>{{ dbAudit?.driver?.toUpperCase() || 'JSON' }}</b> · Latency {{ dbAudit?.latencyMs || 2 }} ms
+          </div>
+        </div>
+        <button type="button" class="erp-btn erp-btn--ghost erp-btn--sm" @click="refreshAudit()">🔄 ตรวจสอบตารางสด</button>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px">
+        <div
+          v-for="m in dbAudit?.modules || []"
+          :key="m.entity"
+          style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-radius:12px;background:#f6f7fc;border:1px solid #e9ebf6;font-size:12.5px"
+        >
+          <span>{{ m.ok ? '🟢' : '🔴' }} {{ m.label }}</span>
+          <b style="font-family:'JetBrains Mono',monospace;color:var(--violet)">{{ m.rows }}</b>
+        </div>
       </div>
     </div>
   </div>

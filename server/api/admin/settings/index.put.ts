@@ -9,7 +9,7 @@ export default defineEventHandler(async (event) => {
     'name', 'companyName', 'tagline', 'email', 'phone', 'address', 'addressEn',
     'currency', 'currencySymbol', 'defaultLocale', 'announcement',
     'lineId', 'lineUrl', 'facebookUrl', 'messengerUrl', 'tiktokUrl', 'shopeeUrl', 'instagramUrl',
-    'chatGreetingTh', 'chatGreetingEn'
+    'chatGreetingTh', 'chatGreetingEn', 'erpThemeColor', 'driveFolder'
   ]
   for (const key of strKeys) {
     if (body?.site?.[key] !== undefined) {
@@ -25,7 +25,7 @@ export default defineEventHandler(async (event) => {
     if (body?.site?.[key] !== undefined) site[key] = Number(body.site[key]) || 0
   }
   const boolKeys = [
-    'chatEnabled', 'giftWrapEnabled', 'giftCardEnabled', 'branchPickupEnabled', 'promoHomeEnabled'
+    'chatEnabled', 'giftWrapEnabled', 'giftCardEnabled', 'branchPickupEnabled', 'promoHomeEnabled', 'autoImageEnhance'
   ]
   for (const key of boolKeys) {
     if (body?.site?.[key] !== undefined) site[key] = Boolean(body.site[key])
@@ -41,6 +41,10 @@ export default defineEventHandler(async (event) => {
     if (body.ai.model !== undefined) nextAi.model = String(body.ai.model).trim()
     if (body.ai.baseUrl !== undefined) nextAi.baseUrl = String(body.ai.baseUrl).trim()
     if (body.ai.brandVoice !== undefined) nextAi.brandVoice = String(body.ai.brandVoice).trim()
+    if (body.ai.webhookUrl !== undefined) nextAi.webhookUrl = String(body.ai.webhookUrl).trim()
+    if (body.ai.webhookSecret !== undefined && String(body.ai.webhookSecret).trim() !== '') {
+      nextAi.webhookSecret = String(body.ai.webhookSecret).trim()
+    }
     if (body.ai.apiKey !== undefined && String(body.ai.apiKey).trim() !== '') {
       nextAi.apiKey = String(body.ai.apiKey).trim()
     } else if (body.ai.clearApiKey) {

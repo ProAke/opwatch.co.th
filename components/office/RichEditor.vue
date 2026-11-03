@@ -70,16 +70,16 @@ function insertTable() {
   const tableHtml = `
     <table style="width:100%;border-collapse:collapse;margin:12px 0;">
       <tbody>
-        <tr><th style="border:1px solid #cbd5e1;padding:8px;text-align:left;background:#f8fafc;">คุณสมบัติ</th><td style="border:1px solid #cbd5e1;padding:8px;">รายละเอียด</td></tr>
-        <tr><th style="border:1px solid #cbd5e1;padding:8px;text-align:left;background:#f8fafc;">กระจกหน้าปัด</th><td style="border:1px solid #cbd5e1;padding:8px;">Sapphire Crystal กันรอยขีดข่วน</td></tr>
-        <tr><th style="border:1px solid #cbd5e1;padding:8px;text-align:left;background:#f8fafc;">การรับประกัน</th><td style="border:1px solid #cbd5e1;padding:8px;">ศูนย์ไทย 2 ปี (บริษัท อินเตอร์ไทมส์ จำกัด)</td></tr>
+        <tr><th style="border:1px solid #e2e8f0;padding:8px;text-align:left;background:#f8fafc;">คุณสมบัติ</th><td style="border:1px solid #e2e8f0;padding:8px;">รายละเอียด</td></tr>
+        <tr><th style="border:1px solid #e2e8f0;padding:8px;text-align:left;background:#f8fafc;">กระจกหน้าปัด</th><td style="border:1px solid #e2e8f0;padding:8px;">Sapphire Crystal กันรอยขีดข่วน</td></tr>
+        <tr><th style="border:1px solid #e2e8f0;padding:8px;text-align:left;background:#f8fafc;">การรับประกัน</th><td style="border:1px solid #e2e8f0;padding:8px;">ศูนย์ไทย 2 ปี (บริษัท อินเตอร์ไทมส์ จำกัด)</td></tr>
       </tbody>
     </table><p></p>`
   exec('insertHTML', tableHtml)
 }
 
 function insertCallout() {
-  const html = `<blockquote style="border-left:4px solid #1d2088;padding:12px 16px;background:#f1f5f9;margin:12px 0;color:#0f172a;"><strong>สิทธิพิเศษศูนย์ไทย:</strong> ของแท้ 100% พร้อมบริการห่อของขวัญฟรี และรับประกันศูนย์ไทย 2 ปีเต็ม</blockquote><p></p>`
+  const html = `<blockquote style="border-left:4px solid #6c5ce7;padding:12px 16px;background:#f5f3ff;margin:12px 0;color:#23264d;"><strong>สิทธิพิเศษศูนย์ไทย:</strong> ของแท้ 100% พร้อมบริการห่อของขวัญฟรี และรับประกันศูนย์ไทย 2 ปีเต็ม</blockquote><p></p>`
   exec('insertHTML', html)
 }
 
@@ -91,8 +91,8 @@ function promptLink() {
 
 function promptImage() {
   if (!import.meta.client) return
-  const url = window.prompt('ระบุ URL รูปภาพ:', '/images/op/banner-899832ags.jpg')
-  if (url) exec('insertHTML', `<img src="${url}" alt="" style="max-width:100%;height:auto;border-radius:8px;margin:8px 0;" />`)
+  const url = window.prompt('ระบุ URL รูปภาพ (หรืออัปโหลดผ่านแกลเลอรีแล้วคัดลอกลิงก์):', '/images/op/')
+  if (url) exec('insertImage', url)
 }
 </script>
 
@@ -100,25 +100,25 @@ function promptImage() {
   <div class="op-rte">
     <div class="op-rte__bar">
       <div class="op-rte__grp">
-        <button type="button" class="op-rte__btn" title="ย่อหน้าปกติ" @click="exec('formatBlock', 'P')">P</button>
-        <button type="button" class="op-rte__btn" title="หัวข้อ H2" @click="exec('formatBlock', 'H2')">H2</button>
-        <button type="button" class="op-rte__btn" title="หัวข้อ H3" @click="exec('formatBlock', 'H3')">H3</button>
-      </div>
-      <div class="op-rte__grp">
-        <button type="button" class="op-rte__btn" title="ตัวหนา" @click="exec('bold')"><strong>B</strong></button>
-        <button type="button" class="op-rte__btn" title="ตัวเอียง" @click="exec('italic')"><em>I</em></button>
+        <button type="button" class="op-rte__btn" title="ตัวหนา" @click="exec('bold')"><b>B</b></button>
+        <button type="button" class="op-rte__btn" title="ตัวเอียง" @click="exec('italic')"><i>I</i></button>
         <button type="button" class="op-rte__btn" title="ขีดเส้นใต้" @click="exec('underline')"><u>U</u></button>
       </div>
       <div class="op-rte__grp">
-        <button type="button" class="op-rte__btn" title="รายการจุด" @click="exec('insertUnorderedList')">• List</button>
-        <button type="button" class="op-rte__btn" title="รายการลำดับเลข" @click="exec('insertOrderedList')">1. List</button>
-        <button type="button" class="op-rte__btn" title="แทรกตาราง" @click="insertTable">⊞ ตาราง</button>
-        <button type="button" class="op-rte__btn" title="กล่องข้อความเด่น" @click="insertCallout">❝ กล่องเด่น</button>
+        <button type="button" class="op-rte__btn" @click="exec('formatBlock', 'H2')">H2</button>
+        <button type="button" class="op-rte__btn" @click="exec('formatBlock', 'H3')">H3</button>
+        <button type="button" class="op-rte__btn" @click="exec('formatBlock', 'P')">ย่อหน้า</button>
       </div>
       <div class="op-rte__grp">
-        <button type="button" class="op-rte__btn" title="แทรกลิงก์" @click="promptLink">🔗 ลิงก์</button>
-        <button type="button" class="op-rte__btn" title="แทรกรูปภาพ" @click="promptImage">🖼 รูป</button>
-        <button type="button" class="op-rte__btn" title="ล้างการจัดรูปแบบ" @click="exec('removeFormat')">⌫</button>
+        <button type="button" class="op-rte__btn" @click="exec('insertUnorderedList')">• รายการ</button>
+        <button type="button" class="op-rte__btn" @click="exec('insertOrderedList')">1. ลำดับ</button>
+        <button type="button" class="op-rte__btn" @click="insertTable">⊞ ตารางสเปก</button>
+        <button type="button" class="op-rte__btn" @click="insertCallout">❝ กล่องไฮไลต์</button>
+      </div>
+      <div class="op-rte__grp">
+        <button type="button" class="op-rte__btn" @click="promptLink">🔗 ลิงก์</button>
+        <button type="button" class="op-rte__btn" @click="promptImage">🖼 รูป</button>
+        <button type="button" class="op-rte__btn" @click="exec('removeFormat')">ล้างฟอร์แมต</button>
       </div>
       <button
         type="button"
@@ -126,7 +126,7 @@ function promptImage() {
         :class="{ 'is-active': sourceMode }"
         @click="toggleSource"
       >
-        &lt;/&gt; HTML
+        &lt;/&gt; {{ sourceMode ? 'โหมดแก้ไขปกติ' : 'ดู/แก้โค้ด HTML' }}
       </button>
     </div>
 
@@ -134,7 +134,8 @@ function promptImage() {
       v-if="sourceMode"
       :value="localHtml"
       class="op-rte__source"
-      :style="{ minHeight: minHeight + 'px' }"
+      :style="{ minHeight: `${props.minHeight}px` }"
+      spellcheck="false"
       @input="onSourceInput"
     />
     <div
@@ -142,24 +143,24 @@ function promptImage() {
       ref="editorEl"
       class="op-rte__canvas"
       contenteditable="true"
-      :data-placeholder="placeholder"
-      :style="{ minHeight: minHeight + 'px' }"
+      :data-placeholder="props.placeholder"
+      :style="{ minHeight: `${props.minHeight}px` }"
       @input="syncFromDom"
       @blur="syncFromDom"
     />
     <div class="op-rte__foot">
-      <span>CKEditor-Style Free Rich Editor · รองรับตาราง รูปภาพ และ HTML เต็มรูปแบบ</span>
-      <span>{{ localHtml.replace(/<[^>]+>/g, '').length }} ตัวอักษร</span>
+      <span>WYSIWYG Rich HTML Editor · รองรับตาราง หัวข้อ รายการ และ HTML Source</span>
+      <span>{{ (localHtml || '').length.toLocaleString() }} ตัวอักษร</span>
     </div>
   </div>
 </template>
 
 <style scoped>
 .op-rte {
-  border: 1px solid #1e2d4a;
+  border: 1px solid var(--line, #e9ebf6);
   border-radius: 12px;
   overflow: hidden;
-  background: #08101f;
+  background: #ffffff;
 }
 .op-rte__bar {
   display: flex;
@@ -167,54 +168,55 @@ function promptImage() {
   align-items: center;
   gap: 6px;
   padding: 8px 10px;
-  background: #0d172b;
-  border-bottom: 1px solid #1e2d4a;
+  background: #f6f7fc;
+  border-bottom: 1px solid var(--line, #e9ebf6);
 }
 .op-rte__grp {
   display: inline-flex;
-  gap: 3px;
+  gap: 4px;
   padding-right: 6px;
-  border-right: 1px solid #1b2844;
+  border-right: 1px solid var(--line, #e9ebf6);
 }
 .op-rte__btn {
-  background: #121f38;
-  color: #cbd5e1;
-  border: 1px solid #1f3052;
-  border-radius: 7px;
-  padding: 4px 8px;
+  background: #ffffff;
+  color: var(--ink-2, #454a75);
+  border: 1px solid var(--line-2, #dfe2f2);
+  border-radius: 8px;
+  padding: 4px 9px;
   font-size: 12px;
   cursor: pointer;
   transition: all 0.14s ease;
 }
 .op-rte__btn:hover {
-  border-color: #22d3ee;
-  color: #ffffff;
+  border-color: var(--violet, #6c5ce7);
+  color: var(--violet, #6c5ce7);
+  background: var(--violet-soft, #efedfd);
 }
 .op-rte__btn--code {
   margin-left: auto;
-  font-family: monospace;
+  font-family: 'JetBrains Mono', monospace;
 }
 .op-rte__btn--code.is-active {
-  background: rgba(34, 211, 238, 0.18);
-  border-color: #22d3ee;
-  color: #67e8f9;
+  background: var(--violet, #6c5ce7);
+  border-color: var(--violet, #6c5ce7);
+  color: #ffffff;
 }
 .op-rte__canvas {
   padding: 14px 16px;
-  color: #f1f5f9;
+  color: var(--ink, #23264d);
   font-size: 14px;
   line-height: 1.75;
   outline: none;
-  background: #0a1222;
+  background: #ffffff;
 }
 .op-rte__canvas:empty::before {
   content: attr(data-placeholder);
-  color: #526484;
+  color: var(--muted, #8a8fb1);
 }
 .op-rte__canvas :deep(h2),
 .op-rte__canvas :deep(h3),
 .op-rte__canvas :deep(h4) {
-  color: #67e8f9;
+  color: var(--violet, #6c5ce7);
   margin: 12px 0 6px;
   font-weight: 600;
 }
@@ -224,16 +226,16 @@ function promptImage() {
   margin: 8px 0;
 }
 .op-rte__canvas :deep(a) {
-  color: #38bdf8;
+  color: var(--violet, #6c5ce7);
   text-decoration: underline;
 }
 .op-rte__source {
   width: 100%;
   border: 0;
   padding: 14px 16px;
-  background: #050a14;
-  color: #a5f3fc;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  background: #1e2140;
+  color: #e9e7ff;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: 12.5px;
   line-height: 1.65;
   outline: none;
@@ -244,8 +246,8 @@ function promptImage() {
   justify-content: space-between;
   padding: 6px 12px;
   font-size: 11px;
-  color: #64748b;
-  background: #070d19;
-  border-top: 1px solid #16223a;
+  color: var(--muted, #8a8fb1);
+  background: #fbfbfe;
+  border-top: 1px solid var(--line, #e9ebf6);
 }
 </style>

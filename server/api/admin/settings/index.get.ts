@@ -14,6 +14,7 @@ export default defineEventHandler(async (event) => {
       model: cfg.ai?.model || '',
       baseUrl: cfg.ai?.baseUrl || 'https://api.openai.com/v1',
       brandVoice: cfg.ai?.brandVoice || '',
+      webhookUrl: cfg.ai?.webhookUrl || '',
       hasApiKey: Boolean(cfg.ai?.apiKey),
       maskedKey: cfg.ai?.apiKey ? `${cfg.ai.apiKey.slice(0, 6)}••••••••${cfg.ai.apiKey.slice(-4)}` : '',
       activeEngine: `${aiResolved.provider} (${aiResolved.model})`

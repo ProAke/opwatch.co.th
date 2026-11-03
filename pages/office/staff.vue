@@ -188,7 +188,7 @@ useHead({ title: 'บริหารงานเจ้าหน้าที่ &
                 <div>{{ u.department || '-' }}</div>
                 <div style="font-size:11px;color:#64748b">{{ u.position || '' }}</div>
               </td>
-              <td style="font-family:monospace;color:#67e8f9">{{ u.points || 0 }} pts</td>
+              <td style="font-family:monospace;color:#6c5ce7">{{ u.points || 0 }} pts</td>
               <td>
                 <select
                   :value="u.role"

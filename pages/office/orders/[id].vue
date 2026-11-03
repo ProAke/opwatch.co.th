@@ -30,6 +30,42 @@ watch(
 )
 
 const saving = ref(false)
+const aiMsgBusy = ref(false)
+const aiCustomerMsg = ref('')
+
+async function draftCustomerNotify() {
+  if (!order.value) return
+  aiMsgBusy.value = true
+  try {
+    const res = await $fetch<any>('/api/admin/ai/generate', {
+      method: 'POST',
+      body: {
+        task: 'order_reply',
+        agentCode: 'OP-CARE',
+        input: {
+          orderNo: order.value.orderNo,
+          customerName: order.value.customer?.name || order.value.customerName,
+          trackingNumber: form.trackingNo,
+          shippingCarrier: form.carrier,
+          status: form.status
+        }
+      }
+    })
+    aiCustomerMsg.value = res?.result?.message || ''
+    toast.success('✨ AI ร่างข้อความแจ้งลูกค้าเรียบร้อยแล้ว')
+  } catch {
+    toast.error('ร่างข้อความด้วย AI ไม่สำเร็จ')
+  } finally {
+    aiMsgBusy.value = false
+  }
+}
+
+async function copyCustomerNotify() {
+  if (!aiCustomerMsg.value || !import.meta.client) return
+  await navigator.clipboard.writeText(aiCustomerMsg.value)
+  toast.success('คัดลอกข้อความสำหรับส่ง LINE / แชทลูกค้าแล้ว')
+}
+
 async function saveOrder(presetStatus?: string) {
   if (presetStatus) form.status = presetStatus
   saving.value = true
@@ -79,20 +115,20 @@ useHead({ title: 'รายละเอียดคำสั่งซื้อ &
     <!-- Visual Status Stepper -->
     <div class="erp-panel">
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
-        <div style="padding:12px;border-radius:10px;border:1px solid #22d3ee;background:rgba(34,211,238,0.08)">
-          <div style="font-size:11px;color:#67e8f9">1. สั่งซื้อสำเร็จ</div>
+        <div style="padding:12px;border-radius:12px;border:1px solid var(--violet);background:var(--violet-soft)">
+          <div style="font-size:11px;color:var(--violet);font-weight:600">1. สั่งซื้อสำเร็จ</div>
           <strong style="font-size:13px">{{ new Date(order.createdAt).toLocaleString('th-TH') }}</strong>
         </div>
-        <div :style="{ padding: '12px', borderRadius: '10px', border: '1px solid #1e2f4f', opacity: order.confirmedAt || order.status !== 'pending' ? 1 : 0.45 }">
-          <div style="font-size:11px;color:#a78bfa">2. ยืนยันคำสั่งซื้อ</div>
+        <div :style="{ padding: '12px', borderRadius: '12px', border: '1px solid #e9ebf6', background: '#f6f7fc', opacity: order.confirmedAt || order.status !== 'pending' ? 1 : 0.5 }">
+          <div style="font-size:11px;color:#2f7bf0;font-weight:600">2. ยืนยันคำสั่งซื้อ</div>
           <strong style="font-size:13px">{{ order.confirmedAt ? new Date(order.confirmedAt).toLocaleString('th-TH') : 'รอยืนยัน' }}</strong>
         </div>
-        <div :style="{ padding: '12px', borderRadius: '10px', border: '1px solid #1e2f4f', opacity: order.shippedAt || order.trackingNo ? 1 : 0.45 }">
-          <div style="font-size:11px;color:#22d3ee">3. ส่งมอบขนส่ง</div>
+        <div :style="{ padding: '12px', borderRadius: '12px', border: '1px solid #e9ebf6', background: '#f6f7fc', opacity: order.shippedAt || order.trackingNo ? 1 : 0.5 }">
+          <div style="font-size:11px;color:var(--violet);font-weight:600">3. ส่งมอบขนส่ง</div>
           <strong style="font-size:13px">{{ order.trackingNo || 'รอกรอกเลขพัสดุ' }}</strong>
         </div>
-        <div :style="{ padding: '12px', borderRadius: '10px', border: '1px solid #1e2f4f', opacity: order.status === 'completed' ? 1 : 0.45 }">
-          <div style="font-size:11px;color:#34d399">4. จัดส่งถึงลูกค้า</div>
+        <div :style="{ padding: '12px', borderRadius: '12px', border: '1px solid #e9ebf6', background: '#f6f7fc', opacity: order.status === 'completed' ? 1 : 0.5 }">
+          <div style="font-size:11px;color:#0e9f6e;font-weight:600">4. จัดส่งถึงลูกค้า</div>
           <strong style="font-size:13px">{{ order.deliveredAt ? new Date(order.deliveredAt).toLocaleString('th-TH') : 'รอนำจ่าย' }}</strong>
         </div>
       </div>
@@ -117,7 +153,7 @@ useHead({ title: 'รายละเอียดคำสั่งซื้อ &
                 <tr v-for="(it, idx) in order.items || []" :key="idx">
                   <td>
                     <strong>{{ it.name }}</strong>
-                    <div style="font-size:11.5px;color:#67e8f9">SKU: {{ it.sku || '-' }} <span v-if="it.wristSize">· ขนาดข้อมือ: {{ it.wristSize }}</span></div>
+                    <div style="font-size:11.5px;color:#6c5ce7">SKU: {{ it.sku || '-' }} <span v-if="it.wristSize">· ขนาดข้อมือ: {{ it.wristSize }}</span></div>
                   </td>
                   <td>{{ it.quantity }}</td>
                   <td>{{ fmt(it.price) }}</td>
@@ -129,9 +165,9 @@ useHead({ title: 'รายละเอียดคำสั่งซื้อ &
 
           <div style="margin-top:14px;display:grid;gap:6px;max-width:340px;margin-left:auto;font-size:13.5px">
             <div style="display:flex;justify-content:space-between"><span>ยอดรวมสินค้า</span><span>{{ fmt(order.subtotal) }}</span></div>
-            <div v-if="order.discount > 0" style="display:flex;justify-content:space-between;color:#34d399"><span>ส่วนลดรวม ({{ order.couponCode || 'Member/Points' }})</span><span>-{{ fmt(order.discount) }}</span></div>
+            <div v-if="order.discount > 0" style="display:flex;justify-content:space-between;color:#0e9f6e"><span>ส่วนลดรวม ({{ order.couponCode || 'Member/Points' }})</span><span>-{{ fmt(order.discount) }}</span></div>
             <div style="display:flex;justify-content:space-between"><span>ค่าจัดส่ง</span><span>{{ fmt(order.shippingFee) }}</span></div>
-            <div style="display:flex;justify-content:space-between;font-size:17px;font-weight:700;color:#67e8f9;border-top:1px solid #1b2842;padding-top:8px">
+            <div style="display:flex;justify-content:space-between;font-size:17px;font-weight:700;color:var(--violet);border-top:1px solid #e9ebf6;padding-top:8px">
               <span>ยอดชำระสุทธิ</span><span>{{ fmt(order.total) }}</span>
             </div>
           </div>
@@ -139,12 +175,12 @@ useHead({ title: 'รายละเอียดคำสั่งซื้อ &
 
         <div class="erp-panel">
           <div class="erp-panel__title" style="margin-bottom:10px">ข้อมูลผู้รับและสิทธิพิเศษ</div>
-          <div style="font-size:13.5px;line-height:1.8;color:#cbd5e1">
+          <div style="font-size:13.5px;line-height:1.8;color:#454a75">
             <div><strong>ชื่อผู้รับ:</strong> {{ order.customer?.name }}</div>
             <div><strong>เบอร์โทร / อีเมล:</strong> {{ order.customer?.phone }} · {{ order.customer?.email }}</div>
             <div><strong>ที่อยู่จัดส่ง:</strong> {{ order.customer?.address }} {{ order.customer?.city }} {{ order.customer?.postalCode }}</div>
-            <div v-if="order.branchSlug" style="color:#6ee7b7"><strong>📍 รับสินค้าที่สาขา (Click &amp; Collect):</strong> {{ order.branchSlug }}</div>
-            <div v-if="order.giftWrap" style="color:#ddd6fe"><strong>🎁 บริการห่อของขวัญ:</strong> ต้องการห่อของขวัญ · การ์ด: "{{ order.giftMessage || '-' }}"</div>
+            <div v-if="order.branchSlug" style="color:#0e9f6e"><strong>📍 รับสินค้าที่สาขา (Click &amp; Collect):</strong> {{ order.branchSlug }}</div>
+            <div v-if="order.giftWrap" style="color:var(--violet)"><strong>🎁 บริการห่อของขวัญ:</strong> ต้องการห่อของขวัญ · การ์ด: "{{ order.giftMessage || '-' }}"</div>
             <div v-if="order.note"><strong>หมายเหตุจากลูกค้า:</strong> {{ order.note }}</div>
           </div>
         </div>
@@ -190,6 +226,23 @@ useHead({ title: 'รายละเอียดคำสั่งซื้อ &
         <button type="button" class="erp-btn erp-btn--primary" style="width:100%;justify-content:center" :disabled="saving" @click="saveOrder()">
           {{ saving ? 'กำลังบันทึก...' : '💾 บันทึกสถานะและเลขพัสดุ' }}
         </button>
+
+        <!-- AI Customer Notification Drafter -->
+        <div style="margin-top:16px;padding-top:14px;border-top:1px solid #e9ebf6">
+          <button
+            type="button"
+            class="erp-btn erp-btn--violet"
+            style="width:100%;justify-content:center"
+            :disabled="aiMsgBusy"
+            @click="draftCustomerNotify"
+          >
+            {{ aiMsgBusy ? 'กำลังร่างข้อความ...' : '✨ ให้ AI ร่างข้อความแจ้งเลขพัสดุให้ลูกค้า' }}
+          </button>
+          <div v-if="aiCustomerMsg" style="margin-top:10px;padding:12px;border-radius:12px;background:#f6f7fc;border:1px solid #e9ebf6">
+            <p style="margin:0 0 8px;font-size:12.5px;line-height:1.6;color:#23264d">{{ aiCustomerMsg }}</p>
+            <button type="button" class="erp-btn erp-btn--ghost erp-btn--sm" @click="copyCustomerNotify">📋 คัดลอกส่ง LINE / อีเมล</button>
+          </div>
+        </div>
       </div>
     </div>
   </div>

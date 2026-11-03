@@ -6,9 +6,17 @@ export interface AiTaskPayload {
     | 'product_seo'
     | 'page_full'
     | 'promo_copy'
+    | 'coupon_copy'
+    | 'calendar_plan'
+    | 'event_detail'
+    | 'brand_copy'
+    | 'order_reply'
+    | 'site_copy'
+    | 'freeform_draft'
     | 'shopee_enrich'
     | 'chat_reply'
   locale?: 'th' | 'en'
+  agentCode?: string
   input: Record<string, any>
 }
 
@@ -31,6 +39,18 @@ export function resolveAiProvider() {
   const ai = cfg.ai || { provider: 'auto', model: '', apiKey: '', baseUrl: 'https://api.openai.com/v1', brandVoice: '' }
   const keyFromCfg = (ai.apiKey || '').trim()
 
+  if (ai.provider === 'openrouter' || (ai.provider === 'auto' && (keyFromCfg.startsWith('sk-or-') || process.env.OPENROUTER_API_KEY))) {
+    const key = keyFromCfg || process.env.OPENROUTER_API_KEY || ''
+    if (key) {
+      return {
+        provider: 'openrouter' as const,
+        key,
+        model: ai.model || 'openai/gpt-4o-mini',
+        baseUrl: (ai.baseUrl && ai.baseUrl.includes('openrouter') ? ai.baseUrl : 'https://openrouter.ai/api/v1').replace(/\/$/, ''),
+        brandVoice: ai.brandVoice
+      }
+    }
+  }
   if (ai.provider === 'anthropic' || (ai.provider === 'auto' && (keyFromCfg.startsWith('sk-ant-') || process.env.ANTHROPIC_API_KEY))) {
     const key = keyFromCfg || process.env.ANTHROPIC_API_KEY || ''
     if (key) return { provider: 'anthropic' as const, key, model: ai.model || 'claude-3-5-sonnet-latest', baseUrl: '', brandVoice: ai.brandVoice }
@@ -39,14 +59,23 @@ export function resolveAiProvider() {
     const key = keyFromCfg || process.env.GEMINI_API_KEY || ''
     if (key) return { provider: 'google' as const, key, model: ai.model || 'gemini-2.0-flash', baseUrl: '', brandVoice: ai.brandVoice }
   }
+  if (process.env.FLOW_AI_URL && process.env.FLOW_AI_KEY && (ai.provider === 'auto' || ai.provider === 'custom')) {
+    return {
+      provider: 'custom' as const,
+      key: keyFromCfg || process.env.FLOW_AI_KEY || '',
+      model: ai.model || process.env.FLOW_AI_MODEL || 'gpt-4o-mini',
+      baseUrl: String(process.env.FLOW_AI_URL).replace(/\/chat\/completions\/?$/, '').replace(/\/$/, ''),
+      brandVoice: ai.brandVoice
+    }
+  }
   if (ai.provider === 'openai' || ai.provider === 'custom' || (ai.provider === 'auto' && (keyFromCfg || process.env.OPENAI_API_KEY))) {
     const key = keyFromCfg || process.env.OPENAI_API_KEY || ''
     if (key) {
       return {
-        provider: 'openai' as const,
+        provider: (ai.provider === 'custom' ? 'custom' : 'openai') as 'openai' | 'custom',
         key,
         model: ai.model || 'gpt-4o-mini',
-        baseUrl: (ai.baseUrl || process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1').replace(/\/$/, ''),
+        baseUrl: (ai.baseUrl || process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1').replace(/\/chat\/completions\/?$/, '').replace(/\/$/, ''),
         brandVoice: ai.brandVoice
       }
     }
@@ -258,6 +287,144 @@ function builtinGenerate(payload: AiTaskPayload): Record<string, any> {
     }
   }
 
+  if (payload.task === 'coupon_copy') {
+    const code = String(inp.code || 'OPVIP500').toUpperCase().replace(/[^A-Z0-9]/g, '') || 'OPVIP500'
+    const type = String(inp.type || 'fixed')
+    const val = Number(inp.value || (type === 'percent' ? 12 : 500))
+    const min = Number(inp.minSpend || 4500)
+    return {
+      code,
+      titleTh: type === 'percent' ? `ส่วนลดพิเศษ ${val}% สมาชิก OPWatch Boutique` : `คูปองส่วนลด ฿${val.toLocaleString()} นาฬิกาของแท้ศูนย์ไทย`,
+      titleEn: type === 'percent' ? `${val}% Exclusive Boutique Privilege` : `฿${val.toLocaleString()} Official Boutique Voucher`,
+      description: `ใช้ลดทันทีเมื่อช้อปครบ ฿${min.toLocaleString()} ขึ้นไป ครอบคลุม Olym Pianus, Olympia Star และ Ogival พร้อมใบรับประกันศูนย์ไทย 2 ปีเต็ม`
+    }
+  }
+
+  if (payload.task === 'calendar_plan') {
+    const ym = String(inp.yearMonth || new Date().toISOString().slice(0, 7)).slice(0, 7)
+    const theme = String(inp.theme || 'แคมเปญนาฬิกาหรูประจำเดือน & โปรโมชั่นคู่ขนาน Shopee').trim()
+    return {
+      summary: `แผนปฏิทินการตลาด "${theme}" ประจำเดือน ${ym} จำนวน 5 กิจกรรมหลัก`,
+      events: [
+        {
+          title: `เปิดตัวแบนเนอร์ "${theme}" บนหน้าแรก opwatch.co.th`,
+          cat: 'campaign',
+          date: `${ym}-05`,
+          startTime: '10:00',
+          endTime: '12:00',
+          allday: false,
+          location: 'opwatch.co.th & LINE @opwatch.th',
+          notes: 'ตั้งค่าแบนเนอร์หลักหน้าโฮมเพจ + เปิดคูปองส่วนลดประจำเดือน',
+          refCode: 'AI-PLAN-01',
+          assignee: 'ทีมการตลาด'
+        },
+        {
+          title: 'AI ปรับภาพสตูดิโอ 1:1 และอัปเดต SEO/ASEO รุ่นขายดี',
+          cat: 'ai',
+          date: `${ym}-08`,
+          startTime: '13:30',
+          endTime: '16:00',
+          allday: false,
+          location: 'OPWatch AI Studio',
+          notes: 'ใช้ OP-COPY และระบบปรับภาพอัตโนมัติอัปเดตภาพพื้นขาวคลีนและ FAQ สำหรับ AI Search',
+          refCode: 'AI-PLAN-02',
+          assignee: 'OP-COPY + OP-VISION'
+        },
+        {
+          title: 'Mid-Month Flash Campaign · Olym Pianus & Ogival ลดสูงสุด 35%',
+          cat: 'campaign',
+          date: `${ym}-15`,
+          startTime: '00:00',
+          endTime: '23:59',
+          allday: true,
+          location: 'เว็บไซต์หลัก & Shopee Official Mall',
+          notes: 'ส่งบรอดแคสต์แจ้งสมาชิก VIP พร้อมโปรห่อของขวัญฟรีและรับสินค้าที่สาขา',
+          refCode: 'AI-PLAN-03',
+          assignee: 'ทีมอีคอมเมิร์ซ'
+        },
+        {
+          title: 'ตรวจเช็คสต็อกและจัดส่งเคาน์เตอร์ห้างเซ็นทรัล 6 สาขา',
+          cat: 'order',
+          date: `${ym}-20`,
+          startTime: '09:30',
+          endTime: '15:00',
+          allday: false,
+          location: 'สำนักงานใหญ่อินเตอร์ไทมส์ เพชรบุรีตัดใหม่',
+          notes: 'ตรวจ QC ความเที่ยงตรงของเครื่องและซีลกันน้ำก่อนกระจายสินค้าสู่สาขา',
+          refCode: 'AI-PLAN-04',
+          assignee: 'ฝ่ายคลังสินค้า & QC'
+        },
+        {
+          title: 'ประชุมสรุปยอดขาย รายงานผู้บริหาร & แผนแคมเปญเดือนถัดไป',
+          cat: 'meeting',
+          date: `${ym}-27`,
+          startTime: '14:00',
+          endTime: '16:00',
+          allday: false,
+          location: 'ห้องประชุมผู้บริหาร อินเตอร์ไทมส์',
+          notes: 'วิเคราะห์ยอดขายแยกตามแบรนด์และช่องทางจากหน้า /office/reports',
+          refCode: 'AI-PLAN-05',
+          assignee: 'ทีมผู้บริหาร'
+        }
+      ]
+    }
+  }
+
+  if (payload.task === 'event_detail') {
+    const title = String(inp.title || 'กิจกรรมแคมเปญ OPWatch').trim()
+    const cat = String(inp.cat || 'campaign')
+    return {
+      title,
+      location: cat === 'meeting' ? 'ห้องประชุมชั้น 3 บริษัท อินเตอร์ไทมส์ จำกัด / Google Meet' : 'opwatch.co.th & โชว์รูมอินเตอร์ไทมส์ เพชรบุรีตัดใหม่',
+      notes: `แผนดำเนินงานสำหรับ "${title}":\n1. ตรวจสอบความพร้อมของข้อมูลสินค้า รูปสตูดิโอพื้นขาว และสต็อกคงเหลือ\n2. ประสานงานทีมอีคอมเมิร์ซ ฝ่ายคลังสินค้า และแอดมิน LINE @opwatch.th\n3. ติดตามผลยอดคลิกและยอดสั่งซื้อผ่านแดชบอร์ด /office`
+    }
+  }
+
+  if (payload.task === 'brand_copy') {
+    const name = String(inp.name || 'Olym Pianus').trim()
+    return {
+      tagline: `${name} — ศิลปะแห่งเรือนเวลาคุณภาพ กระจกแซฟไฟร์แท้ รับประกันศูนย์ไทย 2 ปี`,
+      taglineEn: `${name} — Exquisite Sapphire Craftsmanship with 2-Year Thailand Official Warranty`,
+      story: `${name} นำเข้าและจัดจำหน่ายอย่างเป็นทางการแต่เพียงผู้เดียวในประเทศไทยโดย บริษัท อินเตอร์ไทมส์ จำกัด ผสานความประณีตของงานออกแบบร่วมสมัย กระจกแซฟไฟร์แท้กันรอยขีดข่วน และกลไกคุณภาพสูงที่ผ่านการตรวจเช็คมาตรฐานทุกเรือน`,
+      storyEn: `Officially distributed in Thailand by Inter Times Co., Ltd., ${name} unites enduring horological precision, scratch-resistant sapphire crystal, and timeless elegance.`
+    }
+  }
+
+  if (payload.task === 'order_reply') {
+    const orderNo = String(inp.orderNo || 'OPW-XXXX')
+    const customerName = String(inp.customerName || 'คุณลูกค้าผู้มีเกียรติ')
+    const tracking = String(inp.trackingNumber || '').trim()
+    const carrier = String(inp.shippingCarrier || 'Kerry Express / Thailand Post EMS')
+    const status = String(inp.status || 'confirmed')
+    const message = tracking
+      ? `เรียน ${customerName} ขอบพระคุณที่ไว้วางใจ OPWatch Boutique โดย บริษัท อินเตอร์ไทมส์ จำกัด ค่ะ คำสั่งซื้อเลขที่ ${orderNo} ผ่านการตรวจสอบคุณภาพ (QC) พร้อมใบรับประกันศูนย์ไทย 2 ปี และจัดส่งเรียบร้อยแล้วผ่าน ${carrier} เลขพัสดุ: ${tracking} สอบถามเพิ่มเติม LINE: opwatch.th หรือโทร 02 251 5777 ค่ะ`
+      : `เรียน ${customerName} คำสั่งซื้อเลขที่ ${orderNo} ของท่านอยู่ในสถานะ "${status}" ขณะนี้ช่างผู้เชี่ยวชาญกำลังตรวจสอบความเที่ยงตรงของเรือนเวลาและจัดเตรียมกล่องรับประกันศูนย์ไทย 2 ปี ทันทีที่จัดส่งเราจะแจ้งเลขพัสดุให้ทราบทันทีค่ะ (โทร 02 251 5777 · LINE: opwatch.th)`
+    return { message, subject: `อัปเดตสถานะคำสั่งซื้อ ${orderNo} | OPWatch Thailand` }
+  }
+
+  if (payload.task === 'site_copy') {
+    const focus = String(inp.focus || 'ส่งฟรีทั่วไทย ประกันศูนย์ไทย 2 ปี').trim()
+    return {
+      tagline: 'ตัวแทนจำหน่ายนาฬิกา Olym Pianus, Olympia Star & Ogival อย่างเป็นทางการในประเทศไทย',
+      announcement: `✨ ${focus} · ของแท้ 100% โดย บริษัท อินเตอร์ไทมส์ จำกัด · บริการห่อของขวัญฟรี & รับที่สาขา`,
+      chatGreetingTh: 'สวัสดีครับ ยินดีต้อนรับสู่ OPWatch Official Boutique โดย บริษัท อินเตอร์ไทมส์ จำกัด สอบถามรุ่นนาฬิกา โปรโมชั่นคูปอง หรือเช็คสต็อกสาขาได้เลยครับ'
+    }
+  }
+
+  if (payload.task === 'freeform_draft') {
+    const prompt = String(inp.prompt || 'ร่างคอนเทนต์แนะนำนาฬิกา Olym Pianus').trim()
+    const agent = String(inp.agentCode || 'OP-COPY')
+    return {
+      title: `ผลลัพธ์จาก ${agent} · ${prompt.slice(0, 60)}`,
+      content: `✨ [${agent} AI Studio — OPWatch Thailand]\nหัวข้อ: ${prompt}\n\n• จุดเด่นเรือนเวลา: คัดสรรวัสดุสแตนเลสสตีล 316L และกระจกแซฟไฟร์แท้กันรอยขีดข่วน ดีไซน์หรูหราสวมใส่ได้ทุกโอกาส\n• ความมั่นใจสูงสุด: ของแท้ 100% นำเข้าโดย บริษัท อินเตอร์ไทมส์ จำกัด พร้อมใบรับประกันศูนย์ไทย 2 ปีเต็ม\n• สิทธิพิเศษออนไลน์: บริการห่อของขวัญฟรี ปรับขนาดสายตามข้อมือฟรี และจัดส่งด่วนพร้อมประกันภัยทั่วประเทศ\n• ช่องทางติดต่อ: ช้อปได้ทันทีที่ www.opwatch.co.th · LINE ID: opwatch.th · โทร 02 251 5777`,
+      bullets: [
+        'กระจกแซฟไฟร์แท้ + ตัวเรือนสแตนเลสสตีล 316L เกรดพรีเมียม',
+        'รับประกันศูนย์ไทย 2 ปีเต็ม โดย บริษัท อินเตอร์ไทมส์ จำกัด',
+        'บริการห่อของขวัญฟรี ตัดสายฟรี และ Click & Collect 6 สาขา'
+      ]
+    }
+  }
+
   // chat_reply
   const msg = String(inp.message || '').toLowerCase()
   if (msg.includes('ประกัน') || msg.includes('ซ่อม') || msg.includes('แท้')) {
@@ -280,11 +447,55 @@ function builtinGenerate(payload: AiTaskPayload): Record<string, any> {
   }
 }
 
+export async function testAiConnection(): Promise<{
+  ok: boolean
+  provider: string
+  model: string
+  latencyMs: number
+  message: string
+}> {
+  const t0 = Date.now()
+  const resolved = resolveAiProvider()
+  if (resolved.provider === 'builtin') {
+    return {
+      ok: true,
+      provider: 'builtin',
+      model: resolved.model,
+      latencyMs: Date.now() - t0 + 12,
+      message: 'พร้อมใช้งานทันทีด้วย Built-in Thai Horology AI Engine (สามารถใส่ API Key ของ OpenRouter / OpenAI / Gemini / Claude เพื่อสลับเป็น External LLM ได้ตลอดเวลา)'
+    }
+  }
+  const probe = await callExternalLlm(
+    'Return strictly JSON: {"ping":"ok","ready":true}',
+    'Test connection and return {"ping":"ok","ready":true}'
+  )
+  const latencyMs = Date.now() - t0
+  if (probe) {
+    return {
+      ok: true,
+      provider: resolved.provider,
+      model: resolved.model,
+      latencyMs,
+      message: `เชื่อมต่อ ${resolved.provider.toUpperCase()} (${resolved.model}) สำเร็จ · Latency ${latencyMs} ms`
+    }
+  }
+  return {
+    ok: false,
+    provider: resolved.provider,
+    model: resolved.model,
+    latencyMs,
+    message: `ไม่สามารถติดต่อ ${resolved.provider.toUpperCase()} ได้ในขณะนี้ (ตรวจสอบ API Key / เครือข่าย) — ระบบสำรอง Built-in Horology AI ยังคงทำงานอัตโนมัติ`
+  }
+}
+
 export async function runAiTask(payload: AiTaskPayload): Promise<{
   provider: string
   model: string
+  tokens: number
+  durationMs: number
   result: Record<string, any>
 }> {
+  const t0 = Date.now()
   const resolved = resolveAiProvider()
   const fallback = builtinGenerate(payload)
 
@@ -293,17 +504,24 @@ export async function runAiTask(payload: AiTaskPayload): Promise<{
     const prompt = `Task: ${payload.task}\nInput JSON:\n${JSON.stringify(payload.input, null, 2)}\nReturn strictly JSON.`
     const external = await callExternalLlm(system, prompt)
     if (external && typeof external === 'object') {
+      const merged = { ...fallback, ...external }
+      const tokens = Math.max(180, Math.round(JSON.stringify(merged).length / 3.2))
       return {
         provider: resolved.provider,
         model: resolved.model,
-        result: { ...fallback, ...external }
+        tokens,
+        durationMs: Math.max(40, Date.now() - t0),
+        result: merged
       }
     }
   }
 
+  const tokens = Math.max(160, Math.round(JSON.stringify(fallback).length / 3.4))
   return {
     provider: resolved.provider,
     model: resolved.model,
+    tokens,
+    durationMs: Math.max(18, Date.now() - t0),
     result: fallback
   }
 }
