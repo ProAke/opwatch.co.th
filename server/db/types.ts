@@ -12,6 +12,8 @@ export type Entity =
   | 'branches'
   | 'pages'
   | 'chats'
+  | 'events'
+  | 'ai_runs'
 
 export type OrderStatus =
   | 'pending'
@@ -122,6 +124,15 @@ export const COLUMNS: Record<Entity, string[]> = {
   chats: [
     'id', 'session_id', 'customer_name', 'customer_contact', 'channel',
     'product_slug', 'message', 'sender', 'status', 'reply', 'created_at'
+  ],
+  events: [
+    'id', 'title', 'cat', 'date', 'end_date', 'start_time', 'end_time',
+    'allday', 'location', 'notes', 'ref_code', 'assignee', 'status',
+    'created_at', 'updated_at'
+  ],
+  ai_runs: [
+    'id', 'agent_code', 'task', 'model', 'provider', 'prompt_summary',
+    'output_preview', 'tokens', 'duration_ms', 'status', 'created_at'
   ]
 }
 
@@ -138,7 +149,9 @@ export const ENTITIES: Entity[] = [
   'coupons',
   'branches',
   'pages',
-  'chats'
+  'chats',
+  'events',
+  'ai_runs'
 ]
 
 export const toSnake = (key: string): string =>
@@ -161,7 +174,7 @@ export function shape<T extends Record<string, any> | null>(row: T): T {
   if (!row) return row
   const r: any = { ...row }
 
-  const boolFields = ['featured', 'isAdmin', 'active', 'showOnHome', 'targetBlank', 'giftWrap', 'giftWrapAvailable']
+  const boolFields = ['featured', 'isAdmin', 'active', 'showOnHome', 'targetBlank', 'giftWrap', 'giftWrapAvailable', 'allday']
   for (const bf of boolFields) {
     if (r[bf] !== undefined && r[bf] !== null) {
       r[bf] = r[bf] === true || Number(r[bf]) === 1 || r[bf] === '1' || r[bf] === 'true'
@@ -190,7 +203,8 @@ export function shape<T extends Record<string, any> | null>(row: T): T {
     'points', 'pointsRedeemed', 'pointsEarned', 'pointsMultiplier',
     'rating', 'quantity', 'brandId', 'categoryId', 'parentId',
     'shipping_fee', 'freeShippingThreshold', 'homeColumns',
-    'value', 'minSpend', 'maxDiscount', 'usageLimit', 'usedCount'
+    'value', 'minSpend', 'maxDiscount', 'usageLimit', 'usedCount',
+    'tokens', 'durationMs'
   ]
   for (const f of numericFields) {
     if (r[f] !== undefined && r[f] !== null && r[f] !== '') r[f] = Number(r[f])

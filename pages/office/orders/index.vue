@@ -150,7 +150,7 @@ useHead({ title: 'บริหารจัดการคำสั่งซื�
           <tbody>
             <tr v-for="o in orders" :key="o.id">
               <td>
-                <div style="font-family:monospace;font-weight:700;color:#67e8f9">{{ o.orderNo }}</div>
+                <div style="font-family:monospace;font-weight:700;color:#6c5ce7">{{ o.orderNo }}</div>
                 <div style="font-size:11px;color:#94a3b8">{{ new Date(o.createdAt).toLocaleString('th-TH') }}</div>
                 <span v-if="o.giftWrap" class="erp-chip erp-chip--violet" style="margin-top:4px">🎁 ห่อของขวัญ</span>
               </td>
@@ -168,8 +168,8 @@ useHead({ title: 'บริหารจัดการคำสั่งซื�
               </td>
               <td>
                 <div v-if="o.trackingNo" style="font-size:12px">
-                  <strong style="color:#6ee7b7">{{ o.carrier || 'Express' }}:</strong>
-                  <code style="margin-left:4px;color:#67e8f9">{{ o.trackingNo }}</code>
+                  <strong style="color:#0e9f6e">{{ o.carrier || 'Express' }}:</strong>
+                  <code style="margin-left:4px;color:#6c5ce7">{{ o.trackingNo }}</code>
                 </div>
                 <div v-else style="display:flex;gap:5px;align-items:center">
                   <select v-model="quickCarrier[o.id]" class="erp-select" style="width:118px;padding:4px 6px;font-size:11.5px">

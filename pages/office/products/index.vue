@@ -145,7 +145,7 @@ useHead({ title: 'จัดการสินค้า 405+ รุ่น & ด�
                 />
               </td>
               <td>
-                <div style="font-family:monospace;font-size:11.5px;color:#67e8f9">{{ p.sku }}</div>
+                <div style="font-family:monospace;font-size:11.5px;color:#6c5ce7">{{ p.sku }}</div>
                 <div style="font-weight:600">{{ p.nameTh || p.nameEn }}</div>
               </td>
               <td><span class="erp-chip">{{ p.brandSlug }}</span></td>
@@ -156,7 +156,7 @@ useHead({ title: 'จัดการสินค้า 405+ รุ่น & ด�
                 </div>
               </td>
               <td>
-                <span :style="{ color: Number(p.stock) <= 3 ? '#fda4af' : '#6ee7b7', fontWeight: 700 }">
+                <span :style="{ color: Number(p.stock) <= 3 ? '#e11d48' : '#0e9f6e', fontWeight: 700 }">
                   {{ p.stock }}
                 </span>
               </td>

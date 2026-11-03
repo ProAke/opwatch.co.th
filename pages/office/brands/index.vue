@@ -19,6 +19,29 @@ const brandForm = reactive({
   tagline: ''
 })
 
+const aiBrandBusy = ref(false)
+
+async function generateBrandCopy() {
+  aiBrandBusy.value = true
+  try {
+    const res = await $fetch<any>('/api/admin/ai/generate', {
+      method: 'POST',
+      body: {
+        task: 'brand_copy',
+        input: { name: brandForm.name || 'Olym Pianus' }
+      }
+    })
+    if (res?.result?.tagline) {
+      brandForm.tagline = res.result.tagline
+      toast.success('✨ AI ร่างคำขวัญและจุดเด่นแบรนด์เรียบร้อย')
+    }
+  } catch {
+    toast.error('เรียก AI ไม่สำเร็จ')
+  } finally {
+    aiBrandBusy.value = false
+  }
+}
+
 async function saveBrand() {
   if (!brandForm.name.trim()) return
   if (brandForm.id) {
@@ -84,7 +107,10 @@ useHead({ title: 'จัดการแบรนด์ & หมวดหมู�
           <div class="erp-field"><label class="erp-label">Slug</label><input v-model="brandForm.slug" class="erp-input" /></div>
           <div class="erp-field"><label class="erp-label">คำขวัญ / จุดเด่น</label><input v-model="brandForm.tagline" class="erp-input" /></div>
         </div>
-        <div style="display:flex;justify-content:flex-end;margin-top:12px">
+        <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px">
+          <button type="button" class="erp-btn erp-btn--violet" :disabled="aiBrandBusy" @click="generateBrandCopy">
+            {{ aiBrandBusy ? 'กำลังเขียน...' : '✨ ให้ AI เขียนคำขวัญแบรนด์' }}
+          </button>
           <button type="button" class="erp-btn erp-btn--primary" @click="saveBrand">💾 บันทึกแบรนด์</button>
         </div>
       </div>
@@ -96,7 +122,7 @@ useHead({ title: 'จัดการแบรนด์ & หมวดหมู�
             <tbody>
               <tr v-for="b in brands" :key="b.id">
                 <td><strong>{{ b.name }}</strong></td>
-                <td style="font-family:monospace;color:#67e8f9">{{ b.slug }}</td>
+                <td style="font-family:monospace;color:#6c5ce7">{{ b.slug }}</td>
                 <td>{{ b.country }} · {{ b.movement }}</td>
                 <td>
                   <button type="button" class="erp-btn erp-btn--sm" @click="Object.assign(brandForm, b)">แก้ไข</button>
@@ -128,7 +154,7 @@ useHead({ title: 'จัดการแบรนด์ & หมวดหมู�
               <tr v-for="c in categories" :key="c.id">
                 <td><strong>{{ c.nameTh }}</strong></td>
                 <td>{{ c.nameEn }}</td>
-                <td style="font-family:monospace;color:#67e8f9">{{ c.slug }}</td>
+                <td style="font-family:monospace;color:#6c5ce7">{{ c.slug }}</td>
                 <td><button type="button" class="erp-btn erp-btn--sm" @click="Object.assign(catForm, c)">แก้ไข</button></td>
               </tr>
             </tbody>

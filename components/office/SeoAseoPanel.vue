@@ -53,9 +53,9 @@ function removeFaq(idx: number) {
   <div class="seo-studio">
     <div class="seo-studio__head">
       <div>
-        <div class="seo-studio__title">SEO &amp; ASEO Intelligence Studio</div>
+        <div class="seo-studio__title">🔎 SEO &amp; ASEO Intelligence Studio</div>
         <div class="seo-studio__sub">
-          ปรับแต่งการค้นหา Google (SEO) + AI Search Engine / ChatGPT / Gemini / Perplexity (ASEO) ทั้งแบบ AI อัตโนมัติและแก้ไขเอง (Manual)
+          ปรับแต่งการค้นหา Google (SEO) + AI Search Engine / ChatGPT / Gemini / Perplexity (ASEO) ทั้งแบบ AI อัตโนมัติและแก้ไขเอง
         </div>
       </div>
       <div class="seo-studio__right">
@@ -88,44 +88,45 @@ function removeFaq(idx: number) {
         />
       </div>
       <div class="erp-field">
-        <label class="erp-label">Focus Keywords (คั่นด้วยจุลภาค ,)</label>
+        <label class="erp-label">คีย์เวิร์ดหลัก (SEO Keywords คั่นด้วยจุลภาค ,)</label>
         <input
           :value="seoKeywords"
           class="erp-input"
-          placeholder="เช่น Olym Pianus, นาฬิกาของแท้, กระจกแซฟไฟร์, OPWatch"
+          placeholder="เช่น นาฬิกา Olym Pianus, นาฬิกากระจกแซฟไฟร์, OPWatch ของแท้"
           @input="(e: any) => emit('update:seoKeywords', e.target.value)"
+        />
+      </div>
+      <div class="erp-field erp-field--full">
+        <label class="erp-label">SEO Meta Description ({{ (seoDescription || '').length }}/160)</label>
+        <textarea
+          :value="seoDescription"
+          rows="2"
+          class="erp-textarea"
+          placeholder="สรุปจุดเด่นนาฬิกา การรับประกันศูนย์ไทย 2 ปี และโปรโมชั่นส่งฟรี..."
+          @input="(e: any) => emit('update:seoDescription', e.target.value)"
         />
       </div>
     </div>
 
-    <div class="erp-field">
-      <label class="erp-label">SEO Meta Description ({{ (seoDescription || '').length }}/160)</label>
-      <textarea
-        :value="seoDescription"
-        class="erp-textarea"
-        rows="2"
-        placeholder="สรุปจุดเด่น ราคา โปรโมชั่น และการรับประกันศูนย์ไทย 2 ปี..."
-        @input="(e: any) => emit('update:seoDescription', e.target.value)"
-      />
-    </div>
-
-    <!-- ASEO (Answer Engine Optimization) Block -->
+    <!-- ASEO (AI Search Engine Optimization) -->
     <div class="seo-studio__aseo">
       <div class="seo-studio__aseo-head">
         <div>
-          <span class="erp-chip erp-chip--violet">ASEO · AI Search Ready</span>
-          <strong style="margin-left: 8px; color: #e2e8f0; font-size: 13.5px">ข้อมูลสรุปสำหรับ AI Search &amp; JSON-LD FAQ Schema</strong>
+          <strong style="color: var(--violet, #6c5ce7); font-size: 13.5px">🤖 ASEO (AI Search &amp; Answer Engine Optimization)</strong>
+          <div style="font-size: 11.5px; color: var(--ink-2, #454a75); margin-top: 2px">
+            ข้อมูลสรุปและ FAQ Schema JSON-LD เพื่อให้ ChatGPT, Google AI Overviews, Perplexity และ Claude แนะนำสินค้าของ OPWatch อย่างแม่นยำ
+          </div>
         </div>
-        <button type="button" class="erp-btn erp-btn--sm" @click="addFaq">+ เพิ่มคำถาม Q&amp;A</button>
+        <button type="button" class="erp-btn erp-btn--ghost erp-btn--sm" @click="addFaq">+ เพิ่มคำถาม FAQ</button>
       </div>
 
       <div class="erp-field" style="margin-top: 10px">
-        <label class="erp-label">ASEO Entity Summary (บทสรุปข้อเท็จจริงให้ AI อ้างอิงแบรนด์อย่างแม่นยำ)</label>
+        <label class="erp-label">บทสรุปข้อเท็จจริงสำหรับ AI (ASEO Direct Answer Summary)</label>
         <textarea
           :value="aseoSummary"
-          class="erp-textarea"
           rows="2"
-          placeholder="สรุปข้อเท็จจริงครบถ้วนสำหรับ AI เช่น แบรนด์ รุ่น กลไก กระจก ราคา ตัวแทนจำหน่าย บริษัท อินเตอร์ไทมส์ จำกัด..."
+          class="erp-textarea"
+          placeholder="สรุปข้อมูลสำคัญแบบกระชับ ชัดเจน เพื่อให้ AI นำไปอ้างอิงตอบลูกค้า..."
           @input="(e: any) => emit('update:aseoSummary', e.target.value)"
         />
       </div>
@@ -146,7 +147,7 @@ function removeFaq(idx: number) {
               @input="(e: any) => updateFaq(idx, 'a', e.target.value)"
             />
           </div>
-          <button type="button" class="erp-btn erp-btn--sm" style="color: #fda4af" @click="removeFaq(idx)">ลบ</button>
+          <button type="button" class="erp-btn erp-btn--danger erp-btn--sm" @click="removeFaq(idx)">ลบ</button>
         </div>
       </div>
     </div>
@@ -162,33 +163,33 @@ function removeFaq(idx: number) {
   gap: 12px;
   flex-wrap: wrap;
 }
-.seo-studio__title { font-size: 15px; font-weight: 700; color: #f8fafc; }
-.seo-studio__sub { font-size: 12px; color: #8da0c2; margin-top: 2px; }
+.seo-studio__title { font-size: 15px; font-weight: 700; color: var(--ink, #23264d); }
+.seo-studio__sub { font-size: 12px; color: var(--muted, #8a8fb1); margin-top: 2px; }
 .seo-studio__right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .seo-studio__score {
-  padding: 5px 11px;
+  padding: 5px 12px;
   border-radius: 999px;
   font-size: 12px;
-  border: 1px solid #334155;
-  background: #0f172a;
-  color: #cbd5e1;
+  border: 1px solid var(--line, #e9ebf6);
+  background: #f6f7fc;
+  color: var(--ink-2, #454a75);
 }
-.seo-studio__score.is-good { border-color: rgba(52, 211, 153, 0.45); color: #6ee7b7; background: rgba(52, 211, 153, 0.1); }
-.seo-studio__score.is-mid { border-color: rgba(251, 191, 36, 0.45); color: #fde68a; background: rgba(251, 191, 36, 0.1); }
+.seo-studio__score.is-good { border-color: #a7f3d0; color: #059669; background: #e5f9f2; }
+.seo-studio__score.is-mid { border-color: #fde68a; color: #b45309; background: #fff6e4; }
 .seo-studio__serp {
-  background: #070d1a;
-  border: 1px solid #1b2a47;
-  border-radius: 12px;
-  padding: 12px 16px;
+  background: #fbfbfe;
+  border: 1px solid var(--line, #e9ebf6);
+  border-radius: 14px;
+  padding: 14px 16px;
 }
-.seo-studio__serp-tag { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.1em; color: #64748b; margin-bottom: 4px; }
-.seo-studio__serp-url { font-size: 12px; color: #34d399; }
-.seo-studio__serp-title { font-size: 16px; font-weight: 600; color: #60a5fa; margin-top: 2px; }
-.seo-studio__serp-desc { font-size: 12.5px; color: #94a3b8; margin-top: 3px; line-height: 1.5; }
+.seo-studio__serp-tag { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted, #8a8fb1); margin-bottom: 4px; font-weight: 600; }
+.seo-studio__serp-url { font-size: 12px; color: #059669; }
+.seo-studio__serp-title { font-size: 16px; font-weight: 600; color: #1a0dab; margin-top: 2px; }
+.seo-studio__serp-desc { font-size: 12.5px; color: #475569; margin-top: 3px; line-height: 1.5; }
 .seo-studio__aseo {
-  background: rgba(167, 139, 250, 0.06);
-  border: 1px solid rgba(167, 139, 250, 0.25);
-  border-radius: 12px;
+  background: linear-gradient(135deg, #f7f5ff 0%, #f1f6ff 100%);
+  border: 1px solid #dfd9fb;
+  border-radius: 14px;
   padding: 14px;
 }
 .seo-studio__aseo-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
@@ -197,9 +198,9 @@ function removeFaq(idx: number) {
   display: flex;
   gap: 8px;
   align-items: flex-start;
-  padding: 8px;
-  background: #091121;
-  border: 1px solid #1c2c4c;
-  border-radius: 10px;
+  padding: 10px;
+  background: #ffffff;
+  border: 1px solid var(--line, #e9ebf6);
+  border-radius: 12px;
 }
 </style>

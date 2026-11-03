@@ -2,7 +2,7 @@ import type { Store } from '../db/types'
 import { olympianusOfficialProducts } from './catalog-olympianus'
 import { ogivalOfficialProducts } from './catalog-ogival'
 import { isInstalled, loadConfig, saveConfig } from './config'
-import { defaultPromotions, defaultCoupons, defaultBranches, defaultPages } from './seed-extras'
+import { defaultPromotions, defaultCoupons, defaultBranches, defaultPages, defaultCalendarEvents, defaultAiRuns } from './seed-extras'
 
 export interface SeedBrand {
   slug: string
@@ -919,6 +919,20 @@ export async function syncOfficialCatalog(
         }
       }
 
+      const existingEvents = await store.all('events').catch(() => [])
+      if (existingEvents.length === 0) {
+        for (const ev of defaultCalendarEvents()) {
+          await store.create('events', ev)
+        }
+      }
+
+      const existingAiRuns = await store.all('ai_runs').catch(() => [])
+      if (existingAiRuns.length === 0) {
+        for (const r of defaultAiRuns()) {
+          await store.create('ai_runs', r)
+        }
+      }
+
       const finalCount = await store.count('products', { where: { status: 'active' } })
       return { synced, removedLegacy, total: finalCount }
     }
@@ -941,12 +955,13 @@ export async function syncOfficialCatalog(
  */
 export async function ensureCatalogReady(store: Store): Promise<void> {
   if (!isInstalled()) return
-  const [prodCount, promoCount, pageCount] = await Promise.all([
+  const [prodCount, promoCount, pageCount, eventCount] = await Promise.all([
     store.count('products'),
     store.count('promotions').catch(() => 1),
-    store.count('pages').catch(() => 1)
+    store.count('pages').catch(() => 1),
+    store.count('events').catch(() => 1)
   ])
-  if (prodCount === 0 || promoCount === 0 || pageCount === 0) {
+  if (prodCount === 0 || promoCount === 0 || pageCount === 0 || eventCount === 0) {
     await syncOfficialCatalog(store)
   }
 }

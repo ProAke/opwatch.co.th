@@ -168,12 +168,12 @@ useHead({ title: 'จัดการหน้าเว็บไซต์ CMS + C
             v-for="p in pages"
             :key="p.id"
             type="button"
-            style="text-align:left;padding:10px 12px;border-radius:9px;border:1px solid #1b2a48;cursor:pointer;color:#e2e8f0"
-            :style="{ background: editingId === p.id ? 'rgba(34,211,238,0.16)' : '#081020', borderColor: editingId === p.id ? '#22d3ee' : '#1b2a48' }"
+            style="text-align:left;padding:10px 12px;border-radius:11px;border:1px solid #e9ebf6;cursor:pointer;color:#23264d;font-family:inherit"
+            :style="{ background: editingId === p.id ? 'var(--violet-soft)' : '#f6f7fc', borderColor: editingId === p.id ? 'var(--violet)' : '#e9ebf6' }"
             @click="selectPage(p)"
           >
             <div style="font-weight:600;font-size:13px">{{ p.titleTh }}</div>
-            <div style="font-family:monospace;font-size:11px;color:#67e8f9">/pages/{{ p.slug }}</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--violet)">/pages/{{ p.slug }}</div>
           </button>
         </div>
       </div>

@@ -126,7 +126,7 @@ useHead({ title: 'กราฟรายงานวิเคราะห์ข�
 
         <div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap;padding:8px 0">
           <svg width="170" height="170" viewBox="0 0 170 170" style="flex:none">
-            <circle cx="85" cy="85" :r="brandDonut.r" fill="none" stroke="#121e36" stroke-width="22" />
+            <circle cx="85" cy="85" :r="brandDonut.r" fill="none" stroke="#eef0f8" stroke-width="22" />
             <circle
               v-for="seg in brandDonut.slices"
               :key="seg.name"
@@ -140,8 +140,8 @@ useHead({ title: 'กราฟรายงานวิเคราะห์ข�
               :stroke-dashoffset="seg.dashoffset"
               transform="rotate(-90 85 85)"
             />
-            <text x="85" y="81" text-anchor="middle" fill="#f8fafc" font-size="14" font-weight="700">3 แบรนด์</text>
-            <text x="85" y="99" text-anchor="middle" fill="#94a3b8" font-size="10">Official TH</text>
+            <text x="85" y="81" text-anchor="middle" fill="#23264d" font-size="14" font-weight="700">3 แบรนด์</text>
+            <text x="85" y="99" text-anchor="middle" fill="#8a8fb1" font-size="10">Official TH</text>
           </svg>
 
           <div style="flex:1;display:flex;flex-direction:column;gap:10px;min-width:190px">
@@ -149,9 +149,9 @@ useHead({ title: 'กราฟรายงานวิเคราะห์ข�
               <div style="display:flex;align-items:center;gap:8px">
                 <span :style="{ width: '10px', height: '10px', borderRadius: '50%', background: seg.color, display: 'inline-block' }" />
                 <strong>{{ seg.name }}</strong>
-                <span style="color:#64748b;font-size:11.5px">({{ seg.count }} รุ่น)</span>
+                <span style="color:#8a8fb1;font-size:11.5px">({{ seg.count }} รุ่น)</span>
               </div>
-              <span style="font-family:monospace;color:#67e8f9">{{ seg.pct }}% · {{ fmt(seg.val) }}</span>
+              <span style="font-family:'JetBrains Mono',monospace;color:var(--violet);font-weight:600">{{ seg.pct }}% · {{ fmt(seg.val) }}</span>
             </div>
           </div>
         </div>
@@ -168,9 +168,9 @@ useHead({ title: 'กราฟรายงานวิเคราะห์ข�
           <div v-for="(cat, idx) in categories" :key="cat.slug" style="display:grid;gap:4px">
             <div style="display:flex;justify-content:space-between;font-size:12.5px">
               <span><strong>{{ cat.name }}</strong> ({{ cat.count }} รุ่น)</span>
-              <span style="font-family:monospace;color:#cbd5e1">มูลค่าสต็อก {{ fmt(cat.stockValue) }}</span>
+              <span style="font-family:'JetBrains Mono',monospace;color:#454a75">มูลค่าสต็อก {{ fmt(cat.stockValue) }}</span>
             </div>
-            <div style="height:10px;background:#081122;border-radius:999px;overflow:hidden;border:1px solid #182644">
+            <div style="height:10px;background:#eef0f8;border-radius:999px;overflow:hidden;border:1px solid #e2e6f5">
               <div
                 :style="{
                   height: '100%',
@@ -194,13 +194,13 @@ useHead({ title: 'กราฟรายงานวิเคราะห์ข�
           <div
             v-for="(f, i) in funnel"
             :key="f.stage"
-            style="padding:10px 14px;border-radius:10px;background:#091326;border:1px solid #1c2d4f;display:flex;justify-content:space-between;align-items:center"
+            style="padding:10px 14px;border-radius:12px;background:#f6f7fc;border:1px solid #e9ebf6;display:flex;justify-content:space-between;align-items:center"
           >
             <div>
               <span class="erp-chip" style="margin-right:8px">#{{ i + 1 }}</span>
               <strong>{{ f.label }}</strong>
             </div>
-            <strong style="font-size:16px;color:#67e8f9">{{ f.count }} ออเดอร์</strong>
+            <strong style="font-size:16px;color:var(--violet)">{{ f.count }} ออเดอร์</strong>
           </div>
         </div>
       </div>
@@ -213,14 +213,14 @@ useHead({ title: 'กราฟรายงานวิเคราะห์ข�
           <div
             v-for="pm in payments"
             :key="pm.method"
-            style="padding:14px;border-radius:12px;background:#081020;border:1px solid #1d2d4e"
+            style="padding:14px;border-radius:12px;background:#f6f7fc;border:1px solid #e9ebf6"
           >
-            <div style="font-size:11px;text-transform:uppercase;color:#94a3b8">{{ pm.method }}</div>
-            <div style="font-size:20px;font-weight:700;color:#34d399;margin-top:4px">{{ fmt(pm.revenue) }}</div>
-            <div style="font-size:12px;color:#64748b;margin-top:2px">{{ pm.count }} คำสั่งซื้อ</div>
+            <div style="font-size:11px;text-transform:uppercase;color:#8a8fb1">{{ pm.method }}</div>
+            <div style="font-size:20px;font-weight:700;color:#0e9f6e;margin-top:4px">{{ fmt(pm.revenue) }}</div>
+            <div style="font-size:12px;color:#8a8fb1;margin-top:2px">{{ pm.count }} คำสั่งซื้อ</div>
           </div>
         </div>
-        <p v-else style="color:#64748b;font-size:13px">ข้อมูลสัดส่วนการชำระเงินจะแสดงทันทีเมื่อมีคำสั่งซื้อ</p>
+        <p v-else style="color:#8a8fb1;font-size:13px">ข้อมูลสัดส่วนการชำระเงินจะแสดงทันทีเมื่อมีคำสั่งซื้อ</p>
       </div>
     </div>
   </div>
@@ -236,21 +236,21 @@ useHead({ title: 'กราฟรายงานวิเคราะห์ข�
   overflow-x: auto;
 }
 .rep-col { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-.rep-col__val { font-size: 10px; color: #94a3b8; font-family: monospace; }
+.rep-col__val { font-size: 10px; color: #8a8fb1; font-family: 'JetBrains Mono', monospace; }
 .rep-col__track {
   width: 100%;
   max-width: 28px;
   height: 150px;
-  background: #081122;
-  border: 1px solid #182644;
+  background: #f1f2fa;
+  border: 1px solid #e2e6f5;
   border-radius: 7px;
   display: flex;
   align-items: flex-end;
   overflow: hidden;
 }
 .rep-col__bar { width: 100%; border-radius: 6px 6px 0 0; transition: height 0.3s ease; }
-.rep-col__lbl { font-size: 10px; color: #cbd5e1; white-space: nowrap; }
-.rep-col__ord { font-size: 9.5px; color: #64748b; }
+.rep-col__lbl { font-size: 10px; color: #454a75; font-weight: 600; white-space: nowrap; }
+.rep-col__ord { font-size: 9.5px; color: #8a8fb1; }
 @media (max-width: 1024px) {
   .rep-split { grid-template-columns: 1fr !important; }
 }

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { autoEnhanceFile, autoEnhanceExistingUrl } from '~/utils/autoImageEnhance'
+
 definePageMeta({ layout: 'office', middleware: ['office'] })
 
 const toast = useToast()
@@ -63,19 +65,74 @@ function editPromo(p: any) {
   })
 }
 
+const autoEnhanceBanner = ref(true)
+const enhancingBanner = ref(false)
+const aiCouponBusy = ref(false)
+
 async function uploadBannerFile(e: any) {
-  const f = e.target?.files?.[0]
+  let f = e.target?.files?.[0]
   if (!f) return
+  if (autoEnhanceBanner.value && import.meta.client) {
+    try {
+      f = await autoEnhanceFile(f, { preset: 'banner-wide', autoTrim: false, cleanWhiteBg: false })
+    } catch {}
+  }
   const fd = new FormData()
   fd.append('files', f, f.name)
   try {
     const res = await $fetch<{ urls: string[] }>('/api/admin/upload', { method: 'POST', body: fd })
     if (res.urls?.[0]) {
       promoForm.bannerImage = res.urls[0]
-      toast.success('อัปโหลดภาพแบนเนอร์สำเร็จ!')
+      toast.success(autoEnhanceBanner.value ? '✨ อัปโหลดและปรับภาพแบนเนอร์ 16:9 อัตโนมัติสำเร็จ!' : 'อัปโหลดภาพแบนเนอร์สำเร็จ!')
     }
   } catch {
     toast.error('อัปโหลดภาพไม่สำเร็จ')
+  }
+}
+
+async function enhanceCurrentBanner() {
+  if (!promoForm.bannerImage || !import.meta.client) return
+  enhancingBanner.value = true
+  try {
+    const enhanced = await autoEnhanceExistingUrl(promoForm.bannerImage, { preset: 'banner-wide', autoTrim: false, cleanWhiteBg: false })
+    const fd = new FormData()
+    fd.append('files', enhanced, enhanced.name)
+    const res = await $fetch<{ urls: string[] }>('/api/admin/upload', { method: 'POST', body: fd })
+    if (res.urls?.[0]) {
+      promoForm.bannerImage = res.urls[0]
+      toast.success('✨ ปรับแสงและความคมชัดภาพแบนเนอร์อัตโนมัติเรียบร้อย!')
+    }
+  } catch {
+    toast.error('ปรับภาพแบนเนอร์ไม่สำเร็จ')
+  } finally {
+    enhancingBanner.value = false
+  }
+}
+
+async function generateCouponAi() {
+  aiCouponBusy.value = true
+  try {
+    const res = await $fetch<any>('/api/admin/ai/generate', {
+      method: 'POST',
+      body: {
+        task: 'coupon_copy',
+        input: {
+          code: couponForm.code || 'OPVIP500',
+          type: couponForm.type,
+          value: couponForm.value,
+          minSpend: couponForm.minSpend
+        }
+      }
+    })
+    if (res?.result) {
+      if (!couponForm.code && res.result.code) couponForm.code = res.result.code
+      if (res.result.titleTh) couponForm.titleTh = res.result.titleTh
+      toast.success('✨ AI คิดชื่อสิทธิพิเศษคูปองให้เรียบร้อย!')
+    }
+  } catch {
+    toast.error('เรียก AI ไม่สำเร็จ')
+  } finally {
+    aiCouponBusy.value = false
   }
 }
 
@@ -278,13 +335,21 @@ useHead({ title: 'จัดการโปรโมชั่นทุกช่�
 
         <div class="erp-form-grid erp-form-grid--3" style="margin-top:12px">
           <div class="erp-field">
-            <label class="erp-label">รูปภาพกราฟิกแบนเนอร์ (URL หรืออัปโหลดไฟล์)</label>
-            <div style="display:flex;gap:6px">
-              <input v-model="promoForm.bannerImage" class="erp-input" />
+            <label class="erp-label">รูปภาพกราฟิกแบนเนอร์ (URL หรืออัปโหลดไฟล์ + ปรับภาพอัตโนมัติ)</label>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <input v-model="promoForm.bannerImage" class="erp-input" style="flex:1;min-width:160px" />
               <label class="erp-btn erp-btn--sm" style="white-space:nowrap">
-                อัปโหลด
+                📸 อัปโหลด
                 <input type="file" accept="image/*" hidden @change="uploadBannerFile" />
               </label>
+              <button
+                type="button"
+                class="erp-btn erp-btn--violet erp-btn--sm"
+                :disabled="enhancingBanner"
+                @click="enhanceCurrentBanner"
+              >
+                {{ enhancingBanner ? 'กำลังปรับ...' : '✨ ปรับภาพ' }}
+              </button>
             </div>
           </div>
           <div class="erp-field">
@@ -354,7 +419,12 @@ useHead({ title: 'จัดการโปรโมชั่นทุกช่�
     <!-- TAB 2: COUPONS & GIFT CARDS -->
     <template v-else-if="tab === 'coupons'">
       <div class="erp-panel">
-        <div class="erp-panel__title" style="margin-bottom:12px">+ สร้างคูปองส่วนลด / บัตรของขวัญ (Gift Card)</div>
+        <div class="erp-panel__head">
+          <div class="erp-panel__title">+ สร้างคูปองส่วนลด / บัตรของขวัญ (Gift Card)</div>
+          <button type="button" class="erp-btn erp-btn--violet erp-btn--sm" :disabled="aiCouponBusy" @click="generateCouponAi">
+            {{ aiCouponBusy ? 'กำลังคิด...' : '✨ ให้ AI คิดชื่อสิทธิพิเศษคูปอง' }}
+          </button>
+        </div>
         <div class="erp-form-grid erp-form-grid--3">
           <div class="erp-field">
             <label class="erp-label">รหัสโค้ด (Code) *</label>
@@ -407,7 +477,7 @@ useHead({ title: 'จัดการโปรโมชั่นทุกช่�
             </thead>
             <tbody>
               <tr v-for="c in couponData?.items || []" :key="c.id">
-                <td style="font-family:monospace;font-weight:700;color:#67e8f9">{{ c.code }}</td>
+                <td style="font-family:monospace;font-weight:700;color:#6c5ce7">{{ c.code }}</td>
                 <td>{{ c.titleTh }}</td>
                 <td>{{ c.type === 'percent' ? `${c.value}%` : `฿${c.value}` }}</td>
                 <td>฿{{ c.minSpend }}</td>

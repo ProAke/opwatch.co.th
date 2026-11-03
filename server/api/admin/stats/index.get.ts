@@ -5,7 +5,7 @@ export default defineEventHandler(async (event) => {
   const store = useStore()
   await ensureCatalogReady(store)
 
-  const [orders, products, customers, orderItems, brands, categories, promotions, coupons, chats, pages] = await Promise.all([
+  const [orders, products, customers, orderItems, brands, categories, promotions, coupons, chats, pages, events, aiRuns] = await Promise.all([
     store.all('orders'),
     store.all('products'),
     store.all('customers'),
@@ -15,7 +15,9 @@ export default defineEventHandler(async (event) => {
     store.all('promotions').catch(() => []),
     store.all('coupons').catch(() => []),
     store.all('chats').catch(() => []),
-    store.all('pages').catch(() => [])
+    store.all('pages').catch(() => []),
+    store.all('events').catch(() => []),
+    store.all('ai_runs').catch(() => [])
   ])
 
   const validOrders = orders.filter((o) => o.status !== 'cancelled' && o.status !== 'refunded')
@@ -179,6 +181,8 @@ export default defineEventHandler(async (event) => {
       promotions: promotions.length,
       coupons: coupons.length,
       pages: pages.length,
+      events: events.length,
+      aiRuns: aiRuns.length,
       openChats,
       avgOrder,
       avgOrderValue: avgOrder
@@ -191,6 +195,8 @@ export default defineEventHandler(async (event) => {
     recentOrders: ordersWithItems,
     topProducts,
     lowStock,
-    orderStatusCounts
+    orderStatusCounts,
+    calendarEvents: events,
+    recentAiRuns: aiRuns.slice().sort((a: any, b: any) => String(b.createdAt || '').localeCompare(String(a.createdAt || ''))).slice(0, 8)
   }
 })
