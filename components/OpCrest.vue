@@ -85,9 +85,9 @@ withDefaults(
 }
 
 /* Dark theme (over dark hero imagery) */
-.opcrest--dark .opcrest__shield { color: var(--champagne-soft); }
+.opcrest--dark .opcrest__shield { color: #ffffff; }
 .opcrest--dark .opcrest__script { color: #ffffff; }
-.opcrest--dark .opcrest__sub { color: rgba(255, 255, 255, 0.78); }
+.opcrest--dark .opcrest__sub { color: #ffffff; }
 
 /* Light theme (on #ffffff header, #f8f8f8 story, #f0f0f0 footer — exact olympianus.com Royal Sapphire & Midnight) */
 .opcrest--light .opcrest__shield { color: var(--sapphire); }

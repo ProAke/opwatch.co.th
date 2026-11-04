@@ -33,8 +33,17 @@ definePageMeta({ middleware: 'auth' })
 </script>
 
 <template>
-  <section class="section">
-    <div class="container">
+  <div>
+    <section class="op-page-hero">
+      <div class="container">
+        <p class="eyebrow">{{ t('account.orders') }}</p>
+        <h1 class="page-title">{{ order?.orderNo || orderNo }}</h1>
+        <p v-if="order?.createdAt" class="op-page-hero__sub">{{ formatDateTime(order.createdAt, localeTag) }}</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
       <NuxtLink :to="localePath('/account/orders')" class="link-underline" style="margin-bottom: 26px">{{ t('common.back') }} ←</NuxtLink>
 
       <div v-if="error || !order" class="empty">
@@ -46,7 +55,7 @@ definePageMeta({ middleware: 'auth' })
         <div class="between orderhead">
           <div>
             <p class="eyebrow">{{ t('account.orders') }}</p>
-            <h1 class="page-title" style="margin: 10px 0 4px">{{ order.orderNo }}</h1>
+            <h2 class="serif" style="margin: 8px 0 4px; font-size: 24px">{{ order.orderNo }}</h2>
             <p class="tiny upper faint">{{ formatDateTime(order.createdAt, localeTag) }}</p>
           </div>
           <span class="badge" :class="order.status === 'cancelled' ? 'badge--danger' : ''">{{ t('orderStatus.' + order.status, order.status) }}</span>
@@ -100,8 +109,9 @@ definePageMeta({ middleware: 'auth' })
           </aside>
         </div>
       </template>
-    </div>
-  </section>
+      </div>
+    </section>
+  </div>
 </template>
 
 <style scoped>

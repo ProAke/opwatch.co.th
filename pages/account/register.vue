@@ -38,26 +38,31 @@ useHead({ title: `${t('auth.registerTitle')} — ${site.value.name}` })
 </script>
 
 <template>
-  <section class="section auth">
-    <div class="container auth__inner">
-      <div class="auth__aside">
-        <p class="eyebrow">{{ t('auth.memberBenefits') }}</p>
-        <h2 class="serif auth__asidetitle">{{ t('auth.memberBenefits') }}</h2>
-        <ul class="benefits">
-          <li v-for="i in 4" :key="i"><span class="benefits__dot" /><span>{{ t('auth.benefit' + i) }}</span></li>
-        </ul>
-        <div class="auth__quote">
-          <p class="serif">“{{ site.tagline }}”</p>
-          <p class="tiny upper faint">{{ site.name }}</p>
-        </div>
-      </div>
-
-      <div class="auth__formwrap">
+  <div>
+    <section class="op-page-hero">
+      <div class="container">
         <p class="eyebrow">{{ t('nav.register') }}</p>
-        <h1 class="page-title" style="margin: 14px 0 8px">{{ t('auth.registerTitle') }}</h1>
-        <p class="muted" style="margin-bottom: 34px">{{ t('auth.registerSubtitle') }}</p>
+        <h1 class="page-title">{{ t('auth.registerTitle') }}</h1>
+        <p class="op-page-hero__sub">{{ t('auth.registerSubtitle') }}</p>
+      </div>
+    </section>
 
-        <form @submit.prevent="submit">
+    <section class="section auth">
+      <div class="container auth__inner">
+        <div class="auth__aside">
+          <p class="eyebrow">{{ t('auth.memberBenefits') }}</p>
+          <h2 class="serif auth__asidetitle">{{ t('auth.memberBenefits') }}</h2>
+          <ul class="benefits">
+            <li v-for="i in 4" :key="i"><span class="benefits__dot" /><span>{{ t('auth.benefit' + i) }}</span></li>
+          </ul>
+          <div class="auth__quote">
+            <p class="serif">“{{ site.tagline }}”</p>
+            <p class="tiny upper faint">{{ site.name }}</p>
+          </div>
+        </div>
+
+        <div class="auth__formwrap">
+          <form @submit.prevent="submit">
           <div class="field" style="margin-bottom: 18px">
             <label class="label">{{ t('auth.name') }}</label>
             <input v-model="form.name" class="input" :class="{ 'input--error': errors.name }" autocomplete="name" />
@@ -87,9 +92,10 @@ useHead({ title: `${t('auth.registerTitle')} — ${site.value.name}` })
           {{ t('auth.haveAccount') }}
           <NuxtLink :to="localePath('/account/login')" class="link-underline">{{ t('auth.loginButton') }}</NuxtLink>
         </p>
+        </div>
       </div>
-    </div>
-  </section>
+    </section>
+  </div>
 </template>
 
 <style scoped>

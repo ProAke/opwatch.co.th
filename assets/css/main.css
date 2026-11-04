@@ -133,7 +133,47 @@ p { margin: 0; }
 .section--tight { padding-block: 60px; }
 .section--alt { background: var(--sand); }
 .section--pearl { background: var(--ivory); }
-.section--dark { background: var(--ink); color: #f8f8f8; }
+.section--dark { background: var(--ink); color: #ffffff; }
+.section--dark h1,
+.section--dark h2,
+.section--dark h3,
+.section--dark h4,
+.section--dark h5,
+.section--dark h6,
+.section--dark .page-title,
+.section--dark .eyebrow {
+  color: #ffffff;
+}
+
+/* Unified Royal Sapphire Top Page Hero Banner (Crisp #ffffff White Headline Text) */
+.op-page-hero {
+  background: linear-gradient(135deg, #101444 0%, #1d2088 100%);
+  color: #ffffff;
+  padding: 58px 0 46px;
+}
+.op-page-hero .eyebrow {
+  color: #ffffff;
+}
+.op-page-hero h1,
+.op-page-hero .page-title {
+  color: #ffffff !important;
+  font-family: var(--font-display);
+  font-size: clamp(1.95rem, 3.3vw, 2.85rem);
+  letter-spacing: 0.05em;
+  text-transform: none;
+  margin-top: 8px;
+}
+.op-page-hero p.op-page-hero__sub {
+  color: #ffffff;
+  opacity: 0.94;
+  max-width: 720px;
+  margin-top: 10px;
+  font-size: 15px;
+  line-height: 1.7;
+}
+.op-page-hero a {
+  color: #ffffff;
+}
 
 .eyebrow {
   font-family: var(--font-roman);

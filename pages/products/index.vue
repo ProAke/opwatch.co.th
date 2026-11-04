@@ -358,14 +358,14 @@ function resetAll() {
   font-family: var(--font-roman);
   font-size: 11px;
   letter-spacing: 0.3em;
-  color: var(--champagne-soft);
+  color: #ffffff;
 }
 .op-cat__hero-body h1 { color: #ffffff; }
 .op-cat__hero-body p {
   max-width: 620px;
   font-family: var(--font-display);
   font-size: 18.5px;
-  color: rgba(255, 255, 255, 0.88);
+  color: #ffffff;
 }
 
 .op-cat__toolbar {

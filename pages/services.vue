@@ -49,7 +49,7 @@ useHead(() => ({
   <div class="op-services">
     <section class="op-services__hero">
       <div class="container">
-        <span class="eyebrow" style="color:#a5b4fc">INTER TIMES EXCLUSIVE PRIVILEGES</span>
+        <span class="eyebrow" style="color:#ffffff">INTER TIMES EXCLUSIVE PRIVILEGES</span>
         <h1>{{ locale === 'th' ? 'บริการพิเศษระดับบูติก & การรับประกันศูนย์ไทย' : 'Boutique Services & Thailand Official Care' }}</h1>
         <p>
           {{
@@ -220,10 +220,10 @@ useHead(() => ({
 .op-services__hero {
   background: linear-gradient(135deg, #101444 0%, #1d2088 100%);
   color: #ffffff;
-  padding: 120px 0 52px;
+  padding: 64px 0 52px;
 }
-.op-services__hero h1 { font-family: var(--font-display); font-size: clamp(2rem, 3.4vw, 2.8rem); margin-top: 8px; }
-.op-services__hero p { max-width: 760px; opacity: 0.9; margin-top: 10px; line-height: 1.75; }
+.op-services__hero h1 { color: #ffffff; font-family: var(--font-display); font-size: clamp(2rem, 3.4vw, 2.8rem); margin-top: 8px; }
+.op-services__hero p { color: #ffffff; max-width: 760px; opacity: 0.94; margin-top: 10px; line-height: 1.75; }
 .op-svc-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px; }
 .op-svc-card {
   background: #ffffff;

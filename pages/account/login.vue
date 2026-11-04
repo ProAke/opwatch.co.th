@@ -38,14 +38,19 @@ useHead({ title: `${t('auth.loginTitle')} — ${site.value.name}` })
 </script>
 
 <template>
-  <section class="section auth">
-    <div class="container auth__inner">
-      <div class="auth__formwrap">
+  <div>
+    <section class="op-page-hero">
+      <div class="container">
         <p class="eyebrow">{{ t('nav.login') }}</p>
-        <h1 class="page-title" style="margin: 14px 0 8px">{{ t('auth.loginTitle') }}</h1>
-        <p class="muted" style="margin-bottom: 34px">{{ t('auth.loginSubtitle') }}</p>
+        <h1 class="page-title">{{ t('auth.loginTitle') }}</h1>
+        <p class="op-page-hero__sub">{{ t('auth.loginSubtitle') }}</p>
+      </div>
+    </section>
 
-        <form @submit.prevent="submit">
+    <section class="section auth">
+      <div class="container auth__inner">
+        <div class="auth__formwrap">
+          <form @submit.prevent="submit">
           <div class="field" style="margin-bottom: 18px">
             <label class="label">{{ t('auth.email') }}</label>
             <input v-model="form.email" type="email" class="input" :class="{ 'input--error': errors.email }" autocomplete="email" />
@@ -84,8 +89,9 @@ useHead({ title: `${t('auth.loginTitle')} — ${site.value.name}` })
           <p class="tiny upper faint">{{ site.name }}</p>
         </div>
       </aside>
-    </div>
-  </section>
+      </div>
+    </section>
+  </div>
 </template>
 
 <style scoped>

@@ -521,14 +521,19 @@ useHead(() => {
 </template>
 
 <style scoped>
-.op-detail { padding-top: var(--header-h); background: #ffffff; }
-.op-detail__crumb { background: var(--silver); border-bottom: 1px solid var(--sand); padding-block: 14px; }
+.op-detail { background: #ffffff; }
+.op-detail__crumb {
+  background: linear-gradient(135deg, #101444 0%, #1d2088 100%);
+  color: #ffffff;
+  padding-block: 18px;
+}
 .op-detail__crumb-row {
   display: flex; align-items: center; flex-wrap: wrap; gap: 10px;
-  font-size: 12px; color: var(--muted);
+  font-size: 12.5px; color: rgba(255, 255, 255, 0.85);
 }
-.op-detail__crumb-row a:hover { color: var(--sapphire); }
-.op-detail__crumb-row strong { color: var(--sapphire); }
+.op-detail__crumb-row a { color: #ffffff; }
+.op-detail__crumb-row a:hover { color: #ffffff; text-decoration: underline; }
+.op-detail__crumb-row strong { color: #ffffff; font-weight: 600; }
 
 .op-detail__main {
   display: grid;

@@ -265,13 +265,13 @@ useHead(() => {
   background-size: cover;
   background-position: center;
   color: #ffffff;
-  padding: 126px 0 64px;
+  padding: 68px 0 58px;
 }
 .op-cms__crumb {
   margin-bottom: 12px;
 }
 .op-cms__crumb a {
-  color: rgba(255, 255, 255, 0.85);
+  color: #ffffff;
   font-size: 13px;
   text-decoration: none;
 }
@@ -279,11 +279,12 @@ useHead(() => {
   text-decoration: underline;
 }
 .op-cms__eyebrow {
-  color: #e2c97e;
+  color: #ffffff;
   display: inline-block;
   margin-bottom: 8px;
 }
 .op-cms__hero h1 {
+  color: #ffffff !important;
   margin: 0 0 12px;
   line-height: 1.25;
 }
@@ -300,7 +301,7 @@ useHead(() => {
   max-width: 780px;
   font-size: 16px;
   line-height: 1.65;
-  color: rgba(255, 255, 255, 0.88);
+  color: #ffffff;
   margin: 0;
 }
 .op-cms__cta {

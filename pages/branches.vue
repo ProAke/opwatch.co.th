@@ -27,7 +27,7 @@ useHead(() => ({
   <div class="op-branches">
     <section class="op-branches__hero">
       <div class="container">
-        <span class="eyebrow" style="color:#a5b4fc">THAILAND BOUTIQUE NETWORK</span>
+        <span class="eyebrow" style="color:#ffffff">THAILAND BOUTIQUE NETWORK</span>
         <h1>{{ locale === 'th' ? 'เลือกสินค้าใกล้บ้าน & สาขาทั่วประเทศไทย' : 'Nearby Branches & Service Center (Thailand)' }}</h1>
         <p>
           {{
@@ -88,10 +88,10 @@ useHead(() => ({
 .op-branches__hero {
   background: linear-gradient(135deg, #101444 0%, #1d2088 100%);
   color: #ffffff;
-  padding: 120px 0 46px;
+  padding: 64px 0 46px;
 }
-.op-branches__hero h1 { font-family: var(--font-display); font-size: clamp(2rem, 3.2vw, 2.7rem); margin-top: 8px; }
-.op-branches__hero p { max-width: 740px; opacity: 0.9; margin-top: 8px; line-height: 1.7; }
+.op-branches__hero h1 { color: #ffffff; font-family: var(--font-display); font-size: clamp(2rem, 3.2vw, 2.7rem); margin-top: 8px; }
+.op-branches__hero p { color: #ffffff; max-width: 740px; opacity: 0.94; margin-top: 8px; line-height: 1.7; }
 .op-branches__filters { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; }
 .op-branches__filters button {
   background: rgba(255, 255, 255, 0.12);
