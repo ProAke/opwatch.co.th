@@ -10,6 +10,10 @@ const savedCoupons = ref<string[]>([])
 const { data } = await useAsyncData('op-all-promotions', () =>
   reqFetch<any>('/api/promotions')
 )
+const { data: promoStoriesRes } = await useAsyncData('op-promo-stories', () =>
+  reqFetch<any>('/api/pages?pageType=promo_story')
+)
+const promoStories = computed<any[]>(() => promoStoriesRes.value?.items || [])
 
 const channels = [
   { key: 'all', th: 'ทุกช่องทางจำหน่าย', en: 'All Channels' },
@@ -103,6 +107,35 @@ useHead(() => ({
     </section>
 
     <!-- Clickable Omnichannel Banner Cards -->
+    <section v-if="promoStories.length" class="section" style="padding-bottom:0">
+      <div class="container">
+        <div style="margin-bottom:18px">
+          <span class="eyebrow" style="color:#1d2088">CAMPAIGN STORIES</span>
+          <h2 style="margin:4px 0 0;font-size:clamp(22px,3vw,28px);color:#141936">
+            {{ locale === 'th' ? 'เรื่องราวโปรโมชั่นและคอลเลกชันคัดสรรพิเศษ' : 'Featured Promotion Stories' }}
+          </h2>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px">
+          <NuxtLink
+            v-for="ps in promoStories"
+            :key="ps.id || ps.slug"
+            :to="localePath(`/pages/${ps.slug}`)"
+            style="display:flex;flex-direction:column;border-radius:16px;overflow:hidden;border:1px solid #e4e8f3;background:#ffffff;text-decoration:none;color:inherit;box-shadow:0 10px 26px rgba(18,25,60,0.06)"
+          >
+            <img :src="ps.banner || '/images/op/hero-gold-stones.jpg'" :alt="ps.titleTh" style="width:100%;height:185px;object-fit:cover" loading="lazy" />
+            <div style="padding:18px;display:flex;flex-direction:column;gap:6px;flex:1">
+              <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;color:#e11d48">{{ ps.heroEyebrow || 'PROMOTION STORY' }}</span>
+              <h3 style="margin:0;font-size:18px;color:#141936">{{ locale === 'en' && ps.titleEn ? ps.titleEn : ps.titleTh || ps.title }}</h3>
+              <p style="margin:0;font-size:13.5px;color:#64748b;line-height:1.55">{{ ps.summary }}</p>
+              <span style="margin-top:auto;padding-top:8px;font-size:13.5px;font-weight:600;color:#1d2088">
+                {{ locale === 'th' ? 'อ่านเรื่องโปรโมชั่นและช้อปสินค้าที่เชื่อมไว้ →' : 'Read Campaign Story & Shop →' }}
+              </span>
+            </div>
+          </NuxtLink>
+        </div>
+      </div>
+    </section>
+
     <section class="section">
       <div class="container">
         <div class="op-promos-banners">

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const auth = useAuth()
+const officeAuth = useOfficeAuth()
 const route = useRoute()
 const router = useRouter()
 const toast = useToast()
@@ -42,39 +42,113 @@ const navSections = computed(() => {
   const pendingOrders = Number(shellStats.value?.totals?.pendingOrders || 0)
   const eventCount = Number(shellStats.value?.totals?.events || 0)
   const openChats = Number(shellStats.value?.totals?.openChats || 0)
+  const warrantyCount =
+    Number(shellStats.value?.totals?.openRepairs || 0) +
+    Number(shellStats.value?.totals?.pendingWarranties || 0)
+  const role = officeAuth.role.value || 'ceo'
+  const isDealer = role === 'dealer'
+  const can = (p: string | string[]) => officeAuth.hasPermission(p)
 
   const raw = [
     {
       group: 'WORKSPACE & AI',
-      groupTh: 'ภาพรวม & ระบบอัจฉริยะ',
+      groupTh: isDealer ? 'พอร์ทัลตัวแทนจำหน่าย' : 'ภาพรวม & ระบบอัจฉริยะ',
       items: [
-        { to: '/office', label: 'แดชบอร์ดภาพรวม', sub: 'KPI · กราฟ · AI สด', icon: 'dash', exact: true, tone: 'violet' },
-        { to: '/office/calendar', label: 'ปฏิทินงาน & แคมเปญ', sub: 'เดือน · สัปดาห์ · วัน · กำหนดการ', icon: 'cal', tone: 'blue', badge: eventCount || undefined },
-        { to: '/office/ai', label: 'AI Workforce & เชื่อมต่อ', sub: 'OpenRouter · Gemini · Hermes', icon: 'bot', tone: 'pink', badge: 'LIVE', badgeTone: 'mint' },
-        { to: '/office/reports', label: 'รายงานผู้บริหาร', sub: 'วิเคราะห์ยอดขาย · Export CSV', icon: 'report', tone: 'mint' }
-      ]
+        can('dashboard') && { to: '/office', label: 'แดชบอร์ดภาพรวม', sub: 'KPI · กราฟ · AI สด', icon: 'dash', exact: true, tone: 'violet' },
+        can('calendar') && { to: '/office/calendar', label: 'ปฏิทินงาน & แคมเปญ', sub: 'เดือน · สัปดาห์ · วัน · กำหนดการ', icon: 'cal', tone: 'blue', badge: eventCount || undefined },
+        can('ai') && { to: '/office/ai', label: 'AI Workforce & เชื่อมต่อ', sub: 'OpenRouter · Gemini · Hermes', icon: 'bot', tone: 'pink', badge: 'LIVE', badgeTone: 'mint' },
+        can('reports') && { to: '/office/reports', label: 'รายงานผู้บริหาร', sub: 'วิเคราะห์ยอดขาย · Export CSV', icon: 'report', tone: 'mint' }
+      ].filter(Boolean) as any[]
     },
     {
-      group: 'COMMERCE & STUDIO',
-      groupTh: 'สินค้า · การขาย · สตูดิโอภาพ',
+      group: 'COMMERCE & WAREHOUSE',
+      groupTh: isDealer ? 'ราคาตัวแทน · คลังตัวเอง · รับหน้าร้าน' : 'คลัง 5 ช่องทาง · สินค้า · การขาย',
       items: [
-        { to: '/office/products', label: 'สินค้า & ปรับภาพอัตโนมัติ', sub: 'นาฬิกา · Shopee Sync · SEO', icon: 'watch', tone: 'violet' },
-        { to: '/office/orders', label: 'คำสั่งซื้อ & จัดส่ง', sub: 'สถานะบิล · เลขพัสดุ · แชท', icon: 'truck', tone: 'amber', badge: (pendingOrders + openChats) || undefined, badgeTone: 'amber' },
-        { to: '/office/promotions', label: 'โปรโมชั่น · คูปอง · สาขา', sub: 'แคมเปญหน้าแรก · โค้ดลด', icon: 'tag', tone: 'pink' },
-        { to: '/office/brands', label: 'แบรนด์ & หมวดหมู่', sub: 'Olym Pianus · Ogival · ซีรีส์', icon: 'proj', tone: 'blue' },
-        { to: '/office/customers', label: 'สมาชิก & ลูกค้า (CRM)', sub: 'แต้มสะสม OP Point · ประวัติซื้อ', icon: 'client', tone: 'mint' }
-      ]
+        can(['warehouse', 'warehouse_5ch', 'warehouse_dealer', 'dealer_portal']) && {
+          to: '/office/warehouse',
+          label: isDealer ? 'พอร์ทัล & คลังสินค้าตัวแทน' : 'คลังสินค้า 5 ช่องทาง',
+          sub: isDealer ? 'ราคาตัวแทน · สต็อกร้าน · รับหน้าร้าน' : 'Web · Shopee · Lazada · TikTok · ตัวแทน',
+          icon: 'warehouse',
+          tone: 'mint',
+          badge: isDealer ? 'DEALER' : '5CH',
+          badgeTone: 'mint'
+        },
+        can(['products_view', 'products_retail', 'products_stock', 'products_dealer']) && {
+          to: '/office/products',
+          label: isDealer ? 'แคตตาล็อกราคาตัวแทน' : 'สินค้า & ปรับภาพอัตโนมัติ',
+          sub: isDealer ? 'ราคาส่งตัวแทน · สเปกนาฬิกา' : 'ราคาขาย · Shopee Sync · SEO',
+          icon: 'watch',
+          tone: 'violet'
+        },
+        can(['orders', 'orders_fulfill', 'orders_pickup']) && {
+          to: '/office/orders',
+          label: isDealer ? 'การรับสินค้าหน้าร้าน' : 'คำสั่งซื้อ & การส่งสินค้า',
+          sub: isDealer ? 'Click & Collect ประจำสาขา/ร้าน' : 'จัดส่งสินค้า · เลขพัสดุ · แชท',
+          icon: 'truck',
+          tone: 'amber',
+          badge: !isDealer && (pendingOrders + openChats) ? (pendingOrders + openChats) : undefined,
+          badgeTone: 'amber'
+        },
+        can(['promotions', 'promotions_view']) && {
+          to: '/office/promotions',
+          label: isDealer ? 'โปรโมชั่น & แคมเปญแบรนด์' : 'โปรโมชั่น · คูปอง · สาขา',
+          sub: isDealer ? 'สิทธิพิเศษและสื่อส่งเสริมการขาย' : 'แคมเปญหน้าแรก · โค้ดลด',
+          icon: 'tag',
+          tone: 'pink'
+        },
+        can('warranty') && {
+          to: '/office/warranty',
+          label: 'แจ้งซ่อม & ลงทะเบียนประกัน',
+          sub: 'E-Warranty · งานซ่อมออนไลน์',
+          icon: 'wrench',
+          tone: 'blue',
+          badge: warrantyCount || undefined,
+          badgeTone: 'amber'
+        },
+        can('customers') && {
+          to: '/office/customers',
+          label: 'ข้อมูลสมาชิกและลูกค้า',
+          sub: 'สมาชิกหน้าเว็บ · แต้ม OP Point',
+          icon: 'client',
+          tone: 'mint'
+        },
+        can('brands') && {
+          to: '/office/brands',
+          label: 'แบรนด์ & หมวดหมู่',
+          sub: 'Olym Pianus · Ogival · ซีรีส์',
+          icon: 'proj',
+          tone: 'blue'
+        }
+      ].filter(Boolean) as any[]
     },
     {
-      group: 'CMS & GOVERNANCE',
-      groupTh: 'เนื้อหาเว็บ · ทีมงาน · ตั้งค่า',
+      group: 'TREE CMS & GOVERNANCE',
+      groupTh: 'โครงสร้างเว็บ Tree · เจ้าหน้าที่ · ตั้งค่า',
       items: [
-        { to: '/office/pages', label: 'จัดการหน้าเว็บไซต์ (CMS)', sub: 'PDPA · รับประกัน · บทความ', icon: 'doc', tone: 'blue' },
-        { to: '/office/staff', label: 'ทีมงาน & สิทธิ์ (RBAC)', sub: 'CEO · Admin · Staff', icon: 'team', tone: 'violet' },
-        { to: '/office/settings', label: 'ตั้งค่าระบบ & ธีมสี', sub: 'องค์กร · AI Key · ฐานข้อมูล', icon: 'gear', tone: 'amber' }
-      ]
+        can('pages') && {
+          to: '/office/pages',
+          label: 'เนื้อหาเว็บ (Tree Menu CMS)',
+          sub: 'หน้ากั้นแบรนด์ · Story ซีรีส์ · AI',
+          icon: 'tree',
+          tone: 'blue'
+        },
+        can('staff_manage') && {
+          to: '/office/staff',
+          label: 'เจ้าหน้าที่ & ตัวแทนจำหน่าย',
+          sub: '5 บทบาท: CEO · IT · Mkt · คลัง · ตัวแทน',
+          icon: 'team',
+          tone: 'violet'
+        },
+        can('settings_manage') && {
+          to: '/office/settings',
+          label: 'ตั้งค่าระบบ & ธีมสี',
+          sub: 'องค์กร · AI Key · ฐานข้อมูล',
+          icon: 'gear',
+          tone: 'amber'
+        }
+      ].filter(Boolean) as any[]
     }
-  ]
+  ].filter((sec) => sec.items.length > 0)
 
   const q = menuFilter.value.trim().toLowerCase()
   if (!q) return raw
@@ -190,7 +264,7 @@ async function copyQuickAi() {
 }
 
 async function signOut() {
-  await auth.logout()
+  await officeAuth.logout()
   router.push('/office/login')
 }
 
@@ -292,14 +366,14 @@ onMounted(() => {
           <span v-if="!sidebarCollapsed">ดูหน้าร้าน opwatch.co.th ↗</span>
         </NuxtLink>
         <div class="mng-user-row">
-          <div class="mng-av">
-            {{ (auth.customer.value?.name || auth.customer.value?.email || 'AD').slice(0, 2).toUpperCase() }}
+          <div class="mng-av" :style="{ background: officeAuth.officer.value?.roleBadgeColor || '#6c5ce7' }">
+            {{ (officeAuth.officer.value?.name || officeAuth.officer.value?.email || 'OP').slice(0, 2).toUpperCase() }}
           </div>
           <div v-if="!sidebarCollapsed" class="mng-user-info">
-            <strong>{{ auth.customer.value?.name || 'ผู้ดูแลระบบ' }}</strong>
-            <small>{{ (auth.customer.value?.role || 'admin').toUpperCase() }} · {{ auth.customer.value?.email }}</small>
+            <strong>{{ officeAuth.officer.value?.name || 'เจ้าหน้าที่ระบบ' }}</strong>
+            <small>{{ officeAuth.officer.value?.roleLabelTh || officeAuth.officer.value?.role }} · {{ officeAuth.officer.value?.email }}</small>
           </div>
-          <button type="button" class="mng-icon-btn" title="ออกจากระบบ" @click="signOut">
+          <button type="button" class="mng-icon-btn" title="ออกจากระบบเจ้าหน้าที่/ตัวแทน" @click="signOut">
             <OfficeMngIcon name="logout" :size="16" />
           </button>
         </div>
@@ -320,7 +394,7 @@ onMounted(() => {
             <h1>{{ currentMeta.label }}</h1>
             <span class="mng-live-pill">
               <i />
-              {{ shellStats?.driver === 'mysql' ? 'MariaDB Live' : 'Database Ready' }}
+              {{ officeAuth.officer.value?.roleLabelTh || (shellStats?.driver === 'mysql' ? 'MariaDB Live' : 'Database Ready') }}
             </span>
           </div>
         </div>

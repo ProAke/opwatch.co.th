@@ -93,8 +93,11 @@ function scrollToTop() {
           <NuxtLink :to="localePath('/promotions')" class="op-ftr__contact-btn" style="margin-right:8px;margin-bottom:8px">
             {{ locale === 'th' ? '🎁 รวมโปรโมชั่น & เก็บคูปองส่วนลด' : '🎁 Promotions & Vouchers' }}
           </NuxtLink>
-          <NuxtLink :to="localePath('/services')" class="op-ftr__contact-btn" style="margin-bottom:8px">
+          <NuxtLink :to="localePath('/services')" class="op-ftr__contact-btn" style="margin-right:8px;margin-bottom:8px">
             {{ locale === 'th' ? '✦ ห่อของขวัญ · เช็คสาขาใกล้บ้าน · ประกันแท้ 2 ปี' : '✦ Gift Wrap · Branches · 2-Yr Warranty' }}
+          </NuxtLink>
+          <NuxtLink :to="localePath('/warranty')" class="op-ftr__contact-btn" style="margin-bottom:8px">
+            {{ locale === 'th' ? '🛡 ลงทะเบียนรับประกัน & แจ้งซ่อมออนไลน์' : '🛡 Online Warranty & Watch Repair' }}
           </NuxtLink>
         </div>
 
@@ -106,11 +109,11 @@ function scrollToTop() {
           <NuxtLink :to="localePath('/brands/olympianus')">Olym Pianus</NuxtLink>
           <NuxtLink :to="localePath('/brands/olympia-star')">Olympia Star</NuxtLink>
           <NuxtLink :to="localePath('/brands/ogival')">Ogival</NuxtLink>
+          <NuxtLink :to="localePath('/warranty')">{{ locale === 'th' ? 'ลงทะเบียนประกัน & แจ้งซ่อม' : 'Warranty & Repair' }}</NuxtLink>
           <NuxtLink :to="localePath('/services')">{{ locale === 'th' ? 'บริการพิเศษ & บัตรของขวัญ' : 'Services & Gift Cards' }}</NuxtLink>
           <NuxtLink :to="localePath('/branches')">{{ locale === 'th' ? 'สาขาใกล้บ้าน' : 'Branches' }}</NuxtLink>
           <NuxtLink :to="localePath('/track')">{{ locale === 'th' ? 'เช็คสถานะพัสดุ' : 'Track Order' }}</NuxtLink>
           <NuxtLink :to="localePath('/contact')">{{ locale === 'th' ? 'ติดต่อเรา' : 'Contact' }}</NuxtLink>
-          <NuxtLink :to="localePath('/office')">{{ locale === 'th' ? 'ระบบหลังบ้าน ERP' : 'ERP Office' }}</NuxtLink>
         </nav>
 
         <!-- Legal & Policy Links (PDPA, Cookie, Terms, Return, Warranty) -->

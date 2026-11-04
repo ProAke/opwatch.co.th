@@ -800,3 +800,811 @@ export function defaultAiRuns() {
   ]
 }
 
+export function defaultOfficers(passwordHash: string, adminEmail = 'admin@opwatch.co.th') {
+  const cleanAdminEmail = String(adminEmail || 'admin@opwatch.co.th').trim().toLowerCase()
+  const list: Record<string, any>[] = [
+    {
+      code: 'OFC-001',
+      name: 'ผู้บริหารสูงสุด · บริษัท อินเตอร์ไทมส์ จำกัด',
+      email: cleanAdminEmail,
+      passwordHash,
+      phone: '02 251 5777',
+      role: 'ceo',
+      department: 'คณะผู้บริหาร (Executive Board)',
+      position: 'Chief Executive Officer (CEO)',
+      permissions: ['*'],
+      status: 'active'
+    },
+    {
+      code: 'OFC-002',
+      name: 'ธนภัทร ศรีสุวรรณ (IT. Admin)',
+      email: 'it@opwatch.co.th',
+      passwordHash,
+      phone: '02 251 5777 ต่อ 108',
+      role: 'it_admin',
+      department: 'เทคโนโลยีสารสนเทศ (IT & Digital)',
+      position: 'Head of IT & System Administrator',
+      permissions: ['*'],
+      status: 'active'
+    },
+    {
+      code: 'OFC-003',
+      name: 'พิมพ์ชนก วัฒนากุล (Marketing / Sales)',
+      email: 'marketing@opwatch.co.th',
+      passwordHash,
+      phone: '02 251 5777 ต่อ 204',
+      role: 'marketing_sales',
+      department: 'การตลาดและฝ่ายขายออนไลน์',
+      position: 'Digital Marketing & E-Commerce Lead',
+      permissions: [
+        'dashboard', 'calendar', 'ai', 'orders', 'orders_fulfill',
+        'products_view', 'products_retail', 'products_edit',
+        'promotions', 'promotions_view', 'customers', 'pages', 'warranty', 'chats', 'reports'
+      ],
+      status: 'active'
+    },
+    {
+      code: 'OFC-004',
+      name: 'กิตติพงศ์ วงศ์สวัสดิ์ (คลังสินค้า 5 ช่องทาง)',
+      email: 'warehouse@opwatch.co.th',
+      passwordHash,
+      phone: '02 251 5777 ต่อ 305',
+      role: 'warehouse',
+      department: 'คลังสินค้ากลางและจัดส่ง (Omnichannel Warehouse)',
+      position: 'Warehouse & Marketplace Stock Manager',
+      permissions: [
+        'dashboard', 'calendar', 'warehouse', 'warehouse_5ch',
+        'products_view', 'products_stock', 'orders', 'orders_fulfill', 'warranty'
+      ],
+      status: 'active'
+    },
+    {
+      code: 'DLR-001',
+      name: 'สยามไทม์ แกลเลอรี่ · ตัวแทนจำหน่ายทางการ',
+      email: 'dealer@opwatch.co.th',
+      passwordHash,
+      phone: '081 899 2455',
+      role: 'dealer',
+      department: 'เครือข่ายตัวแทนจำหน่าย (Authorized Dealer)',
+      position: 'Platinum Authorized Partner',
+      dealerCode: 'DLR-BKK-01',
+      dealerName: 'สยามไทม์ แกลเลอรี่ (Siam Time Gallery)',
+      dealerTier: 'Platinum',
+      discountPct: 35,
+      branchSlug: 'central-chidlom-watch-galleria',
+      permissions: [
+        'dealer_portal', 'warehouse', 'warehouse_dealer',
+        'products_view', 'products_dealer', 'promotions_view', 'orders_pickup', 'warranty'
+      ],
+      status: 'active'
+    },
+    {
+      code: 'DLR-002',
+      name: 'ลานนา วอทช์ บูติก เชียงใหม่ · ตัวแทนจำหน่าย',
+      email: 'dealer-cnx@opwatch.co.th',
+      passwordHash,
+      phone: '089 755 8899',
+      role: 'dealer',
+      department: 'เครือข่ายตัวแทนจำหน่ายภาคเหนือ',
+      position: 'Gold Authorized Partner',
+      dealerCode: 'DLR-CNX-02',
+      dealerName: 'ลานนา วอทช์ บูติก เชียงใหม่',
+      dealerTier: 'Gold',
+      discountPct: 30,
+      branchSlug: 'central-chiangmai-counter',
+      permissions: [
+        'dealer_portal', 'warehouse', 'warehouse_dealer',
+        'products_view', 'products_dealer', 'promotions_view', 'orders_pickup', 'warranty'
+      ],
+      status: 'active'
+    }
+  ]
+
+  // If cleanAdminEmail isn't ceo@opwatch.co.th, also create ceo@opwatch.co.th alias for clarity
+  if (cleanAdminEmail !== 'ceo@opwatch.co.th') {
+    list.splice(1, 0, {
+      code: 'OFC-001B',
+      name: 'วรเมธ อินเตอร์ไทมส์ (CEO)',
+      email: 'ceo@opwatch.co.th',
+      passwordHash,
+      phone: '02 251 5777',
+      role: 'ceo',
+      department: 'คณะผู้บริหาร (Executive Board)',
+      position: 'Managing Director',
+      permissions: ['*'],
+      status: 'active'
+    })
+  }
+  return list
+}
+
+export function defaultWarranties() {
+  return [
+    {
+      warrantyNo: 'WRT-20261101-A91',
+      customerName: 'คุณณัฐพล รัตนโชติ',
+      phone: '089-412-8899',
+      email: 'nattapol.r@example.com',
+      lineId: 'nattapol.watch',
+      brandSlug: 'olympianus',
+      productSku: 'OP-899832AGS',
+      productName: 'Olym Pianus Sportmaster Automatic Sapphire',
+      serialNo: 'OP26-899832-00418',
+      purchaseDate: '2026-10-25',
+      purchaseChannel: 'website',
+      dealerOrBranch: 'สั่งซื้อผ่านเว็บไซต์ opwatch.co.th',
+      warrantyUntil: '2028-10-25',
+      status: 'verified',
+      adminNote: 'ตรวจสอบหมายเลขเครื่องและใบเสร็จเรียบร้อย รับประกันศูนย์ไทย 2 ปีเต็ม'
+    },
+    {
+      warrantyNo: 'WRT-20261102-B42',
+      customerName: 'คุณอภิญญา เลิศสกุล',
+      phone: '081-775-3320',
+      email: 'apinya.l@example.com',
+      lineId: 'apinya_l',
+      brandSlug: 'ogival',
+      productSku: 'OG-358-61AGR',
+      productName: 'Ogival Lucky Fish Skeleton Swiss Automatic',
+      serialNo: 'OG26-35861-00921',
+      purchaseDate: '2026-10-29',
+      purchaseChannel: 'dealer',
+      dealerOrBranch: 'สยามไทม์ แกลเลอรี่ (DLR-BKK-01)',
+      registeredByDealer: 'DLR-BKK-01',
+      warrantyUntil: '2028-10-29',
+      status: 'verified',
+      adminNote: 'ตัวแทนจำหน่าย DLR-BKK-01 ลงทะเบียนหน้าเคาน์เตอร์ให้ลูกค้า'
+    },
+    {
+      warrantyNo: 'WRT-20261103-C77',
+      customerName: 'คุณศุภชัย ทองดี',
+      phone: '092-601-4411',
+      email: 'supachai.t@example.com',
+      lineId: 'supachai92',
+      brandSlug: 'olympia-star',
+      productSku: 'OPA-58012MK',
+      productName: 'Olympia Star Swiss Quartz Ultra-Slim Sapphire',
+      serialNo: 'OPA26-58012-00155',
+      purchaseDate: '2026-11-02',
+      purchaseChannel: 'shopee',
+      dealerOrBranch: 'OPWatch Official Shopee Mall',
+      warrantyUntil: '2028-11-02',
+      status: 'pending',
+      adminNote: 'รอเจ้าหน้าที่ตรวจสอบรูปใบเสร็จ Shopee Mall'
+    }
+  ]
+}
+
+export function defaultRepairs() {
+  return [
+    {
+      ticketNo: 'REP-20261101-701',
+      warrantyNo: 'WRT-20261101-A91',
+      customerName: 'คุณกิตติศักดิ์ เจริญผล',
+      phone: '086-515-9090',
+      email: 'kittisak.j@example.com',
+      lineId: 'kittisak_j',
+      brandSlug: 'olympianus',
+      productSku: 'OP-89322AGSK',
+      productName: 'Olym Pianus Gentleman Automatic',
+      serialNo: 'OP25-89322-01190',
+      serviceType: 'movement_overhaul',
+      symptom: 'นาฬิกาเดินเร็วกว่าปกติประมาณวันละ 25 วินาที ต้องการตรวจเช็กกำลังลานและล้างเครื่องมาตรฐานศูนย์',
+      images: ['/images/op/portrait-8909amk.jpg'],
+      dropoffMethod: 'head_office',
+      branchSlug: 'inter-times-head-office',
+      estimatedCost: 0,
+      status: 'repairing',
+      technicianNote: 'อยู่ในระยะรับประกันศูนย์ 2 ปี ช่างเทคนิคกำลังปรับตั้ง Timegrapher และทดสอบกันน้ำ 5 ATM ฟรีไม่มีค่าใช้จ่าย'
+    },
+    {
+      ticketNo: 'REP-20261103-702',
+      warrantyNo: '',
+      customerName: 'คุณมนัสนันท์ วงศ์ไพศาล',
+      phone: '084-228-7112',
+      email: 'manassanan@example.com',
+      lineId: 'manas_watch',
+      brandSlug: 'olympia-star',
+      productSku: 'OPA-28039DLS',
+      productName: 'Olympia Star Lady Jewelry Swiss Quartz',
+      serialNo: 'OPA23-28039-00612',
+      serviceType: 'battery_seal',
+      symptom: 'ถ่านหมดและต้องการเปลี่ยนซีลยางกันน้ำพร้อมทำความสะอาดสายสเตนเลสด้วยคลื่นอัลตราโซนิก',
+      images: ['/images/op/watch-82672-lady.png'],
+      dropoffMethod: 'branch_dropoff',
+      branchSlug: 'siam-paragon-watch-galleria',
+      estimatedCost: 450,
+      status: 'received',
+      submittedByDealer: 'DLR-BKK-01',
+      technicianNote: 'รับเรือนเวลาจากเคาน์เตอร์สยามพารากอน เตรียมส่งเข้าห้องแล็บสำนักงานใหญ่ถนนเพชรบุรีตัดใหม่'
+    }
+  ]
+}
+
+export function defaultTreePages(allProducts: Record<string, any>[]) {
+  const byBrand = (b: string, limit = 6, keyword = '') => {
+    const brandItems = allProducts.filter((p) => p.brand === b && p.status === 'active')
+    if (keyword) {
+      const kw = keyword.toLowerCase()
+      const matched = brandItems.filter((p) =>
+        `${p.name || ''} ${p.nameTh || ''} ${p.sku || ''} ${p.shortDescription || ''}`.toLowerCase().includes(kw)
+      )
+      if (matched.length >= 2) return matched.slice(0, limit).map((p) => Number(p.id))
+    }
+    return brandItems.slice(0, limit).map((p) => Number(p.id))
+  }
+
+  // Note: `parentSlug` is resolved to numeric `parentId` during seeding in `seed.ts`
+  return [
+    // ==================== ROOT 1: หน้าหลักเว็บไซต์ & หน้าหลักของระบบ ====================
+    {
+      slug: 'site-home',
+      parentSlug: null,
+      pageType: 'system_page',
+      routePath: '/',
+      category: 'main_menu',
+      heroEyebrow: 'OFFICIAL SOLE DISTRIBUTOR THAILAND · INTER TIMES CO., LTD.',
+      title: 'หน้าแรกเว็บไซต์ (Home Boutique)',
+      titleTh: 'เรือนเวลาแท้ระดับตำนาน ประจำประเทศไทย',
+      titleEn: 'Official Swiss & Japanese Horology Boutique in Thailand',
+      summary: 'ศูนย์รวมนาฬิกา Olym Pianus, Olympia Star และ Ogival ของแท้ 100% กระจกแซฟไฟร์แท้ รับประกันศูนย์ไทย 2 ปี โดย บริษัท อินเตอร์ไทมส์ จำกัด',
+      summaryEn: 'Official Thailand flagship store for Olym Pianus, Olympia Star, and Ogival timepieces with 2-year warranty.',
+      contentTh: `<p>คัดสรรเรือนเวลาคุณภาพสูงโดย <strong>บริษัท อินเตอร์ไทมส์ จำกัด</strong> ตัวแทนจำหน่ายอย่างเป็นทางการแต่เพียงผู้เดียวในประเทศไทย ทุกเรือนมาพร้อมกระจกแซฟไฟร์แท้ กันรอยขีดข่วน และบริการดูแลหลังการขายโดยช่างผู้ชำนาญการประจำศูนย์เพชรบุรีตัดใหม่</p>`,
+      contentEn: `<p>Curated official timepieces by <strong>Inter Times Co., Ltd.</strong>, sole authorized distributor in Thailand.</p>`,
+      banner: '/images/op/hero-diver-dark.jpg',
+      styleConfig: {
+        fontFamily: 'Prompt',
+        headingColor: '#ffffff',
+        textColor: '#1e2438',
+        accentColor: '#c9a84c',
+        bgColor: '#0c1228',
+        overlayOpacity: 0.55,
+        headingSize: 'xl'
+      },
+      productIds: [...byBrand('olympianus', 3), ...byBrand('olympia-star', 2), ...byBrand('ogival', 3)],
+      ctaText: 'เลือกชมคอลเลกชันทั้งหมด',
+      ctaUrl: '/products',
+      seoTitle: 'OPWatch.co.th | นาฬิกา Olym Pianus, Olympia Star, Ogival ศูนย์ไทยแท้ 100%',
+      seoDescription: 'ช้อปนาฬิกาข้อมือ Olym Pianus, Olympia Star และ Ogival ของแท้ประกันศูนย์ไทย 2 ปี โดย บริษัท อินเตอร์ไทมส์ จำกัด ส่งฟรีทั่วไทย',
+      seoKeywords: 'Olym Pianus, Olympia Star, Ogival, นาฬิกาข้อมือของแท้, OPWatch, อินเตอร์ไทมส์',
+      status: 'published',
+      sortOrder: 10
+    },
+    {
+      slug: 'site-about',
+      parentSlug: 'site-home',
+      pageType: 'system_page',
+      routePath: '/about',
+      category: 'main_menu',
+      heroEyebrow: 'HERITAGE & CRAFTSMANSHIP',
+      title: 'เกี่ยวกับเรา (บริษัท อินเตอร์ไทมส์ จำกัด)',
+      titleTh: 'กว่าทศวรรษแห่งความไว้วางใจ ผู้นำเข้าเรือนเวลาคุณภาพสู่เมืองไทย',
+      titleEn: 'About Inter Times Co., Ltd. — Official Watch Distributor Thailand',
+      summary: 'เรื่องราวของ บริษัท อินเตอร์ไทมส์ จำกัด ผู้แทนจำหน่ายนาฬิกา Olym Pianus, Olympia Star และ Ogival อย่างเป็นทางการในประเทศไทย',
+      contentTh: `<h2>มาตรฐานเรือนเวลาแท้ที่คนไทยไว้วางใจ</h2><p><strong>บริษัท อินเตอร์ไทมส์ จำกัด</strong> มุ่งมั่นคัดสรรนาฬิกาที่เปี่ยมด้วยคุณค่าทางวิศวกรรมและดีไซน์เหนือกาลเวลา พร้อมศูนย์บริการมาตรฐานสากล ณ ถนนเพชรบุรีตัดใหม่ กรุงเทพมหานคร และเคาน์เตอร์ห้างสรรพสินค้าชั้นนำทั่วประเทศ</p>`,
+      banner: '/images/op/hero-ceramic-dark.jpg',
+      styleConfig: { fontFamily: 'Prompt', headingColor: '#ffffff', textColor: '#23264d', accentColor: '#1d2088', bgColor: '#141a38', overlayOpacity: 0.58, headingSize: 'lg' },
+      productIds: byBrand('olympianus', 4),
+      seoTitle: 'เกี่ยวกับเรา | บริษัท อินเตอร์ไทมส์ จำกัด · OPWatch Thailand',
+      seoDescription: 'รู้จัก บริษัท อินเตอร์ไทมส์ จำกัด ผู้นำเข้าและจัดจำหน่ายนาฬิกา Olym Pianus, Olympia Star และ Ogival อย่างเป็นทางการในประเทศไทย',
+      seoKeywords: 'บริษัท อินเตอร์ไทมส์ จำกัด, Inter Times, ตัวแทนจำหน่าย Olym Pianus, Ogival ประเทศไทย',
+      status: 'published',
+      sortOrder: 11
+    },
+    {
+      slug: 'site-services',
+      parentSlug: 'site-home',
+      pageType: 'system_page',
+      routePath: '/services',
+      category: 'main_menu',
+      heroEyebrow: 'AUTHORIZED SERVICE CENTER',
+      title: 'บริการหลังการขาย & ศูนย์ซ่อมมาตรฐาน',
+      titleTh: 'ศูนย์บริการครบวงจร ดูแลเรือนเวลาคู่ใจโดยช่างผู้เชี่ยวชาญ',
+      titleEn: 'Official Horology Service & Care Center',
+      summary: 'บริการล้างเครื่อง เปลี่ยนถ่านสวิส ซีลยางกันน้ำ ตัดสาย และตรวจเช็กความเที่ยงตรงด้วยเครื่องมือมาตรฐานสวิส',
+      contentTh: `<h2>ดูแลทุกรายละเอียดโดยทีมช่างอินเตอร์ไทมส์</h2><p>เรือนเวลาทุกเรือนจาก OPWatch ได้รับสิทธิ์ตรวจเช็กสภาพกลไก ทดสอบแรงดันน้ำ และบริการทำความสะอาดตัวเรือนด้วยเครื่อง Ultrasonic ตลอดอายุการรับประกัน</p>`,
+      banner: '/images/op/portrait-8909amk.jpg',
+      styleConfig: { fontFamily: 'Prompt', headingColor: '#ffffff', textColor: '#23264d', accentColor: '#1d2088', bgColor: '#101836', overlayOpacity: 0.6, headingSize: 'lg' },
+      productIds: [],
+      ctaText: 'ลงทะเบียนรับประกัน / แจ้งซ่อมออนไลน์',
+      ctaUrl: '/warranty',
+      seoTitle: 'ศูนย์ซ่อมนาฬิกาและบริการหลังการขาย | OPWatch Thailand',
+      seoDescription: 'ศูนย์บริการซ่อมบำรุง ล้างเครื่อง เปลี่ยนถ่าน และตรวจสอบกันน้ำมาตรฐานศูนย์ไทย โดย บริษัท อินเตอร์ไทมส์ จำกัด',
+      seoKeywords: 'ศูนย์ซ่อม Olym Pianus, ซ่อมนาฬิกา Ogival, ประกันศูนย์อินเตอร์ไทมส์',
+      status: 'published',
+      sortOrder: 12
+    },
+    {
+      slug: 'site-warranty',
+      parentSlug: 'site-home',
+      pageType: 'system_page',
+      routePath: '/warranty',
+      category: 'main_menu',
+      heroEyebrow: 'ONLINE E-WARRANTY & REPAIR PORTAL',
+      title: 'ระบบลงทะเบียนรับประกันและแจ้งซ่อมออนไลน์',
+      titleTh: 'ลงทะเบียนรับประกันศูนย์ไทย 2 ปี & แจ้งซ่อมเรือนเวลาออนไลน์',
+      titleEn: 'Online E-Warranty Registration & Watch Repair Submission',
+      summary: 'บันทึกข้อมูลรับประกันเข้าสู่คลังข้อมูลศูนย์ใหญ่อินเตอร์ไทมส์ทันที พร้อมติดตามสถานะงานซ่อมแบบเรียลไทม์ตลอด 24 ชั่วโมง',
+      contentTh: `<p>ไม่ว่าท่านจะซื้อนาฬิกาผ่านเว็บไซต์ <strong>opwatch.co.th</strong>, Shopee, Lazada, TikTok Shop หรือร้านตัวแทนจำหน่ายทั่วประเทศ สามารถกรอกลงทะเบียนรับประกันออนไลน์และแจ้งส่งซ่อมได้ในหน้านี้ทันที</p>`,
+      banner: '/images/op/banner-899832ags.jpg',
+      styleConfig: { fontFamily: 'Prompt', headingColor: '#ffffff', textColor: '#23264d', accentColor: '#c9a84c', bgColor: '#13193b', overlayOpacity: 0.62, headingSize: 'lg' },
+      productIds: [],
+      seoTitle: 'ลงทะเบียนรับประกันออนไลน์ & แจ้งซ่อมนาฬิกา | OPWatch Thailand',
+      seoDescription: 'ลงทะเบียนใบรับประกันอีเล็กทรอนิกส์ (E-Warranty) และส่งคำร้องแจ้งซ่อมนาฬิกา Olym Pianus, Olympia Star, Ogival ออนไลน์',
+      seoKeywords: 'ลงทะเบียนรับประกัน Olym Pianus, แจ้งซ่อมนาฬิกาออนไลน์, E-Warranty OPWatch, เช็กสถานะซ่อมนาฬิกา',
+      status: 'published',
+      sortOrder: 13
+    },
+    {
+      slug: 'site-branches',
+      parentSlug: 'site-home',
+      pageType: 'system_page',
+      routePath: '/branches',
+      category: 'main_menu',
+      heroEyebrow: 'BOUTIQUES & COUNTERS THAILAND',
+      title: 'สาขาและเคาน์เตอร์ห้างสรรพสินค้า',
+      titleTh: 'สาขาและจุดบริการรับสินค้าหน้าร้าน (Click & Collect)',
+      titleEn: 'Authorized Department Store Counters & Boutiques',
+      summary: 'พบเคาน์เตอร์นาฬิกา Olym Pianus, Olympia Star และ Ogival ในห้างสรรพสินค้าชั้นนำ พร้อมบริการรับสินค้าหน้าร้านและตัดสายฟรี',
+      contentTh: `<p>ลูกค้าสามารถเลือกบริการรับสินค้าที่สาขาใกล้บ้าน (Click & Collect) เพื่อรับบริการปรับขนาดสายข้อมือให้พอดีโดยผู้เชี่ยวชาญประจำเคาน์เตอร์</p>`,
+      banner: '/images/op/lifestyle-men.jpg',
+      styleConfig: { fontFamily: 'Prompt', headingColor: '#ffffff', textColor: '#23264d', accentColor: '#1d2088', bgColor: '#171d42', overlayOpacity: 0.55, headingSize: 'lg' },
+      productIds: [],
+      seoTitle: 'สาขาและเคาน์เตอร์ห้างสรรพสินค้า | OPWatch Thailand',
+      seoDescription: 'ค้นหาสาขาและเคาน์เตอร์นาฬิกา Olym Pianus, Olympia Star, Ogival ในเซ็นทรัล สยามพารากอน และสำนักงานใหญ่อินเตอร์ไทมส์',
+      seoKeywords: 'สาขา Olym Pianus, เคาน์เตอร์ Ogival, รับสินค้าหน้าร้าน OPWatch',
+      status: 'published',
+      sortOrder: 14
+    },
+    {
+      slug: 'site-contact',
+      parentSlug: 'site-home',
+      pageType: 'system_page',
+      routePath: '/contact',
+      category: 'main_menu',
+      heroEyebrow: 'CONCIERGE & HEAD OFFICE',
+      title: 'ติดต่อเรา (Contact Concierge)',
+      titleTh: 'ติดต่อสำนักงานใหญ่ บริษัท อินเตอร์ไทมส์ จำกัด',
+      titleEn: 'Contact Inter Times Co., Ltd. Bangkok',
+      summary: 'สอบถามข้อมูลรุ่นนาฬิกา สมัครตัวแทนจำหน่าย หรือติดต่อฝ่ายบริการลูกค้า โทร. 02 251 5777 และ LINE ID: opwatch.th',
+      contentTh: `<p>สำนักงานใหญ่ตั้งอยู่ที่ 1091/229 ซอย 35 ถนนเพชรบุรีตัดใหม่ แขวงมักกะสัน เขตราชเทวี กรุงเทพมหานคร 10400 เปิดทำการจันทร์–ศุกร์ 09:00–18:00 น.</p>`,
+      banner: '/images/op/lifestyle-lady.jpg',
+      styleConfig: { fontFamily: 'Prompt', headingColor: '#ffffff', textColor: '#23264d', accentColor: '#1d2088', bgColor: '#182046', overlayOpacity: 0.55, headingSize: 'lg' },
+      productIds: [],
+      seoTitle: 'ติดต่อเรา | บริษัท อินเตอร์ไทมส์ จำกัด · โทร 02 251 5777',
+      seoDescription: 'ช่องทางติดต่อ บริษัท อินเตอร์ไทมส์ จำกัด โทร 02 251 5777, LINE: opwatch.th และแผนที่สำนักงานใหญ่เพชรบุรีตัดใหม่',
+      seoKeywords: 'ติดต่ออินเตอร์ไทมส์, เบอร์โทร OPWatch, สมัครตัวแทนจำหน่ายนาฬิกา',
+      status: 'published',
+      sortOrder: 15
+    },
+
+    // ==================== ROOT 2: หน้ากั้นแบรนด์ OLYM PIANUS + SERIES STORIES ====================
+    {
+      slug: 'brand-gate-olympianus',
+      parentSlug: null,
+      pageType: 'brand_gate',
+      routePath: '/brands/olympianus',
+      brandSlug: 'olympianus',
+      category: 'brand_gate',
+      heroEyebrow: 'BRAND PAVILION · JAPANESE MOVEMENT × SWISS HERITAGE',
+      title: 'หน้ากั้นแบรนด์ Olym Pianus (OP)',
+      titleTh: 'OLYM PIANUS — จิตวิญญาณสปอร์ตหรู ผสานกลไกญี่ปุ่นความเที่ยงตรงสูง',
+      titleEn: 'OLYM PIANUS — Prestige Japanese Movement & Sapphire Crystal',
+      summary: 'หน้ากั้นต้อนรับเข้าสู่จักรวาล Olym Pianus ถ่ายทอดเอกลักษณ์กระจกแซฟไฟร์แท้ทุกรุ่น ตัวเรือนสเตนเลสสตีล 316L และคอลเลกชันยอดนิยมระดับตำนาน',
+      contentTh: `
+        <h2>ทำไมนักสะสมชาวไทยจึงเลือก Olym Pianus?</h2>
+        <p><strong>Olym Pianus (OP)</strong> ถือกำเนิดจากแนวคิดที่ต้องการมอบเรือนเวลามาตรฐานสวิสในราคาที่เข้าถึงได้จริง โดยผสานความทนทานและซ่อมบำรุงง่ายของกลไกออโตเมติกและควอตซ์ชั้นนำจากประเทศญี่ปุ่น เข้ากับกระจก <strong>Sapphire Crystal แท้</strong> ที่ทนทานต่อรอยขีดข่วนเหนือกว่ากระจกทั่วไปหลายเท่าตัว</p>
+        <p>สำรวจเรื่องราวประจำแต่ละซีรีส์ด้านล่าง เพื่อค้นหาเรือนเวลาที่สะท้อนบุคลิกของคุณอย่างสมบูรณ์แบบ</p>
+      `,
+      banner: '/images/op/hero-diver-dark.jpg',
+      gallery: ['/images/op/banner-899832ags.jpg', '/images/op/portrait-diver.jpg', '/images/op/hero-gold-stones.jpg'],
+      styleConfig: {
+        fontFamily: 'Prompt',
+        headingColor: '#ffffff',
+        textColor: '#1e2438',
+        accentColor: '#1d2088',
+        bgColor: '#0e1330',
+        overlayOpacity: 0.56,
+        headingSize: 'xl'
+      },
+      productIds: byBrand('olympianus', 8),
+      ctaText: 'ดูนาฬิกา Olym Pianus ทั้งหมด',
+      ctaUrl: '/products?brand=olympianus',
+      seoTitle: 'Olym Pianus (OP) Thailand | หน้ากั้นแบรนด์และเรื่องราวประจำซีรีส์ของแท้ศูนย์ไทย',
+      seoDescription: 'สัมผัสเรื่องราวแบรนด์ Olym Pianus (OP) นาฬิกากระจกแซฟไฟร์แท้ กลไกญี่ปุ่น พร้อมเจาะลึกทุกซีรีส์ยอดนิยม Sportmaster, Open-Heart และ Lady Jewelry',
+      seoKeywords: 'Olym Pianus, นาฬิกา OP, OP Sportmaster, Olym Pianus Automatic, นาฬิกาแซฟไฟร์',
+      status: 'published',
+      sortOrder: 20
+    },
+    {
+      slug: 'series-op-sportmaster',
+      parentSlug: 'brand-gate-olympianus',
+      pageType: 'series_story',
+      routePath: '/pages/series-op-sportmaster',
+      brandSlug: 'olympianus',
+      seriesKey: 'sportmaster',
+      category: 'series_story',
+      heroEyebrow: 'SERIES STORY · OLYM PIANUS SPORTMASTER',
+      title: 'Story ซีรีส์ OP Sportmaster Automatic',
+      titleTh: 'OP Sportmaster Series — ตำนานสปอร์ตขอบเซรามิกและสาย Jubilee อันทรงพลัง',
+      titleEn: 'OP Sportmaster Automatic Series Story',
+      summary: 'เจาะลึกซีรีส์เรือธงที่ขายดีที่สุดของ Olym Pianus โดดเด่นด้วยขอบหน้าปัดหยักและขอบเซรามิก กระจกแซฟไฟร์เลนส์ขยายวันที่ และกลไกออโตเมติกขึ้นลานมือ',
+      contentTh: `
+        <h2>แรงบันดาลใจแห่งความสำเร็จบนข้อมือสุภาพบุรุษ</h2>
+        <p>ซีรีส์ <strong>OP Sportmaster</strong> (อาทิรหัสตระกูล 89322 และ 899832) ได้รับการยกย่องให้เป็นหนึ่งในเรือนเวลาสปอร์ตเดรสที่คุ้มค่าที่สุดในประเทศไทย ตัวเรือนสเตนเลสสตีล 316L ขัดแต่งสลับเงาและด้านอย่างประณีต มาพร้อมเม็ดมะยมขันเกลียวป้องกันน้ำ และพรายน้ำสว่างชัดเจนในที่มืด</p>
+        <ul>
+          <li><strong>กระจกหน้าปัด:</strong> Sapphire Crystal แท้ พร้อมเลนส์ขยายวันที่ (Cyclops)</li>
+          <li><strong>หัวใจขับเคลื่อน:</strong> กลไก Japanese Automatic รองรับการขึ้นลานด้วยมือและแฮ็กเข็มวินาที</li>
+          <li><strong>ความสบายในการสวมใส่:</strong> สายสเตนเลสสตีลตันโอบรับข้อมือคนเอเชีย พร้อมบานพับล็อกสองชั้น</li>
+        </ul>
+      `,
+      banner: '/images/op/banner-899832ags.jpg',
+      gallery: ['/images/op/portrait-diver.jpg', '/images/op/square-diver-glow.jpg'],
+      styleConfig: {
+        fontFamily: 'Prompt',
+        headingColor: '#ffffff',
+        textColor: '#1f2440',
+        accentColor: '#c9a84c',
+        bgColor: '#0b152c',
+        overlayOpacity: 0.52,
+        headingSize: 'xl'
+      },
+      productIds: byBrand('olympianus', 8, '89'),
+      ctaText: 'ช้อปซีรีส์ Sportmaster ทั้งหมด',
+      ctaUrl: '/products?brand=olympianus',
+      seoTitle: 'OP Sportmaster Series Story | เจาะลึกซีรีส์สปอร์ตออโตเมติก Olym Pianus',
+      seoDescription: 'เรื่องราวและจุดเด่นของซีรีส์ Olym Pianus Sportmaster Automatic กระจกแซฟไฟร์แท้ ขอบเซรามิก พร้อมรุ่นแนะนำที่เชื่อมโยงให้ช้อปทันที',
+      seoKeywords: 'OP Sportmaster, Olym Pianus 89322, Olym Pianus 899832, นาฬิกาสปอร์ตออโตเมติก',
+      status: 'published',
+      sortOrder: 21
+    },
+    {
+      slug: 'series-op-open-heart',
+      parentSlug: 'brand-gate-olympianus',
+      pageType: 'series_story',
+      routePath: '/pages/series-op-open-heart',
+      brandSlug: 'olympianus',
+      seriesKey: 'open-heart',
+      category: 'series_story',
+      heroEyebrow: 'SERIES STORY · OLYM PIANUS OPEN-HEART',
+      title: 'Story ซีรีส์ OP Open-Heart Mechanical',
+      titleTh: 'OP Open-Heart Series — สุนทรียะแห่งกลไกจักรกลที่เต้นอยู่บนหน้าปัด',
+      titleEn: 'OP Open-Heart Mechanical Series Story',
+      summary: 'เผยจังหวะการทำงานของ Balance Wheel ผ่านช่องหน้าต่าง Open-Heart ผสานความคลาสสิกเหนือกาลเวลาเข้ากับฝาหลังเปลือยโชว์โรเตอร์',
+      contentTh: `
+        <h2>ศิลปะแห่งจักรกลที่สัมผัสได้ในทุกวินาที</h2>
+        <p>สำหรับผู้ที่หลงใหลในเสน่ห์ของนาฬิกาจักรกล ซีรีส์ <strong>OP Open-Heart</strong> เปิดมุมมองให้เห็นหัวใจสำคัญของกลไกที่ขยับตัวอย่างเที่ยงตรงที่ตำแหน่ง 9 นาฬิกา เสริมความหรูหราด้วยเข็มทรง Dauphine และหลักชั่วโมงประดับคริสตัลหรือขีดทองชมพูสุดประณีต</p>
+      `,
+      banner: '/images/op/openheart-stones.jpg',
+      gallery: ['/images/op/portrait-8934msk.jpg', '/images/op/portrait-99141agnsk.jpg'],
+      styleConfig: {
+        fontFamily: 'IBM Plex Sans Thai',
+        headingColor: '#fff8eb',
+        textColor: '#2a2438',
+        accentColor: '#b7791f',
+        bgColor: '#1f1629',
+        overlayOpacity: 0.58,
+        headingSize: 'lg'
+      },
+      productIds: byBrand('olympianus', 6, '99'),
+      ctaText: 'เลือกชมรุ่น Open-Heart',
+      ctaUrl: '/products?brand=olympianus',
+      seoTitle: 'OP Open-Heart Series Story | นาฬิกาโชว์กลไก Olym Pianus ของแท้ศูนย์ไทย',
+      seoDescription: 'สัมผัสความงามของซีรีส์ Olym Pianus Open-Heart โชว์กลไกออโตเมติกผ่านหน้าปัดแซฟไฟร์แท้ พร้อมรายการนาฬิกาที่เกี่ยวข้อง',
+      seoKeywords: 'Olym Pianus Open Heart, นาฬิกาโชว์กลไก, OP Automatic Open Heart',
+      status: 'published',
+      sortOrder: 22
+    },
+    {
+      slug: 'series-op-lady-jewelry',
+      parentSlug: 'brand-gate-olympianus',
+      pageType: 'series_story',
+      routePath: '/pages/series-op-lady-jewelry',
+      brandSlug: 'olympianus',
+      seriesKey: 'lady-jewelry',
+      category: 'series_story',
+      heroEyebrow: 'SERIES STORY · OLYM PIANUS LADY & PAIR',
+      title: 'Story ซีรีส์ OP Lady Jewelry & Couple',
+      titleTh: 'OP Lady & Couple Series — ประกายเครื่องประดับหรูเหนือกาลเวลาสำหรับสุภาพสตรี',
+      titleEn: 'OP Lady Jewelry & Pair Watch Series',
+      summary: 'ดีไซน์ตัวเรือนบางเฉียบประดับคริสตัลเจียระไนและหน้าปัดมุกแท้ (Mother of Pearl) มอบเป็นของขวัญล้ำค่าในทุกโอกาสสำคัญ',
+      contentTh: `
+        <h2>เมื่อเรือนเวลาและจิวเวลรี่หลอมรวมเป็นหนึ่งเดียว</h2>
+        <p>ซีรีส์สุภาพสตรีและนาฬิกาคู่รักของ <strong>Olym Pianus</strong> โดดเด่นด้วยการคัดสรรหน้าปัดเปลือกมุกธรรมชาติที่เล่นแสงแตกต่างกันในแต่ละเรือน ล้อมกรอบคริสตัลน้ำงามและกระจกแซฟไฟร์ป้องกันรอยขีดข่วนในชีวิตประจำวัน</p>
+      `,
+      banner: '/images/op/hero-gold-stones.jpg',
+      gallery: ['/images/op/lifestyle-lady.jpg', '/images/op/square-gold-stones.jpg'],
+      styleConfig: {
+        fontFamily: 'Prompt',
+        headingColor: '#ffffff',
+        textColor: '#2d2235',
+        accentColor: '#d4889c',
+        bgColor: '#2b1929',
+        overlayOpacity: 0.54,
+        headingSize: 'lg'
+      },
+      productIds: byBrand('olympianus', 6, 'L'),
+      ctaText: 'ชมคอลเลกชันสุภาพสตรี',
+      ctaUrl: '/products?brand=olympianus',
+      seoTitle: 'OP Lady Jewelry Series | นาฬิกาผู้หญิงและนาฬิกาคู่รัก Olym Pianus',
+      seoDescription: 'เรื่องราวซีรีส์นาฬิกาสุภาพสตรี Olym Pianus ประดับคริสตัล หน้าปัดมุกแท้ กระจกแซฟไฟร์ รับประกันศูนย์ไทย 2 ปี',
+      seoKeywords: 'นาฬิกาผู้หญิง Olym Pianus, นาฬิกาคู่รัก OP, OP Lady Watch',
+      status: 'published',
+      sortOrder: 23
+    },
+
+    // ==================== ROOT 3: หน้ากั้นแบรนด์ OLYMPIA STAR + SERIES STORIES ====================
+    {
+      slug: 'brand-gate-olympia-star',
+      parentSlug: null,
+      pageType: 'brand_gate',
+      routePath: '/brands/olympia-star',
+      brandSlug: 'olympia-star',
+      category: 'brand_gate',
+      heroEyebrow: 'BRAND PAVILION · SWISS QUARTZ PRECISION SINCE 1958',
+      title: 'หน้ากั้นแบรนด์ Olympia Star (OPA)',
+      titleTh: 'OLYMPIA STAR — ความเที่ยงตรงระดับขุมพลังสวิสควอตซ์ ในดีไซน์บางเฉียบสง่างาม',
+      titleEn: 'OLYMPIA STAR — Swiss Movement Elegance & Ultra-Slim Design',
+      summary: 'หน้ากั้นแบรนด์ Olympia Star ถ่ายทอดจิตวิญญาณช่อมะกอกแห่งสันติภาพและชัยชนะ ขับเคลื่อนด้วยขุมพลัง Swiss Ronda & ISA Movement แท้ทุกเรือน',
+      contentTh: `
+        <h2>ขุมพลังสวิสแท้ เพื่อความบางเฉียบและความแม่นยำสูงสุด</h2>
+        <p><strong>Olympia Star (OPA)</strong> ก่อตั้งขึ้นในสวิตเซอร์แลนด์ตั้งแต่ปี ค.ศ. 1958 ทุกเรือนบรรจุกลไก <strong>Swiss Movement</strong> ที่มอบความเที่ยงตรงระดับวินาทีต่อเดือน ตัวเรือนออกแบบให้บางเบาแนบข้อมือ พร้อมกระจกแซฟไฟร์แท้ทุกรุ่น</p>
+      `,
+      banner: '/images/op/hero-ceramic-dark.jpg',
+      styleConfig: {
+        fontFamily: 'Prompt',
+        headingColor: '#ffffff',
+        textColor: '#1e2438',
+        accentColor: '#2f5fd0',
+        bgColor: '#101b3b',
+        overlayOpacity: 0.56,
+        headingSize: 'xl'
+      },
+      productIds: byBrand('olympia-star', 6),
+      ctaText: 'ดูนาฬิกา Olympia Star ทั้งหมด',
+      ctaUrl: '/products?brand=olympia-star',
+      seoTitle: 'Olympia Star (OPA) Thailand | หน้ากั้นแบรนด์นาฬิกากลไกสวิสแท้ ศูนย์ไทย',
+      seoDescription: 'เปิดประวัติและคอลเลกชัน Olympia Star (OPA) นาฬิกาขุมพลัง Swiss Movement ดีไซน์คลาสสิกบางเฉียบ กระจกแซฟไฟร์แท้',
+      seoKeywords: 'Olympia Star, OPA Watch, นาฬิกาสวิสควอตซ์, Olympia Star ศูนย์ไทย',
+      status: 'published',
+      sortOrder: 30
+    },
+    {
+      slug: 'series-opa-swiss-slim',
+      parentSlug: 'brand-gate-olympia-star',
+      pageType: 'series_story',
+      routePath: '/pages/series-opa-swiss-slim',
+      brandSlug: 'olympia-star',
+      seriesKey: 'swiss-slim',
+      category: 'series_story',
+      heroEyebrow: 'SERIES STORY · OLYMPIA STAR SWISS ULTRA-SLIM',
+      title: 'Story ซีรีส์ Olympia Star Swiss Ultra-Slim',
+      titleTh: 'OPA Swiss Ultra-Slim — นิยามแห่ง Dress Watch บางเฉียบสำหรับผู้บริหาร',
+      titleEn: 'Olympia Star Swiss Ultra-Slim Dress Series',
+      summary: 'ตัวเรือนเพรียวบางสอดรับปลายแขนเสื้อเชิ้ตอย่างสมบูรณ์แบบ ขับเคลื่อนด้วยกลไก Swiss Ronda ประหยัดพลังงานยาวนานหลายปี',
+      contentTh: `<p>ซีรีส์ <strong>Swiss Ultra-Slim</strong> ของ Olympia Star ออกแบบขึ้นสำหรับผู้บริหารและคนทำงานที่ต้องการความเรียบหรู สุภาพ และไม่ต้องกังวลเรื่องการตั้งเวลาใหม่แม้ไม่ได้สวมใส่ในวันหยุดสุดสัปดาห์</p>`,
+      banner: '/images/op/portrait-82671m.jpg',
+      styleConfig: {
+        fontFamily: 'Prompt',
+        headingColor: '#ffffff',
+        textColor: '#1e2438',
+        accentColor: '#2f5fd0',
+        bgColor: '#122044',
+        overlayOpacity: 0.55,
+        headingSize: 'lg'
+      },
+      productIds: byBrand('olympia-star', 6),
+      ctaText: 'เลือกชมซีรีส์ Olympia Star',
+      ctaUrl: '/products?brand=olympia-star',
+      seoTitle: 'Olympia Star Swiss Ultra-Slim Series | นาฬิกาผู้บริหารบางเฉียบกลไกสวิส',
+      seoDescription: 'เจาะลึกซีรีส์ Olympia Star Swiss Ultra-Slim ดีไซน์บางเฉียบ กลไกสวิสแท้ กระจกแซฟไฟร์ ประกันศูนย์อินเตอร์ไทมส์ 2 ปี',
+      seoKeywords: 'Olympia Star Ultra Slim, นาฬิกาบางเฉียบ, Dress Watch สวิส',
+      status: 'published',
+      sortOrder: 31
+    },
+
+    // ==================== ROOT 4: หน้ากั้นแบรนด์ OGIVAL + SERIES STORIES ====================
+    {
+      slug: 'brand-gate-ogival',
+      parentSlug: null,
+      pageType: 'brand_gate',
+      routePath: '/brands/ogival',
+      brandSlug: 'ogival',
+      category: 'brand_gate',
+      heroEyebrow: 'BRAND PAVILION · LA CHAUX-DE-FONDS SWITZERLAND SINCE 1903',
+      title: 'หน้ากั้นแบรนด์ Ogival Swiss (ตั้งแต่ปี 1903)',
+      titleTh: 'OGIVAL 1903 — ศิลปะเรือนเวลาสวิสชั้นสูง และสัญลักษณ์ปลากระโดดแห่งความโชคดี',
+      titleEn: 'OGIVAL SWISS SINCE 1903 — Lucky Jumping Fish Haute Horlogerie',
+      summary: 'หน้ากั้นแบรนด์ Ogival ตำนานเรือนเวลาจากเมือง La Chaux-de-Fonds ประเทศสวิตเซอร์แลนด์ โดดเด่นด้วยงานแกะสลักหน้าปัด Skeleton และอัญมณีมงคล',
+      contentTh: `
+        <h2>มากกว่าการบอกเวลา คือสัญลักษณ์แห่งความรักและคำอวยพรอันเป็นมงคล</h2>
+        <p>ก่อตั้งขึ้นในปี ค.ศ. 1903 โดย René Brandt ณ เมืองแห่งการผลิตนาฬิกาสวิส <strong>La Chaux-de-Fonds</strong> แบรนด์ <strong>Ogival</strong> มีสัญลักษณ์ประจำตัวคือ “ปลาโชคดีกระโดด” (Lucky Jumping Fish) ซึ่งสื่อถึงความเจริญรุ่งเรือง ความรักที่เปี่ยมล้น และความสำเร็จก้าวหน้า</p>
+      `,
+      banner: '/images/op/portrait-8909amk.jpg',
+      styleConfig: {
+        fontFamily: 'IBM Plex Sans Thai',
+        headingColor: '#fffaf0',
+        textColor: '#261f1d',
+        accentColor: '#b8860b',
+        bgColor: '#231710',
+        overlayOpacity: 0.58,
+        headingSize: 'xl'
+      },
+      productIds: byBrand('ogival', 8),
+      ctaText: 'สำรวจคอลเลกชัน Ogival Swiss ทั้งหมด',
+      ctaUrl: '/products?brand=ogival',
+      seoTitle: 'Ogival Watch Thailand | หน้ากั้นแบรนด์นาฬิกาสวิสแท้ปลาโชคดี ตั้งแต่ปี 1903',
+      seoDescription: 'สัมผัสประวัติศาสตร์กว่า 120 ปีของนาฬิกาสวิส Ogival สัญลักษณ์ปลาโชคดี Skeleton และหน้าปัดงานศิลป์ นำเข้าโดย บริษัท อินเตอร์ไทมส์ จำกัด',
+      seoKeywords: 'Ogival, นาฬิกาปลาโชคดี, Ogival Swiss Watch, Ogival Skeleton, นาฬิกาสวิสมงคล',
+      status: 'published',
+      sortOrder: 40
+    },
+    {
+      slug: 'series-ogival-lucky-fish',
+      parentSlug: 'brand-gate-ogival',
+      pageType: 'series_story',
+      routePath: '/pages/series-ogival-lucky-fish',
+      brandSlug: 'ogival',
+      seriesKey: 'lucky-fish',
+      category: 'series_story',
+      heroEyebrow: 'SERIES STORY · OGIVAL SKELETON & LUCKY FISH',
+      title: 'Story ซีรีส์ Ogival Lucky Fish & Skeleton',
+      titleTh: 'Ogival Lucky Fish Skeleton — งานฉลุลายจักรกลสวิสระดับมาสเตอร์พีซ',
+      titleEn: 'Ogival Lucky Fish Skeleton Automatic Series',
+      summary: 'ผลงานฉลุสะพานจักรด้วยความละเอียดระดับไมครอน ประดับลวดลายมงคลมังกร ม้าแปดตัว และปลาคู่โชคดี พร้อมขุมพลัง Swiss Automatic',
+      contentTh: `
+        <h2>หัตถศิลป์สวิสที่นักสะสมส่งต่อจากรุ่นสู่รุ่น</h2>
+        <p>ซีรีส์ <strong>Ogival Skeleton & Lucky Fish</strong> คือจุดสูงสุดของงานฝีมือประจำแบรนด์ ช่างนาฬิกาบรรจงฉลุโครงสร้างกลไกและแกะสลักลวดลายมงคลเคลือบทองคำ พร้อมฝังเพชรและอัญมณีแท้บนหลักชั่วโมง เพื่อเสริมบารมีแก่ผู้ครอบครอง</p>
+      `,
+      banner: '/images/op/openheart-stones.jpg',
+      styleConfig: {
+        fontFamily: 'IBM Plex Sans Thai',
+        headingColor: '#fff8dc',
+        textColor: '#2a2118',
+        accentColor: '#c59b27',
+        bgColor: '#261a12',
+        overlayOpacity: 0.6,
+        headingSize: 'xl'
+      },
+      productIds: byBrand('ogival', 8, '358'),
+      ctaText: 'ชมรุ่น Ogival Skeleton ทั้งหมด',
+      ctaUrl: '/products?brand=ogival',
+      seoTitle: 'Ogival Lucky Fish Skeleton Series | ซีรีส์นาฬิกาสวิสฉลุลายมงคลของแท้',
+      seoDescription: 'เจาะลึกซีรีส์ Ogival Lucky Fish & Skeleton นาฬิกาสวิสออโตเมติกงานแกะสลักมงคล พร้อมรายการสินค้าที่เกี่ยวข้องให้เลือกชม',
+      seoKeywords: 'Ogival Skeleton, Ogival 358, นาฬิกามังกร Ogival, นาฬิกาปลาคู่สวิส',
+      status: 'published',
+      sortOrder: 41
+    },
+
+    // ==================== ROOT 5: เรื่องโปรโมชั่น (PROMOTION STORIES) ====================
+    {
+      slug: 'site-promotions',
+      parentSlug: null,
+      pageType: 'system_page',
+      routePath: '/promotions',
+      category: 'promotion',
+      heroEyebrow: 'EXCLUSIVE CAMPAIGNS & PRIVILEGES',
+      title: 'ศูนย์รวมโปรโมชั่นและแคมเปญพิเศษ',
+      titleTh: 'โปรโมชั่นประจำเดือน & สิทธิพิเศษสมาชิก OP Privilege',
+      titleEn: 'Exclusive Timepiece Promotions & Collector Privileges',
+      summary: 'รวมดีลสุดพิเศษ คูปองส่วนลด บริการห่อของขวัญสุดหรู และเรื่องราวแคมเปญคัดสรรเฉพาะลูกค้า opwatch.co.th',
+      contentTh: `<p>พบข้อเสนอสุดพิเศษจาก <strong>บริษัท อินเตอร์ไทมส์ จำกัด</strong> ทั้งส่วนลดเฉพาะรุ่น คูปองสมาชิกใหม่ และชุดของขวัญประจำเทศกาล</p>`,
+      banner: '/images/op/hero-gold-stones.jpg',
+      styleConfig: {
+        fontFamily: 'Prompt',
+        headingColor: '#ffffff',
+        textColor: '#23264d',
+        accentColor: '#c9a84c',
+        bgColor: '#1b1435',
+        overlayOpacity: 0.56,
+        headingSize: 'xl'
+      },
+      productIds: [...byBrand('olympianus', 4), ...byBrand('ogival', 4)],
+      ctaText: 'เก็บคูปองและช้อปเลย',
+      ctaUrl: '/promotions',
+      seoTitle: 'โปรโมชั่นนาฬิกา Olym Pianus, Olympia Star, Ogival ล่าสุด | OPWatch',
+      seoDescription: 'อัปเดตโปรโมชั่นนาฬิกาของแท้ศูนย์ไทย ลดสูงสุด 30% พร้อมคูปองส่วนลดและบริการจัดส่งฟรีทั่วประเทศ',
+      seoKeywords: 'โปรโมชั่นนาฬิกา, ลดราคา Olym Pianus, คูปอง OPWatch, โปรนาฬิกา Ogival',
+      status: 'published',
+      sortOrder: 50
+    },
+    {
+      slug: 'promo-story-collector-privilege',
+      parentSlug: 'site-promotions',
+      pageType: 'promo_story',
+      routePath: '/pages/promo-story-collector-privilege',
+      category: 'promotion',
+      heroEyebrow: 'PROMOTION STORY · COLLECTOR PRIVILEGE',
+      title: 'เรื่องโปรโมชั่น: Exclusive Sapphire Privilege',
+      titleTh: 'แคมเปญ Exclusive Sapphire Privilege — อัปเกรดสู่กระจกแซฟไฟร์แท้ในราคาสุดคุ้ม',
+      titleEn: 'Exclusive Sapphire Crystal Collector Campaign',
+      summary: 'เรื่องราวเบื้องหลังแคมเปญที่เปิดโอกาสให้คนรักนาฬิกาเป็นเจ้าของเรือนเวลากระจกแซฟไฟร์แท้ พร้อมรับคะแนนสะสม OP Point X2 และบริการตัดสายพร้อมสวมใส่',
+      contentTh: `
+        <h2>ทำไมแคมเปญ Sapphire Privilege จึงห้ามพลาด?</h2>
+        <p>ตลอดเดือนนี้ <strong>OPWatch Thailand</strong> คัดสรรเรือนเวลารุ่นยอดนิยมจากทั้ง 3 แบรนด์หลัก มอบส่วนลดพิเศษพร้อมสิทธิประโยชน์ 3 ต่อ:</p>
+        <ul>
+          <li><strong>ต่อที่ 1:</strong> ส่วนลดพิเศษหน้าเว็บไซต์สูงสุด 25–30% สำหรับรุ่นที่ร่วมรายการด้านล่าง</li>
+          <li><strong>ต่อที่ 2:</strong> รับบริการปรับขนาดสายตามรอบข้อมือจริงฟรี เพียงระบุขนาดข้อมือในขั้นตอนสั่งซื้อ</li>
+          <li><strong>ต่อที่ 3:</strong> ลงทะเบียน E-Warranty ออนไลน์รับความคุ้มครองศูนย์ไทยเต็มรูปแบบ 2 ปี</li>
+        </ul>
+      `,
+      banner: '/images/op/lifestyle-sport.jpg',
+      styleConfig: {
+        fontFamily: 'Prompt',
+        headingColor: '#ffffff',
+        textColor: '#1e2438',
+        accentColor: '#e11d48',
+        bgColor: '#1f122b',
+        overlayOpacity: 0.56,
+        headingSize: 'xl'
+      },
+      productIds: [...byBrand('olympianus', 4), ...byBrand('olympia-star', 2), ...byBrand('ogival', 2)],
+      ctaText: 'ใช้สิทธิ์ช้อปรุ่นร่วมรายการ',
+      ctaUrl: '/promotions',
+      seoTitle: 'แคมเปญ Exclusive Sapphire Privilege | เรื่องราวโปรโมชั่นพิเศษ OPWatch',
+      seoDescription: 'อ่านรายละเอียดแคมเปญโปรโมชั่นพิเศษ Exclusive Sapphire Privilege พร้อมเลือกช้อปนาฬิการุ่นที่ร่วมรายการได้ทันที',
+      seoKeywords: 'แคมเปญนาฬิกา, โปรโมชั่นแซฟไฟร์, OPWatch Sale',
+      status: 'published',
+      sortOrder: 51
+    },
+    {
+      slug: 'promo-story-gift-season',
+      parentSlug: 'site-promotions',
+      pageType: 'promo_story',
+      routePath: '/pages/promo-story-gift-season',
+      category: 'promotion',
+      heroEyebrow: 'PROMOTION STORY · GIFT OF TIME',
+      title: 'เรื่องโปรโมชั่น: The Gift of Time ของขวัญแทนใจ',
+      titleTh: 'The Gift of Time — มอบเรือนเวลาเป็นของขวัญล้ำค่า พร้อมกล่องหรูและการ์ดอวยพรฟรี',
+      titleEn: 'The Gift of Time — Complimentary Boutique Gift Wrapping',
+      summary: 'คัดสรรเรือนเวลาสำหรับมอบในวันครบรอบ วันเกิด วันรับปริญญา และโอกาสเกษียณอายุราชการ พร้อมบริการห่อของขวัญระดับบูติก',
+      contentTh: `
+        <h2>ของขวัญที่บอกเล่าความทรงจำในทุกวินาที</h2>
+        <p>การมอบนาฬิกาคือการมอบ “เวลา” และความปรารถนาดีที่จะอยู่เคียงข้างผู้รับในทุกก้าวของชีวิต เลือกชมรุ่นยอดนิยมสำหรับเป็นของขวัญที่เชื่อมโยงไว้ด้านล่าง พร้อมเลือกบริการห่อของขวัญและพิมพ์ข้อความการ์ดอวยพรได้ฟรีในหน้าชำระเงิน</p>
+      `,
+      banner: '/images/op/hero-gold-stones.jpg',
+      styleConfig: {
+        fontFamily: 'Prompt',
+        headingColor: '#fff9eb',
+        textColor: '#282032',
+        accentColor: '#c9a84c',
+        bgColor: '#291c34',
+        overlayOpacity: 0.55,
+        headingSize: 'lg'
+      },
+      productIds: [...byBrand('olympianus', 3, 'L'), ...byBrand('ogival', 3)],
+      ctaText: 'เลือกนาฬิกาสำหรับเป็นของขวัญ',
+      ctaUrl: '/products',
+      seoTitle: 'The Gift of Time โปรโมชั่นนาฬิกาของขวัญ ห่อของขวัญฟรี | OPWatch',
+      seoDescription: 'คัดสรรนาฬิกาของขวัญวันเกิด วันครบรอบ วันเกษียณ พร้อมบริการห่อของขวัญบูติกและการ์ดอวยพรฟรีจาก OPWatch Thailand',
+      seoKeywords: 'นาฬิกาของขวัญ, ของขวัญวันครบรอบ, ของขวัญเกษียณ นาฬิกา, ห่อของขวัญนาฬิกา',
+      status: 'published',
+      sortOrder: 52
+    },
+
+    // ==================== ROOT 6: นโยบายกฎหมายและเงื่อนไข (LEGAL GROUP) ====================
+    {
+      slug: 'legal-center',
+      parentSlug: null,
+      pageType: 'legal',
+      routePath: '/pages/privacy-policy',
+      category: 'legal',
+      heroEyebrow: 'POLICIES & COMPLIANCE',
+      title: 'ศูนย์รวมนโยบายและเงื่อนไขบริการ',
+      titleTh: 'นโยบายคุ้มครองผู้บริโภค การรับประกัน และกฎหมาย PDPA',
+      titleEn: 'Customer Policies, Warranty Terms & PDPA Compliance',
+      summary: 'หมวดหลักรวบรวมนโยบายความเป็นส่วนตัว นโยบายคุกกี้ การจัดส่ง การเปลี่ยนคืนสินค้า และเงื่อนไขการรับประกันศูนย์ไทย',
+      contentTh: `<p>เลือกดูรายละเอียดนโยบายแต่ละหัวข้อได้จากเมนูย่อยภายใต้หมวดนี้</p>`,
+      banner: '/images/op/hero-ceramic-dark.jpg',
+      styleConfig: { fontFamily: 'Prompt', headingColor: '#ffffff', textColor: '#23264d', accentColor: '#1d2088', bgColor: '#131836', overlayOpacity: 0.6, headingSize: 'lg' },
+      productIds: [],
+      seoTitle: 'นโยบายและเงื่อนไขการให้บริการ | OPWatch Thailand',
+      seoDescription: 'รวมนโยบายความเป็นส่วนตัว PDPA เงื่อนไขการรับประกันศูนย์ไทย 2 ปี และการจัดส่งสินค้าของ OPWatch.co.th',
+      seoKeywords: 'นโยบาย OPWatch, เงื่อนไขรับประกันนาฬิกา, PDPA',
+      status: 'published',
+      sortOrder: 90
+    }
+  ]
+}
+
+

@@ -20,7 +20,7 @@ function generatePool(): HermesSlotToken[] {
 }
 
 export default defineEventHandler(async (event) => {
-  await requireAdmin(event)
+  await requireOfficer(event, '*')
   const body = await readBody(event)
   const action = String(body?.action || 'status')
   const cfg = getConfig()

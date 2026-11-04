@@ -1,6 +1,6 @@
 export default defineEventHandler(async (event) => {
   if (isInstalled()) {
-    await requireAdmin(event)
+    await requireOfficer(event, '*')
   }
   const body = await readBody(event)
   const result = await runInstall(body)

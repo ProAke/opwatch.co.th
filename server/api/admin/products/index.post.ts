@@ -1,5 +1,5 @@
 export default defineEventHandler(async (event) => {
-  await requireAdmin(event)
+  await requirePermission(event, ['products_edit', 'products_stock'])
   const body = await readBody(event)
   const store = useStore()
 
@@ -29,6 +29,27 @@ export default defineEventHandler(async (event) => {
   const slugBase = String(body?.slug || `${brandSlug}-${sku}`)
   const slug = ensureUniqueSlug(slugify(slugBase), await store.all('products'))
 
+  const price = Number(body?.price) || 0
+  const dealerPrice = body?.dealerPrice !== undefined && body?.dealerPrice !== '' && body?.dealerPrice !== null
+    ? Number(body.dealerPrice)
+    : Math.round((price * 0.65) / 10) * 10
+
+  const hasChannelFields =
+    body?.stockWeb !== undefined ||
+    body?.stockShopee !== undefined ||
+    body?.stockLazada !== undefined ||
+    body?.stockTiktok !== undefined ||
+    body?.stockDealer !== undefined
+
+  const stockWeb = Number(body?.stockWeb ?? 4)
+  const stockShopee = Number(body?.stockShopee ?? 3)
+  const stockLazada = Number(body?.stockLazada ?? 2)
+  const stockTiktok = Number(body?.stockTiktok ?? 1)
+  const stockDealer = Number(body?.stockDealer ?? 4)
+  const stock = hasChannelFields
+    ? stockWeb + stockShopee + stockLazada + stockTiktok + stockDealer
+    : Number(body?.stock ?? 14)
+
   const row = {
     sku,
     name,
@@ -38,7 +59,9 @@ export default defineEventHandler(async (event) => {
     brandId,
     brand: brandSlug,
     categoryId,
-    price: Number(body?.price) || 0,
+    seriesSlug: String(body?.seriesSlug || '').trim() || null,
+    price,
+    dealerPrice,
     originalPrice: body?.originalPrice !== undefined && body?.originalPrice !== '' && body?.originalPrice !== null ? Number(body.originalPrice) : null,
     priceCompare: body?.priceCompare !== undefined && body?.priceCompare !== '' && body?.priceCompare !== null ? Number(body.priceCompare) : null,
     currency: String(body?.currency || 'THB'),
@@ -48,7 +71,12 @@ export default defineEventHandler(async (event) => {
     descriptionEn: String(body?.descriptionEn || '').trim(),
     descriptionTh: String(body?.descriptionTh || body?.description || '').trim(),
     specs: body?.specs || {},
-    stock: Number(body?.stock) || 0,
+    stock,
+    stockWeb,
+    stockShopee,
+    stockLazada,
+    stockTiktok,
+    stockDealer,
     status: body?.status === 'draft' || body?.active === false ? 'draft' : 'active',
     badges: Array.isArray(body?.badges) ? body.badges : body?.badges ? [String(body.badges)] : [],
     featured: !!body?.featured,

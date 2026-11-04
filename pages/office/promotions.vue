@@ -4,6 +4,9 @@ import { autoEnhanceFile, autoEnhanceExistingUrl } from '~/utils/autoImageEnhanc
 definePageMeta({ layout: 'office', middleware: ['office'] })
 
 const toast = useToast()
+const { hasPerm, isDealer } = useOfficeAuth()
+const canEditPromos = computed(() => hasPerm('promotions'))
+const canEditBranches = computed(() => hasPerm('branches'))
 const tab = ref<'banners' | 'coupons' | 'branches'>('banners')
 
 const { data: promoData, refresh: refreshPromos } = await useFetch<any>('/api/admin/promotions')
@@ -271,9 +274,15 @@ useHead({ title: 'จัดการโปรโมชั่นทุกช่�
     <div class="erp-page-head">
       <div>
         <div class="erp-kicker">OMNICHANNEL CAMPAIGNS · VOUCHERS · CLICK &amp; COLLECT</div>
-        <h1 class="erp-h1">จัดการโปรโมชั่นทุกช่องทาง คูปองส่วนลด &amp; สาขาใกล้บ้าน</h1>
+        <h1 class="erp-h1">
+          {{ isDealer ? 'โปรโมชั่นแคมเปญ คูปองส่วนลด & สาขารับสินค้าหน้าร้าน' : 'จัดการโปรโมชั่นทุกช่องทาง คูปองส่วนลด & สาขาใกล้บ้าน' }}
+        </h1>
         <p class="erp-sub">
-          จัดการแบนเนอร์โปรโมชั่นหน้าแรก (ใต้โลโก้ 3 แบรนด์), รวมแคมเปญลิงก์ออกทุกช่องทาง (Shopee, TikTok, LINE, FB), คูปอง และสาขาทั่วไทย
+          {{
+            isDealer
+              ? 'ตรวจสอบโปรโมชั่นปัจจุบัน คูปองส่วนลด และจุดรับสินค้าของศูนย์ไทย เพื่อแนะนำสิทธิพิเศษให้ลูกค้าหน้าร้าน (มุมมองสำหรับตัวแทนจำหน่าย)'
+              : 'จัดการแบนเนอร์โปรโมชั่นหน้าแรก (ใต้โลโก้ 3 แบรนด์), รวมแคมเปญลิงก์ออกทุกช่องทาง (Shopee, TikTok, LINE, FB), คูปอง และสาขาทั่วไทย'
+          }}
         </p>
       </div>
     </div>
@@ -292,7 +301,7 @@ useHead({ title: 'จัดการโปรโมชั่นทุกช่�
 
     <!-- TAB 1: PROMOTION BANNERS -->
     <template v-if="tab === 'banners'">
-      <div class="erp-panel">
+      <div v-if="canEditPromos" class="erp-panel">
         <div class="erp-panel__head">
           <div class="erp-panel__title">{{ editingPromoId ? 'แก้ไขแบนเนอร์โปรโมชั่น' : '+ เพิ่มแบนเนอร์โปรโมชั่นใหม่' }}</div>
           <button type="button" class="erp-btn erp-btn--sm erp-btn--violet" :disabled="aiBannerBusy" @click="generatePromoAi">
@@ -404,10 +413,11 @@ useHead({ title: 'จัดการโปรโมชั่นทุกช่�
                   <span class="erp-chip" :class="p.showOnHome ? 'erp-chip--mint' : ''">{{ p.showOnHome ? '✓ หน้าแรก' : 'หน้าโปรฯ' }}</span>
                 </td>
                 <td>
-                  <div style="display:flex;gap:6px">
+                  <div v-if="canEditPromos" style="display:flex;gap:6px">
                     <button type="button" class="erp-btn erp-btn--sm" @click="editPromo(p)">แก้ไข</button>
                     <button type="button" class="erp-btn erp-btn--sm erp-btn--danger" @click="deletePromo(p.id)">ลบ</button>
                   </div>
+                  <span v-else class="erp-chip">ดูข้อมูลแคมเปญ</span>
                 </td>
               </tr>
             </tbody>
@@ -418,7 +428,7 @@ useHead({ title: 'จัดการโปรโมชั่นทุกช่�
 
     <!-- TAB 2: COUPONS & GIFT CARDS -->
     <template v-else-if="tab === 'coupons'">
-      <div class="erp-panel">
+      <div v-if="canEditPromos" class="erp-panel">
         <div class="erp-panel__head">
           <div class="erp-panel__title">+ สร้างคูปองส่วนลด / บัตรของขวัญ (Gift Card)</div>
           <button type="button" class="erp-btn erp-btn--violet erp-btn--sm" :disabled="aiCouponBusy" @click="generateCouponAi">
@@ -483,7 +493,8 @@ useHead({ title: 'จัดการโปรโมชั่นทุกช่�
                 <td>฿{{ c.minSpend }}</td>
                 <td>{{ c.usedCount || 0 }} / {{ c.usageLimit || 999 }}</td>
                 <td>
-                  <button type="button" class="erp-btn erp-btn--sm erp-btn--danger" @click="deleteCoupon(c.id)">ลบ</button>
+                  <button v-if="canEditPromos" type="button" class="erp-btn erp-btn--sm erp-btn--danger" @click="deleteCoupon(c.id)">ลบ</button>
+                  <span v-else class="erp-chip erp-chip--mint">ใช้งานได้</span>
                 </td>
               </tr>
             </tbody>
@@ -494,7 +505,7 @@ useHead({ title: 'จัดการโปรโมชั่นทุกช่�
 
     <!-- TAB 3: THAILAND BRANCHES -->
     <template v-else>
-      <div class="erp-panel">
+      <div v-if="canEditBranches" class="erp-panel">
         <div class="erp-panel__title" style="margin-bottom:12px">+ เพิ่มสาขาเคาน์เตอร์ / จุดรับสินค้าใกล้บ้าน (ประเทศไทย)</div>
         <div class="erp-form-grid erp-form-grid--3">
           <div class="erp-field">
@@ -547,7 +558,10 @@ useHead({ title: 'จัดการโปรโมชั่นทุกช่�
                 <td>{{ b.phone }}</td>
                 <td>{{ b.hours }}</td>
                 <td><span class="erp-chip erp-chip--mint">{{ b.hasPickup ? 'พร้อมรับที่สาขา' : 'โชว์รูม' }}</span></td>
-                <td><button type="button" class="erp-btn erp-btn--sm erp-btn--danger" @click="deleteBranch(b.id)">ลบ</button></td>
+                <td>
+                  <button v-if="canEditBranches" type="button" class="erp-btn erp-btn--sm erp-btn--danger" @click="deleteBranch(b.id)">ลบ</button>
+                  <span v-else class="erp-chip">จุดบริการ</span>
+                </td>
               </tr>
             </tbody>
           </table>

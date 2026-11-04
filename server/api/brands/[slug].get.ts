@@ -60,5 +60,35 @@ export default defineEventHandler(async (event) => {
   const campaigns = (await store.find('campaigns', { orderBy: 'sortOrder', orderDir: 'asc' }))
     .filter((c) => c.active !== false && c.type === 'brand-day' && Number(c.brandId) === Number(brand.id))
 
-  return { brand, products, total: products.length, subcategories, campaigns }
+  // Load Brand Gate CMS node + Series Story child pages from Tree CMS (`pages`)
+  const allPublishedPages = (await store.find('pages', { orderBy: 'sortOrder', orderDir: 'asc' }))
+    .filter((pg) => pg.status !== 'draft')
+  const brandGate = allPublishedPages.find(
+    (pg) => pg.pageType === 'brand_gate' && String(pg.brandSlug || '').toLowerCase() === String(brand.slug).toLowerCase()
+  ) || null
+  const seriesStories = allPublishedPages.filter(
+    (pg) =>
+      pg.pageType === 'series_story' &&
+      (String(pg.brandSlug || '').toLowerCase() === String(brand.slug).toLowerCase() ||
+        (brandGate && Number(pg.parentId) === Number(brandGate.id)))
+  )
+
+  let gateFeaturedProducts: any[] = []
+  if (brandGate && Array.isArray(brandGate.productIds) && brandGate.productIds.length > 0) {
+    const byId = new Map(products.map((pr) => [Number(pr.id), pr]))
+    gateFeaturedProducts = brandGate.productIds
+      .map((pid: any) => byId.get(Number(pid)))
+      .filter(Boolean)
+  }
+
+  return {
+    brand,
+    products,
+    total: products.length,
+    subcategories,
+    campaigns,
+    brandGate,
+    seriesStories,
+    gateFeaturedProducts
+  }
 })

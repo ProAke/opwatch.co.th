@@ -1,5 +1,5 @@
 export default defineEventHandler(async (event) => {
-  await requireAdmin(event)
+  await requireOfficer(event, 'brands')
   const id = Number(getRouterParam(event, 'id'))
   const store = useStore()
   const body = await readBody(event)

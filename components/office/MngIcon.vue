@@ -151,6 +151,19 @@ const props = withDefaults(
     <template v-else-if="name === 'shield'">
       <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
     </template>
+    <template v-else-if="name === 'warehouse'">
+      <path d="M3 9.5 12 4l9 5.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z" />
+      <path d="M9 21V13h6v8M7 9.5h10" />
+    </template>
+    <template v-else-if="name === 'wrench'">
+      <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+    </template>
+    <template v-else-if="name === 'tree'">
+      <rect x="3" y="3" width="6" height="5" rx="1.2" />
+      <rect x="14" y="9" width="7" height="5" rx="1.2" />
+      <rect x="14" y="17" width="7" height="5" rx="1.2" />
+      <path d="M6 8v11.5h8M6 11.5h8" />
+    </template>
     <template v-else>
       <circle cx="12" cy="12" r="9" />
     </template>

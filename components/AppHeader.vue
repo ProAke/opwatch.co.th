@@ -104,6 +104,10 @@ watch(() => route.fullPath, () => {
           {{ locale === 'th' ? 'สิทธิพิเศษ & สาขา' : 'Services & Branches' }}
         </NuxtLink>
 
+        <NuxtLink :to="localePath('/warranty')" class="op-hdr__link">
+          {{ locale === 'th' ? 'แจ้งซ่อม & รับประกัน' : 'Warranty & Repair' }}
+        </NuxtLink>
+
         <NuxtLink :to="localePath('/track')" class="op-hdr__link">
           {{ locale === 'th' ? 'เช็คพัสดุ' : 'Track Order' }}
         </NuxtLink>
@@ -249,6 +253,7 @@ watch(() => route.fullPath, () => {
               ✦ {{ b.name }} ({{ b.tag }})
             </NuxtLink>
             <NuxtLink :to="localePath('/promotions')">{{ locale === 'th' ? 'โปรโมชั่น & คูปองส่วนลด' : 'Promotions & Vouchers' }}</NuxtLink>
+            <NuxtLink :to="localePath('/warranty')">{{ locale === 'th' ? 'ลงทะเบียนรับประกัน & แจ้งซ่อมออนไลน์' : 'Online Warranty & Repair' }}</NuxtLink>
             <NuxtLink :to="localePath('/services')">{{ locale === 'th' ? 'บริการพิเศษ & เช็คสาขาใกล้บ้าน' : 'Boutique Services & Branches' }}</NuxtLink>
             <NuxtLink :to="localePath('/track')">{{ locale === 'th' ? 'ติดตามสถานะคำสั่งซื้อ' : 'Track Order' }}</NuxtLink>
             <NuxtLink :to="localePath('/news')">News</NuxtLink>

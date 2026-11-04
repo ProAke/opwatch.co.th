@@ -1,8 +1,21 @@
 import type { Store } from '../db/types'
 import { olympianusOfficialProducts } from './catalog-olympianus'
 import { ogivalOfficialProducts } from './catalog-ogival'
-import { isInstalled, loadConfig, saveConfig } from './config'
-import { defaultPromotions, defaultCoupons, defaultBranches, defaultPages, defaultCalendarEvents, defaultAiRuns } from './seed-extras'
+import { getConfig, isInstalled, loadConfig, saveConfig } from './config'
+import { useStore } from './store'
+import { hashPassword } from './auth'
+import {
+  defaultPromotions,
+  defaultCoupons,
+  defaultBranches,
+  defaultPages,
+  defaultCalendarEvents,
+  defaultAiRuns,
+  defaultOfficers,
+  defaultWarranties,
+  defaultRepairs,
+  defaultTreePages
+} from './seed-extras'
 
 export interface SeedBrand {
   slug: string
@@ -933,6 +946,8 @@ export async function syncOfficialCatalog(
         }
       }
 
+      await ensureEnterpriseEntities(store)
+
       const finalCount = await store.count('products', { where: { status: 'active' } })
       return { synced, removedLegacy, total: finalCount }
     }
@@ -949,21 +964,290 @@ export async function syncOfficialCatalog(
   return syncPromise
 }
 
+function inferSeriesSlug(p: Record<string, any>): string {
+  const brand = String(p.brand || '').toLowerCase()
+  const text = `${p.sku || ''} ${p.name || ''} ${p.nameTh || ''} ${p.shortDescription || ''}`.toLowerCase()
+  if (brand === 'olympianus') {
+    if (text.includes('open') || text.includes('99141') || text.includes('8934')) return 'series-op-open-heart'
+    if (text.includes('lady') || text.includes('ผู้หญิง') || /\bl\b|280|82672|990-45/.test(text)) return 'series-op-lady-jewelry'
+    return 'series-op-sportmaster'
+  }
+  if (brand === 'olympia-star') return 'series-opa-swiss-slim'
+  if (brand === 'ogival') return 'series-ogival-lucky-fish'
+  return ''
+}
+
+function splitFiveChannels(baseTotal: number, idNum: number) {
+  const total = Math.max(5, Number(baseTotal) || 14)
+  const stockWeb = Math.max(1, Math.round(total * 0.3))
+  const stockShopee = Math.max(1, Math.round(total * 0.22))
+  const stockLazada = Math.max(1, Math.round(total * 0.16))
+  const stockTiktok = Math.max(0, (idNum % 3 === 0 ? 2 : 1))
+  const used = stockWeb + stockShopee + stockLazada + stockTiktok
+  const stockDealer = Math.max(2, total - used)
+  return {
+    stockWeb,
+    stockShopee,
+    stockLazada,
+    stockTiktok,
+    stockDealer,
+    stock: stockWeb + stockShopee + stockLazada + stockTiktok + stockDealer
+  }
+}
+
+let enterpriseReadyDone = false
+let enterprisePromise: Promise<void> | null = null
+
+export async function ensureEnterpriseEntities(store: Store): Promise<void> {
+  if (enterprisePromise) return enterprisePromise
+  enterprisePromise = (async () => {
+    try {
+      const cfg = getConfig()
+      const fallbackHash = cfg.admin?.passwordHash || (await hashPassword('Opwatch@2026'))
+      const adminEmail = String(cfg.admin?.email || 'admin@opwatch.co.th').trim().toLowerCase()
+
+      // 1. Migrate any back-office staff/admin rows out of `customers` into `officers`
+      const allCustomers = await store.all('customers').catch(() => [])
+      const existingOfficers = await store.all('officers').catch(() => [])
+      const officerByEmail = new Map<string, any>()
+      for (const o of existingOfficers) {
+        officerByEmail.set(String(o.email || '').toLowerCase(), o)
+      }
+
+      for (const c of allCustomers) {
+        const cRole = String(c.role || '').toLowerCase()
+        const cEmail = String(c.email || '').toLowerCase()
+        const wasStaff = Boolean(c.isAdmin || ['ceo', 'admin', 'staff', 'it_admin', 'marketing_sales', 'warehouse', 'dealer'].includes(cRole))
+        if (wasStaff && cEmail) {
+          if (!officerByEmail.has(cEmail)) {
+            const mappedRole = cRole === 'admin' ? 'it_admin' : cRole === 'staff' ? 'marketing_sales' : (cRole === 'ceo' ? 'ceo' : 'ceo')
+            const created = await store.create('officers', {
+              code: `OFC-M${c.id}`,
+              name: c.name || 'เจ้าหน้าที่ OPWatch',
+              email: cEmail,
+              passwordHash: c.passwordHash || fallbackHash,
+              phone: c.phone || '02 251 5777',
+              role: mappedRole,
+              department: c.department || 'บริหารจัดการระบบ',
+              position: c.position || 'Executive / Officer',
+              permissions: Array.isArray(c.permissions) && c.permissions.length ? c.permissions : ['*'],
+              status: c.status || 'active'
+            })
+            officerByEmail.set(cEmail, created)
+          }
+          // Check if this customer has any storefront orders; if none, remove admin row from `customers` so `customers` holds ONLY real shoppers/members
+          const custOrders = await store.find('orders', { where: { customerId: Number(c.id) }, limit: 1 }).catch(() => [])
+          if (custOrders.length === 0) {
+            await store.remove('customers', Number(c.id))
+          } else {
+            await store.update('customers', Number(c.id), { isAdmin: false, role: 'member' })
+          }
+        }
+      }
+
+      // 2. Seed all 5 default role accounts in `officers` (`ceo`, `it_admin`, `marketing_sales`, `warehouse`, `dealer`)
+      for (const def of defaultOfficers(fallbackHash, adminEmail)) {
+        const em = String(def.email || '').toLowerCase()
+        if (!officerByEmail.has(em)) {
+          const created = await store.create('officers', def)
+          officerByEmail.set(em, created)
+        }
+      }
+
+      // Seed at least 2 realistic storefront members in `customers` if empty after migration
+      const remainingCustomers = await store.all('customers').catch(() => [])
+      if (remainingCustomers.length === 0) {
+        const memberHash = await hashPassword('Member@2026')
+        await store.create('customers', {
+          name: 'คุณปภาวิน ทองประเสริฐ',
+          email: 'papawin.member@example.com',
+          passwordHash: memberHash,
+          phone: '081-945-2210',
+          address: '88/12 ซอยสุขุมวิท 24 แขวงคลองตัน เขตคลองเตย',
+          city: 'กรุงเทพมหานคร',
+          postalCode: '10110',
+          country: 'TH',
+          isAdmin: false,
+          role: 'member',
+          status: 'active',
+          points: 450,
+          totalSpent: 12900
+        })
+        await store.create('customers', {
+          name: 'คุณลลิตา วงศ์สุวรรณ',
+          email: 'lalita.member@example.com',
+          passwordHash: memberHash,
+          phone: '089-612-7744',
+          address: '199 ถนนนิมมานเหมินท์ ตำบลสุเทพ อำเภอเมือง',
+          city: 'เชียงใหม่',
+          postalCode: '50200',
+          country: 'TH',
+          isAdmin: false,
+          role: 'member',
+          status: 'active',
+          points: 280,
+          totalSpent: 7500
+        })
+      }
+
+      // 3. Backfill 5-channel warehouse stock + wholesale `dealerPrice` + `seriesSlug` on products
+      const prods = await store.all('products').catch(() => [])
+      let prodUpdated = 0
+      for (const p of prods) {
+        const needsBackfill =
+          p.dealerPrice === undefined ||
+          p.dealerPrice === null ||
+          Number(p.dealerPrice) <= 0 ||
+          p.stockWeb === undefined ||
+          p.stockShopee === undefined
+        if (needsBackfill) {
+          const retail = Number(p.price) || 4900
+          const dealerPrice = Math.round((retail * 0.65) / 10) * 10
+          const ch = splitFiveChannels(Number(p.stock) || 14, Number(p.id) || 1)
+          const seriesSlug = p.seriesSlug || inferSeriesSlug(p)
+          await store.update('products', Number(p.id), {
+            dealerPrice,
+            ...ch,
+            seriesSlug
+          })
+          prodUpdated++
+        }
+      }
+      const freshProds = prodUpdated > 0 ? await store.all('products') : prods
+
+      // 4. Seed Dealer's Own Inventory (`dealer_stocks`)
+      const existingDealerStocks = await store.all('dealer_stocks').catch(() => [])
+      if (existingDealerStocks.length === 0 && freshProds.length > 0) {
+        const dlr1 = officerByEmail.get('dealer@opwatch.co.th')
+        const dlr2 = officerByEmail.get('dealer-cnx@opwatch.co.th')
+        const sampleSkus = freshProds.filter((p) => p.status === 'active').slice(0, 12)
+        for (let i = 0; i < sampleSkus.length; i++) {
+          const pr = sampleSkus[i]
+          if (dlr1) {
+            await store.create('dealer_stocks', {
+              officerId: Number(dlr1.id),
+              dealerCode: dlr1.dealerCode || 'DLR-BKK-01',
+              productId: Number(pr.id),
+              sku: pr.sku,
+              onHand: (i % 5) + 2,
+              reserved: i % 3 === 0 ? 1 : 0,
+              reorderPoint: 2,
+              notes: i % 3 === 0 ? 'ติดจองรับหน้าร้าน 1 เรือน' : 'พร้อมจำหน่ายหน้าตู้โชว์'
+            })
+          }
+          if (dlr2 && i < 6) {
+            await store.create('dealer_stocks', {
+              officerId: Number(dlr2.id),
+              dealerCode: dlr2.dealerCode || 'DLR-CNX-02',
+              productId: Number(pr.id),
+              sku: pr.sku,
+              onHand: (i % 4) + 1,
+              reserved: 0,
+              reorderPoint: 2,
+              notes: 'สต็อกหน้าร้านเชียงใหม่'
+            })
+          }
+        }
+      }
+
+      // 5. Seed Online Warranty Registrations (`warranties`) & Watch Repairs (`repairs`)
+      const existingWarranties = await store.all('warranties').catch(() => [])
+      if (existingWarranties.length === 0) {
+        for (const w of defaultWarranties()) {
+          await store.create('warranties', w)
+        }
+      }
+      const existingRepairs = await store.all('repairs').catch(() => [])
+      if (existingRepairs.length === 0) {
+        for (const rep of defaultRepairs()) {
+          await store.create('repairs', rep)
+        }
+      }
+
+      // 6. Seed Full-Website Hierarchical Tree-Menu CMS (`pages`)
+      const existingPages = await store.all('pages').catch(() => [])
+      const pageBySlug = new Map<string, any>()
+      for (const pg of existingPages) pageBySlug.set(String(pg.slug), pg)
+
+      const treeSeeds = defaultTreePages(freshProds)
+      // Pass 1: create root nodes (`parentSlug === null`)
+      for (const node of treeSeeds.filter((n) => !n.parentSlug)) {
+        if (!pageBySlug.has(node.slug)) {
+          const { parentSlug: _ps, ...clean } = node
+          const created = await store.create('pages', { ...clean, parentId: null })
+          pageBySlug.set(node.slug, created)
+        }
+      }
+      // Pass 2: create child nodes with resolved `parentId`
+      for (const node of treeSeeds.filter((n) => Boolean(n.parentSlug))) {
+        if (!pageBySlug.has(node.slug)) {
+          const parent = pageBySlug.get(String(node.parentSlug))
+          const { parentSlug: _ps, ...clean } = node
+          const created = await store.create('pages', {
+            ...clean,
+            parentId: parent ? Number(parent.id) : null
+          })
+          pageBySlug.set(node.slug, created)
+        }
+      }
+      // Pass 3: nest existing legal pages (`privacy-policy`, `cookie-policy`, `terms-conditions`, `shipping-policy`, `warranty-policy`, `return-policy`) under `legal-center`
+      const legalRoot = pageBySlug.get('legal-center')
+      if (legalRoot) {
+        let orderIdx = 91
+        for (const pg of existingPages) {
+          if (pg.slug !== 'legal-center' && pg.category === 'legal' && !pg.parentId) {
+            await store.update('pages', Number(pg.id), {
+              parentId: Number(legalRoot.id),
+              pageType: 'legal',
+              routePath: pg.routePath || `/pages/${pg.slug}`,
+              styleConfig: pg.styleConfig || {
+                fontFamily: 'Prompt',
+                headingColor: '#ffffff',
+                textColor: '#23264d',
+                accentColor: '#1d2088',
+                bgColor: '#111834',
+                overlayOpacity: 0.58,
+                headingSize: 'lg'
+              },
+              sortOrder: orderIdx++
+            })
+          }
+        }
+      }
+
+      enterpriseReadyDone = true
+    } catch (err) {
+      console.error('[opwatch] ensureEnterpriseEntities warning:', err)
+    } finally {
+      enterprisePromise = null
+    }
+  })()
+  return enterprisePromise
+}
+
 /**
  * Ensures an installed store never serves an empty product catalog
  * (e.g. if a previous startup sync was interrupted or worker booted lazily).
  */
 export async function ensureCatalogReady(store: Store): Promise<void> {
   if (!isInstalled()) return
-  const [prodCount, promoCount, pageCount, eventCount] = await Promise.all([
+  const [prodCount, promoCount, pageCount, eventCount, officerCount] = await Promise.all([
     store.count('products'),
     store.count('promotions').catch(() => 1),
     store.count('pages').catch(() => 1),
-    store.count('events').catch(() => 1)
+    store.count('events').catch(() => 1),
+    store.count('officers').catch(() => 0)
   ])
   if (prodCount === 0 || promoCount === 0 || pageCount === 0 || eventCount === 0) {
     await syncOfficialCatalog(store)
+  } else if (!enterpriseReadyDone || officerCount === 0) {
+    await ensureEnterpriseEntities(store)
   }
+}
+
+export async function ensureSeeded(): Promise<void> {
+  if (!isInstalled()) return
+  await ensureCatalogReady(useStore())
 }
 
 export async function seedStore(

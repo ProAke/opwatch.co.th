@@ -1,7 +1,7 @@
 import { parseShopeeImport } from '../../../utils/shopee'
 
 export default defineEventHandler(async (event) => {
-  await requireAdmin(event)
+  await requireOfficer(event, 'products_edit')
   const body = await readBody(event)
   const parsed = await parseShopeeImport({
     url: body?.url,

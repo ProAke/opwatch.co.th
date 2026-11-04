@@ -1,5 +1,5 @@
 export default defineEventHandler(async (event) => {
-  await requireAdmin(event)
+  await requireOfficer(event, 'promotions')
   const id = Number(getRouterParam(event, 'id'))
   const ok = await useStore().remove('promotions', id)
   return { ok }

@@ -1,6 +1,6 @@
 export default defineEventHandler(async (event) => {
   if (isInstalled()) {
-    await requireAdmin(event)
+    await requireOfficer(event, '*')
   }
   const removed = removeConfig()
   resetStore()

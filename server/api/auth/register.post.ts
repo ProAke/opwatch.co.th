@@ -27,6 +27,9 @@ export default defineEventHandler(async (event) => {
     email,
     passwordHash,
     phone: String(body?.phone || '').trim() || null,
+    isAdmin: false,
+    role: 'member',
+    status: 'active',
     points: 0,
     totalSpent: 0
   })

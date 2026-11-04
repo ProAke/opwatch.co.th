@@ -4,9 +4,11 @@ const props = defineProps<{
 }>()
 
 const localePath = useLocalePath()
+const officeAuth = useOfficeAuth()
 const toast = useToast()
 
 const isEdit = computed(() => Boolean(props.productId))
+const canEditWholesale = computed(() => officeAuth.isRole('ceo', 'it_admin'))
 
 const { data: metaData } = await useFetch<any>('/api/site')
 const categories = computed(() => metaData.value?.categories || [])
@@ -26,9 +28,16 @@ const form = reactive({
   nameEn: '',
   brandSlug: 'olympianus',
   categorySlug: 'men-watches',
+  seriesSlug: '',
   price: 4900,
+  dealerPrice: 3190 as number | null,
   originalPrice: 6900 as number | null,
-  stock: 10,
+  stock: 14,
+  stockWeb: 4,
+  stockShopee: 3,
+  stockLazada: 2,
+  stockTiktok: 1,
+  stockDealer: 4,
   featured: true,
   active: true,
   images: ['/images/op/watch-990-083-blue.png'] as string[],
@@ -62,9 +71,16 @@ if (props.productId) {
     form.nameEn = p.nameEn || ''
     form.brandSlug = p.brandSlug || 'olympianus'
     form.categorySlug = p.categorySlug || 'men-watches'
+    form.seriesSlug = p.seriesSlug || ''
     form.price = Number(p.price || 0)
+    form.dealerPrice = p.dealerPrice ? Number(p.dealerPrice) : Math.round((Number(p.price || 0) * 0.65) / 10) * 10
     form.originalPrice = p.originalPrice ? Number(p.originalPrice) : null
-    form.stock = Number(p.stock ?? 10)
+    form.stockWeb = Number(p.stockWeb ?? 4)
+    form.stockShopee = Number(p.stockShopee ?? 3)
+    form.stockLazada = Number(p.stockLazada ?? 2)
+    form.stockTiktok = Number(p.stockTiktok ?? 1)
+    form.stockDealer = Number(p.stockDealer ?? 4)
+    form.stock = Number(p.stock ?? (form.stockWeb + form.stockShopee + form.stockLazada + form.stockTiktok + form.stockDealer))
     form.featured = Boolean(p.featured)
     form.active = p.active !== false
     form.images = Array.isArray(p.images) && p.images.length ? [...p.images] : [p.image || '/images/op/watch-990-083-blue.png']
@@ -198,7 +214,6 @@ async function saveProduct() {
       categorySlug: form.categorySlug,
       price: Number(form.price || 0),
       originalPrice: form.originalPrice ? Number(form.originalPrice) : null,
-      stock: Number(form.stock ?? 0),
       featured: form.featured,
       active: form.active,
       images: form.images,
@@ -208,6 +223,14 @@ async function saveProduct() {
       shopeeUrl: form.shopeeUrl,
       shopeeItemId: form.shopeeItemId,
       videoUrl: form.videoUrl,
+      seriesSlug: form.seriesSlug,
+      dealerPrice: canEditWholesale.value ? form.dealerPrice : undefined,
+      stockWeb: form.stockWeb,
+      stockShopee: form.stockShopee,
+      stockLazada: form.stockLazada,
+      stockTiktok: form.stockTiktok,
+      stockDealer: form.stockDealer,
+      stock: Number(form.stockWeb || 0) + Number(form.stockShopee || 0) + Number(form.stockLazada || 0) + Number(form.stockTiktok || 0) + Number(form.stockDealer || 0),
       seoTitle: form.seoTitle,
       seoDescription: form.seoDescription,
       seoKeywords: form.seoKeywords,
@@ -332,16 +355,50 @@ async function saveProduct() {
 
       <div class="erp-form-grid erp-form-grid--3" style="margin-top:12px">
         <div class="erp-field">
-          <label class="erp-label">ราคาขายสุทธิ (บาท) *</label>
+          <label class="erp-label">ราคาขายปลีกหน้าเว็บ (บาท) *</label>
           <input v-model.number="form.price" type="number" min="0" class="erp-input" />
         </div>
         <div class="erp-field">
           <label class="erp-label">ราคาปกติก่อนลด (แสดงป้าย -XX% &amp; Save ฿...)</label>
           <input v-model.number="form.originalPrice" type="number" min="0" class="erp-input" placeholder="เว้นว่างหากไม่มีส่วนลด" />
         </div>
-        <div class="erp-field">
-          <label class="erp-label">สต็อกคงเหลือ (เรือน)</label>
-          <input v-model.number="form.stock" type="number" min="0" class="erp-input" />
+        <div v-if="canEditWholesale" class="erp-field">
+          <label class="erp-label">ราคาเฉพาะตัวแทนจำหน่าย (บาท · เฉพาะ CEO/IT/ตัวแทนเห็น)</label>
+          <input v-model.number="form.dealerPrice" type="number" min="0" class="erp-input" />
+        </div>
+        <div v-else class="erp-field">
+          <label class="erp-label">รวมสต็อกพร้อมจำหน่ายทั้ง 5 ช่องทาง</label>
+          <input :value="Number(form.stockWeb||0)+Number(form.stockShopee||0)+Number(form.stockLazada||0)+Number(form.stockTiktok||0)+Number(form.stockDealer||0)" disabled class="erp-input" />
+        </div>
+      </div>
+
+      <!-- 5-Channel Warehouse Inventory Split -->
+      <div style="margin-top:14px;padding:14px;border-radius:14px;background:#f6f7fc;border:1px solid #e9ebf6">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:6px">
+          <strong style="font-size:13px;color:#23264d">📦 สต็อกคลังสินค้าแยก 5 ช่องทาง (รวม {{ Number(form.stockWeb||0)+Number(form.stockShopee||0)+Number(form.stockLazada||0)+Number(form.stockTiktok||0)+Number(form.stockDealer||0) }} เรือน)</strong>
+          <NuxtLink to="/office/warehouse" style="font-size:12px;color:#6c5ce7;font-weight:600;text-decoration:none">ไปที่ตารางคลัง 5 ช่องทาง →</NuxtLink>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px">
+          <div class="erp-field">
+            <label class="erp-label">🌐 Opwatch Web</label>
+            <input v-model.number="form.stockWeb" type="number" min="0" class="erp-input" />
+          </div>
+          <div class="erp-field">
+            <label class="erp-label">🛍 Shopee</label>
+            <input v-model.number="form.stockShopee" type="number" min="0" class="erp-input" />
+          </div>
+          <div class="erp-field">
+            <label class="erp-label">💙 Lazada</label>
+            <input v-model.number="form.stockLazada" type="number" min="0" class="erp-input" />
+          </div>
+          <div class="erp-field">
+            <label class="erp-label">🎵 TikTok Shop</label>
+            <input v-model.number="form.stockTiktok" type="number" min="0" class="erp-input" />
+          </div>
+          <div class="erp-field">
+            <label class="erp-label">🏪 ตัวแทนจำหน่าย</label>
+            <input v-model.number="form.stockDealer" type="number" min="0" class="erp-input" />
+          </div>
         </div>
       </div>
 

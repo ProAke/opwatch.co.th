@@ -2,8 +2,12 @@
 definePageMeta({ layout: 'office', middleware: ['office'] })
 
 const localePath = useLocalePath()
+const officeAuth = useOfficeAuth()
 const { site } = useSite()
 const toast = useToast()
+
+const isDealer = computed(() => officeAuth.role.value === 'dealer')
+const canEditProduct = computed(() => officeAuth.hasPermission('products_edit'))
 
 const search = ref('')
 const brandFilter = ref('')
@@ -69,17 +73,25 @@ useHead({ title: 'จัดการสินค้า 405+ รุ่น & ด�
   <div>
     <div class="erp-page-head">
       <div>
-        <div class="erp-kicker">MODULE 7.2 · CATALOGUE &amp; SHOPEE SYNC</div>
-        <h1 class="erp-h1">ระบบจัดการสินค้า (ทั้งหมด {{ total }} รุ่น)</h1>
+        <div class="erp-kicker">{{ isDealer ? 'AUTHORIZED DEALER WHOLESALE CATALOG' : 'MODULE 7.2 · CATALOGUE & 5-CHANNEL STOCK' }}</div>
+        <h1 class="erp-h1">{{ isDealer ? `แคตตาล็อกราคาเฉพาะตัวแทนจำหน่าย (${total} รุ่น)` : `ระบบจัดการสินค้า (ทั้งหมด ${total} รุ่น)` }}</h1>
         <p class="erp-sub">
-          ดึงสินค้าจาก Shopee, จัดเรียงรูปภาพแบบลากวาง, แก้ไขเนื้อหาด้วย CKEditor ฟรี พร้อม SEO + ASEO และ AI Automation
+          <template v-if="isDealer">
+            แสดงราคาส่งเฉพาะตัวแทนจำหน่าย เทียบราคาขายปลีก พร้อมสถานะคลังสินค้าหน้าร้านของตัวแทนเอง
+          </template>
+          <template v-else>
+            ดึงสินค้าจาก Shopee, จัดการราคาขายปลีก, สต็อก 5 ช่องทาง, ปรับภาพสตูดิโออัตโนมัติ และ AI SEO + ASEO
+          </template>
         </p>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button type="button" class="erp-btn erp-btn--violet" @click="quickShopeeOpen = !quickShopeeOpen">
+        <NuxtLink to="/office/warehouse" class="erp-btn erp-btn--ghost">
+          📦 {{ isDealer ? 'คลังสินค้าตัวแทนเอง' : 'คลังสินค้า 5 ช่องทาง' }} →
+        </NuxtLink>
+        <button v-if="canEditProduct" type="button" class="erp-btn erp-btn--violet" @click="quickShopeeOpen = !quickShopeeOpen">
           🛍 ดึงสินค้าด่วนจากลิงก์ Shopee
         </button>
-        <NuxtLink :to="localePath('/office/products/new')" class="erp-btn erp-btn--primary">
+        <NuxtLink v-if="canEditProduct" :to="localePath('/office/products/new')" class="erp-btn erp-btn--primary">
           + เพิ่มสินค้าใหม่
         </NuxtLink>
       </div>
@@ -126,8 +138,8 @@ useHead({ title: 'จัดการสินค้า 405+ รุ่น & ด�
               <th>รูป</th>
               <th>รหัส SKU / ชื่อรุ่น</th>
               <th>แบรนด์</th>
-              <th>ราคาขาย</th>
-              <th>สต็อก</th>
+              <th>{{ isDealer ? 'ราคาเฉพาะตัวแทน' : 'ราคาขาย' }}</th>
+              <th>{{ isDealer ? 'คลังร้านตัวเอง' : 'สต็อก 5 ช่องทาง' }}</th>
               <th>SEO/ASEO</th>
               <th>สถานะ</th>
               <th>จัดการ</th>
@@ -150,15 +162,32 @@ useHead({ title: 'จัดการสินค้า 405+ รุ่น & ด�
               </td>
               <td><span class="erp-chip">{{ p.brandSlug }}</span></td>
               <td>
-                <strong>{{ fmt(p.price) }}</strong>
-                <div v-if="p.originalPrice > p.price" style="font-size:11px;color:#94a3b8;text-decoration:line-through">
-                  {{ fmt(p.originalPrice) }}
-                </div>
+                <template v-if="isDealer">
+                  <strong style="color:#6c5ce7">{{ fmt(p.effectiveDealerPrice || p.dealerPrice) }}</strong>
+                  <div style="font-size:11px;color:#94a3b8">ป้าย: {{ fmt(p.price) }}</div>
+                </template>
+                <template v-else>
+                  <strong>{{ fmt(p.price) }}</strong>
+                  <div v-if="p.originalPrice > p.price" style="font-size:11px;color:#94a3b8;text-decoration:line-through">
+                    {{ fmt(p.originalPrice) }}
+                  </div>
+                  <div v-if="p.dealerPrice" style="font-size:11px;color:#6c5ce7">
+                    ตัวแทน: {{ fmt(p.dealerPrice) }}
+                  </div>
+                </template>
               </td>
               <td>
-                <span :style="{ color: Number(p.stock) <= 3 ? '#e11d48' : '#0e9f6e', fontWeight: 700 }">
-                  {{ p.stock }}
-                </span>
+                <template v-if="isDealer">
+                  <span style="font-weight:700;color:#0e9f6e">{{ p.dealerOwnStock || 0 }} เรือน</span>
+                </template>
+                <template v-else>
+                  <span :style="{ color: Number(p.stock) <= 3 ? '#e11d48' : '#0e9f6e', fontWeight: 700 }">
+                    รวม {{ p.stock }}
+                  </span>
+                  <div style="font-size:10.5px;color:#8a8fb1">
+                    W:{{ p.stockWeb ?? '-' }} · S:{{ p.stockShopee ?? '-' }} · L:{{ p.stockLazada ?? '-' }} · T:{{ p.stockTiktok ?? '-' }} · D:{{ p.stockDealer ?? '-' }}
+                  </div>
+                </template>
               </td>
               <td>
                 <span class="erp-chip" :class="p.seoTitle || p.aseoSummary ? 'erp-chip--violet' : ''">
@@ -172,9 +201,10 @@ useHead({ title: 'จัดการสินค้า 405+ รุ่น & ด�
               </td>
               <td>
                 <div style="display:flex;gap:6px">
-                  <NuxtLink :to="localePath(`/office/products/${p.id}`)" class="erp-btn erp-btn--sm">แก้ไข / AI</NuxtLink>
+                  <NuxtLink v-if="canEditProduct" :to="localePath(`/office/products/${p.id}`)" class="erp-btn erp-btn--sm">แก้ไข / AI</NuxtLink>
+                  <NuxtLink v-else to="/office/warehouse" class="erp-btn erp-btn--sm">สต็อก</NuxtLink>
                   <NuxtLink :to="localePath(`/products/${p.slug}`)" target="_blank" class="erp-btn erp-btn--sm">ดูหน้าเว็บ</NuxtLink>
-                  <button type="button" class="erp-btn erp-btn--sm erp-btn--danger" @click="removeProduct(p)">ลบ</button>
+                  <button v-if="canEditProduct" type="button" class="erp-btn erp-btn--sm erp-btn--danger" @click="removeProduct(p)">ลบ</button>
                 </div>
               </td>
             </tr>

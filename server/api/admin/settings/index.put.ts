@@ -1,5 +1,5 @@
 export default defineEventHandler(async (event) => {
-  await requireAdmin(event)
+  await requireRole(event, ['ceo', 'it_admin'])
   const body = await readBody(event)
   const cfg = getConfig()
   const store = useStore()

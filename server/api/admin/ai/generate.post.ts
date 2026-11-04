@@ -23,6 +23,8 @@ const TASK_MAP: Record<string, AiTaskPayload['task']> = {
   site_copy: 'site_copy',
   'freeform-draft': 'freeform_draft',
   freeform_draft: 'freeform_draft',
+  'warranty-reply': 'warranty_reply',
+  warranty_reply: 'warranty_reply',
   shopee_enrich: 'shopee_enrich',
   chat_reply: 'chat_reply'
 }
@@ -39,22 +41,33 @@ const AGENT_BY_TASK: Record<string, string> = {
   calendar_plan: 'OP-PROMO',
   event_detail: 'OP-PROMO',
   order_reply: 'OP-CARE',
+  warranty_reply: 'OP-CARE',
   chat_reply: 'OP-CARE',
   freeform_draft: 'OP-COPY'
 }
 
 export default defineEventHandler(async (event) => {
-  await requireAdmin(event)
+  const officer = await requireAdmin(event)
   const body = await readBody(event)
-  const rawTask = String(body?.task || 'product_full')
+  const rawTask = String(body?.task || body?.type || 'product_full')
   const task: AiTaskPayload['task'] = TASK_MAP[rawTask] || 'product_full'
-  const agentCode = String(body?.agentCode || body?.input?.agentCode || AGENT_BY_TASK[task] || 'OP-COPY')
+
+  if (task === 'warranty_reply') {
+    if (!officerHasPermission(officer, 'warranty') && !officerHasPermission(officer, 'ai')) {
+      throw createError({ statusCode: 403, statusMessage: 'office.forbidden' })
+    }
+  } else if (!officerHasPermission(officer, 'ai') && !officerHasPermission(officer, 'pages') && !officerHasPermission(officer, 'products_edit')) {
+    throw createError({ statusCode: 403, statusMessage: 'office.forbidden' })
+  }
+
+  const inputObj = body?.input && typeof body.input === 'object' ? body.input : body || {}
+  const agentCode = String(body?.agentCode || inputObj?.agentCode || AGENT_BY_TASK[task] || 'OP-COPY')
 
   const out = await runAiTask({
     task,
     locale: body?.locale === 'en' ? 'en' : 'th',
     agentCode,
-    input: body?.input || {}
+    input: inputObj
   })
 
   try {

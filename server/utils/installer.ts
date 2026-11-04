@@ -201,27 +201,31 @@ export async function runInstall(payload: InstallPayload): Promise<InstallResult
     console.error('[opwatch] seed error:', err)
   }
 
-  // Ensure the administrator exists as a customer row.
+  // Ensure the administrator exists as a CEO Officer row (strictly separated from storefront `customers`).
   try {
     const store = useStore()
-    const existing = await store.findOne('customers', { where: { email: cfg.admin.email } })
+    const existing = await store.findOne('officers', { where: { email: cfg.admin.email } })
     if (!existing) {
-      await store.create('customers', {
-        name: 'Administrator',
+      await store.create('officers', {
+        code: 'OFC-001',
+        name: 'ผู้บริหารสูงสุด (CEO)',
         email: cfg.admin.email,
         passwordHash: cfg.admin.passwordHash,
-        isAdmin: true,
-        points: 0,
-        totalSpent: 0
+        role: 'ceo',
+        department: 'ผู้บริหารสูงสุด (Executive)',
+        position: 'Chief Executive Officer',
+        permissions: ['*'],
+        status: 'active'
       })
     } else {
-      await store.update('customers', Number(existing.id), {
+      await store.update('officers', Number(existing.id), {
         passwordHash: cfg.admin.passwordHash,
-        isAdmin: true
+        role: 'ceo',
+        status: 'active'
       })
     }
   } catch (err: any) {
-    console.error('[opwatch] admin create error:', err)
+    console.error('[opwatch] officer admin create error:', err)
   }
 
   resetStore()

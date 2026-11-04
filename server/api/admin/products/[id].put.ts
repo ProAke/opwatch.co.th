@@ -1,5 +1,5 @@
 export default defineEventHandler(async (event) => {
-  await requireAdmin(event)
+  const officer = await requirePermission(event, ['products_edit', 'products_stock'])
   const id = Number(getRouterParam(event, 'id'))
   const store = useStore()
   const body = await readBody(event)
@@ -9,14 +9,38 @@ export default defineEventHandler(async (event) => {
 
   const patch: Record<string, any> = { updatedAt: new Date().toISOString() }
   for (const key of [
-    'name', 'nameEn', 'nameTh', 'sku', 'slug', 'brand', 'brandId', 'categoryId', 'price',
-    'originalPrice', 'priceCompare', 'currency', 'images', 'shortDescription',
-    'description', 'descriptionEn', 'descriptionTh', 'specs', 'stock',
+    'name', 'nameEn', 'nameTh', 'sku', 'slug', 'brand', 'brandId', 'categoryId', 'seriesSlug',
+    'price', 'dealerPrice', 'originalPrice', 'priceCompare', 'currency',
+    'images', 'shortDescription', 'description', 'descriptionEn', 'descriptionTh',
+    'specs', 'stock', 'stockWeb', 'stockShopee', 'stockLazada', 'stockTiktok', 'stockDealer',
     'status', 'badges', 'featured', 'sortOrder',
     'seoTitle', 'seoDescription', 'seoKeywords', 'aseoSummary', 'aseoFaqs',
     'shopeeUrl', 'shopeeItemId', 'videoUrl', 'giftWrapAvailable', 'pointsMultiplier'
   ]) {
     if (body?.[key] !== undefined) patch[key] = body[key]
+  }
+
+  // Only CEO / IT Admin can modify wholesale dealerPrice
+  if (patch.dealerPrice !== undefined && officer.role !== 'ceo' && officer.role !== 'it_admin') {
+    delete patch.dealerPrice
+  }
+
+  // Sync total `stock` whenever any of the 5 channel stock fields is updated
+  const touchesChannels = ['stockWeb', 'stockShopee', 'stockLazada', 'stockTiktok', 'stockDealer'].some(
+    (k) => patch[k] !== undefined
+  )
+  if (touchesChannels) {
+    const sw = Number(patch.stockWeb ?? existing.stockWeb ?? 0)
+    const ss = Number(patch.stockShopee ?? existing.stockShopee ?? 0)
+    const sl = Number(patch.stockLazada ?? existing.stockLazada ?? 0)
+    const st = Number(patch.stockTiktok ?? existing.stockTiktok ?? 0)
+    const sd = Number(patch.stockDealer ?? existing.stockDealer ?? 0)
+    patch.stockWeb = Math.max(0, sw)
+    patch.stockShopee = Math.max(0, ss)
+    patch.stockLazada = Math.max(0, sl)
+    patch.stockTiktok = Math.max(0, st)
+    patch.stockDealer = Math.max(0, sd)
+    patch.stock = patch.stockWeb + patch.stockShopee + patch.stockLazada + patch.stockTiktok + patch.stockDealer
   }
 
   if (body?.brandSlug && body?.brandId === undefined) {

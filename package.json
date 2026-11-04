@@ -6,8 +6,8 @@
   "type": "module",
   "scripts": {
     "dev": "nuxt dev",
-    "build": "nuxt build",
-    "generate": "nuxt generate",
+    "build": "NODE_OPTIONS='--max-old-space-size=4096' nuxt build",
+    "generate": "NODE_OPTIONS='--max-old-space-size=4096' nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "db:init": "node scripts/init-db.mjs"
