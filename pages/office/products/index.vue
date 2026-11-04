@@ -25,29 +25,75 @@ const { data, refresh, pending } = await useFetch<any>('/api/admin/products', {
 const items = computed(() => data.value?.items || data.value?.products || [])
 const total = computed(() => Number(data.value?.total || items.value.length))
 
-// Quick Shopee 1-Click Create Modal
+// Shopee Pre-Import Inspection & Staging Studio (`ตรวจสอบแล้วทำรายการก่อนดึงข้อมูล ภาพเนื้อหา พร้อมโปรโมชั่น`)
 const quickShopeeOpen = ref(false)
-const quickShopeeUrl = ref('')
+const quickShopeeUrl = ref('https://shopee.co.th/shop/232486539/recommendation-landing?pageNumber=1&upstream=pdp')
+const quickShopeeRaw = ref('')
+const showRawShopeePaste = ref(false)
+const shopeeInspecting = ref(false)
 const quickShopeeSaving = ref(false)
 
-async function quickImportAndCreate() {
-  if (!quickShopeeUrl.value.trim()) return
+const stagedReport = ref<any>(null)
+const selectedStagedSkus = ref<string[]>([])
+const selectedStagedPromos = ref<string[]>([])
+const optImportImages = ref(true)
+const optImportContent = ref(true)
+const optImportPromotions = ref(true)
+
+async function inspectShopeeBeforeImport() {
+  if (!quickShopeeUrl.value.trim() && !quickShopeeRaw.value.trim()) return
+  shopeeInspecting.value = true
+  try {
+    const res = await $fetch<any>('/api/admin/products/shopee-import', {
+      method: 'POST',
+      body: {
+        url: quickShopeeUrl.value.trim(),
+        rawPayload: quickShopeeRaw.value.trim() || undefined,
+        commit: false
+      }
+    })
+    stagedReport.value = res
+    selectedStagedSkus.value = (res.items || []).map((it: any) => String(it.sku))
+    selectedStagedPromos.value = (res.promotions || []).map((pr: any) => String(pr.slug))
+    toast.success(`ตรวจสอบสำเร็จ: พบสินค้า ${res.items?.length || 0} รายการ และโปรโมชั่น ${res.promotions?.length || 0} แคมเปญ`)
+  } catch (e: any) {
+    toast.error(e?.data?.statusMessage || 'ไม่สามารถตรวจสอบข้อมูล Shopee ได้')
+  } finally {
+    shopeeInspecting.value = false
+  }
+}
+
+function toggleAllStagedSkus(checked: boolean) {
+  if (!stagedReport.value?.items) return
+  selectedStagedSkus.value = checked ? stagedReport.value.items.map((it: any) => String(it.sku)) : []
+}
+
+async function commitSelectedShopeeImport() {
+  if (!selectedStagedSkus.value.length && !(optImportPromotions.value && selectedStagedPromos.value.length)) {
+    toast.error('กรุณาเลือกรายการสินค้าหรือโปรโมชั่นอย่างน้อย 1 รายการ')
+    return
+  }
   quickShopeeSaving.value = true
   try {
     const res = await $fetch<any>('/api/admin/products/shopee-import', {
       method: 'POST',
-      body: { url: quickShopeeUrl.value.trim(), saveImmediately: true }
+      body: {
+        url: quickShopeeUrl.value.trim(),
+        rawPayload: quickShopeeRaw.value.trim() || undefined,
+        commit: true,
+        selectedSkus: selectedStagedSkus.value,
+        selectedPromotionSlugs: selectedStagedPromos.value,
+        importImages: optImportImages.value,
+        importContent: optImportContent.value,
+        importPromotions: optImportPromotions.value
+      }
     })
-    toast.success('ดึงและบันทึกสินค้าจาก Shopee สำเร็จ!')
+    toast.success(`ดึงข้อมูลสำเร็จ: สินค้า ${res.count || 0} รุ่น · โปรโมชั่น ${res.promotionsCount || 0} แคมเปญ · คูปอง ${res.couponsCount || 0} รายการ!`)
+    stagedReport.value = null
     quickShopeeOpen.value = false
-    quickShopeeUrl.value = ''
     await refresh()
-    if (res.product?.id) {
-      await navigateTo(localePath(`/office/products/${res.product.id}`))
-    }
   } catch (e: any) {
-    toast.error(e?.data?.statusMessage || 'กรุณาเปิดหน้าเพิ่มสินค้าเพื่อวางข้อมูลเสริมจาก Shopee')
-    await navigateTo(localePath('/office/products/new'))
+    toast.error(e?.data?.statusMessage || 'บันทึกข้อมูลจาก Shopee ไม่สำเร็จ')
   } finally {
     quickShopeeSaving.value = false
   }
@@ -88,8 +134,13 @@ useHead({ title: 'จัดการสินค้า 405+ รุ่น & ด�
         <NuxtLink to="/office/warehouse" class="erp-btn erp-btn--ghost">
           📦 {{ isDealer ? 'คลังสินค้าตัวแทนเอง' : 'คลังสินค้า 5 ช่องทาง' }} →
         </NuxtLink>
-        <button v-if="canEditProduct" type="button" class="erp-btn erp-btn--violet" @click="quickShopeeOpen = !quickShopeeOpen">
-          🛍 ดึงสินค้าด่วนจากลิงก์ Shopee
+        <button
+          v-if="canEditProduct"
+          type="button"
+          class="erp-btn erp-btn--violet"
+          @click="quickShopeeOpen = !quickShopeeOpen; if (quickShopeeOpen && !stagedReport) inspectShopeeBeforeImport()"
+        >
+          🛍 ตรวจสอบ &amp; ดึงข้อมูล Shopee (Shop 232486539)
         </button>
         <NuxtLink v-if="canEditProduct" :to="localePath('/office/products/new')" class="erp-btn erp-btn--primary">
           + เพิ่มสินค้าใหม่
@@ -97,19 +148,173 @@ useHead({ title: 'จัดการสินค้า 405+ รุ่น & ด�
       </div>
     </div>
 
-    <!-- Quick Shopee Bar -->
-    <div v-if="quickShopeeOpen" class="erp-panel" style="border-color:#f97316">
+    <!-- Shopee Pre-Import Inspection & Staging Panel -->
+    <div v-if="quickShopeeOpen" class="erp-panel" style="border:1.5px solid #ee4d2d;background:#fffdfb;margin-bottom:18px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:12px">
+        <div>
+          <div style="font-size:11px;font-weight:700;letter-spacing:0.08em;color:#ee4d2d">
+            SHOPEE OFFICIAL STAGING INSPECTOR · ตรวจสอบแล้วทำรายการก่อนดึงข้อมูล
+          </div>
+          <h2 style="margin:4px 0 0;font-size:18px;color:#23264d">
+            🛍 ตรวจสอบรายการสินค้า ภาพ เนื้อหา และโปรโมชั่นจาก Shopee (Shop ID: 232486539)
+          </h2>
+        </div>
+        <button type="button" class="erp-btn erp-btn--sm" @click="showRawShopeePaste = !showRawShopeePaste">
+          {{ showRawShopeePaste ? 'ซ่อนช่องวาง JSON/HTML' : '+ วาง JSON / HTML จาก Shopee เพิ่มเติม' }}
+        </button>
+      </div>
+
       <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
-        <strong style="color:#fdba74">🛍 Quick Shopee Import:</strong>
         <input
           v-model="quickShopeeUrl"
           class="erp-input"
-          style="flex:1;min-width:260px"
-          placeholder="วางลิงก์สินค้า Shopee เช่น https://shopee.co.th/...-i.12345.67890"
+          style="flex:1;min-width:280px"
+          placeholder="https://shopee.co.th/shop/232486539/recommendation-landing?pageNumber=1&upstream=pdp"
         />
-        <button type="button" class="erp-btn erp-btn--primary" :disabled="quickShopeeSaving" @click="quickImportAndCreate">
-          {{ quickShopeeSaving ? 'กำลังดึงข้อมูล...' : 'ดึงและเปิดหน้าแก้ไขทันที →' }}
+        <button
+          type="button"
+          class="erp-btn erp-btn--violet"
+          :disabled="shopeeInspecting"
+          @click="inspectShopeeBeforeImport"
+        >
+          {{ shopeeInspecting ? 'กำลังตรวจสอบรายการ...' : '🔍 1. ตรวจสอบ & ทำรายการก่อนดึงข้อมูล' }}
         </button>
+      </div>
+
+      <div v-if="showRawShopeePaste" style="margin-top:10px">
+        <textarea
+          v-model="quickShopeeRaw"
+          class="erp-input"
+          rows="4"
+          style="width:100%;font-family:monospace;font-size:12px"
+          placeholder="วาง JSON จาก Network API ของ Shopee (เช่น recommendation_v2 / search_items) หรือข้อความรายละเอียดสินค้าเพื่อแปลงเป็นรายการอัตโนมัติ..."
+        />
+      </div>
+
+      <!-- Staging Checklist Result -->
+      <div v-if="stagedReport" style="margin-top:16px;padding-top:16px;border-top:1px solid #f1e4de">
+        <div style="background:#fff4f0;border:1px solid #fed7aa;border-radius:10px;padding:10px 14px;font-size:12.5px;color:#7c2d12;margin-bottom:14px">
+          <strong>ร้านค้า:</strong> {{ stagedReport.shop?.shopName }} ·
+          <span>{{ stagedReport.shop?.noteTh }}</span>
+        </div>
+
+        <!-- Summary Chips & Import Scope Checkboxes -->
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px">
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <span class="erp-chip erp-chip--violet">สินค้าทั้งหมด {{ stagedReport.summary?.totalItems }} รุ่น</span>
+            <span class="erp-chip erp-chip--mint">+ รุ่นใหม่ยังไม่มีในเว็บ {{ stagedReport.summary?.newItemsCount }} รุ่น</span>
+            <span class="erp-chip">↻ มีในเว็บแล้ว (ซิงก์ราคา/โปร) {{ stagedReport.summary?.existingUpdateCount }} รุ่น</span>
+            <span class="erp-chip erp-chip--rose">🎁 โปรโมชั่น {{ stagedReport.summary?.totalPromotions }} แคมเปญ + {{ stagedReport.summary?.totalCoupons }} คูปอง</span>
+          </div>
+
+          <div style="display:flex;gap:14px;flex-wrap:wrap;font-size:13px;font-weight:600;color:#23264d">
+            <label style="display:inline-flex;align-items:center;gap:5px;cursor:pointer">
+              <input v-model="optImportImages" type="checkbox" /> ดึงภาพสินค้า
+            </label>
+            <label style="display:inline-flex;align-items:center;gap:5px;cursor:pointer">
+              <input v-model="optImportContent" type="checkbox" /> ดึงเนื้อหา &amp; สเปก
+            </label>
+            <label style="display:inline-flex;align-items:center;gap:5px;cursor:pointer">
+              <input v-model="optImportPromotions" type="checkbox" /> ดึงโปรโมชั่น &amp; คูปอง
+            </label>
+          </div>
+        </div>
+
+        <!-- Staged Products Table -->
+        <div class="erp-table-wrap" style="max-height:380px;overflow:auto;border:1px solid #e9ebf6;border-radius:12px;background:#ffffff">
+          <table class="erp-table">
+            <thead>
+              <tr>
+                <th style="width:36px">
+                  <input
+                    type="checkbox"
+                    :checked="selectedStagedSkus.length === (stagedReport.items?.length || 0)"
+                    @change="(e: any) => toggleAllStagedSkus(e.target.checked)"
+                  />
+                </th>
+                <th>ภาพ</th>
+                <th>รหัส SKU / เนื้อหาสินค้า</th>
+                <th>แบรนด์</th>
+                <th>ราคา Shopee / ปกติ</th>
+                <th>โปรโมชั่น / ของแถม</th>
+                <th>สถานะเทียบเว็บ</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="st in stagedReport.items" :key="st.sku">
+                <td>
+                  <input v-model="selectedStagedSkus" type="checkbox" :value="st.sku" />
+                </td>
+                <td>
+                  <div style="position:relative;width:48px;height:48px">
+                    <img
+                      :src="(st.images && st.images[0]) || '/images/op/watch-990-083-blue.png'"
+                      alt=""
+                      style="width:48px;height:48px;object-fit:contain;border:1px solid #e9ebf6;border-radius:8px;background:#fff;padding:2px"
+                    />
+                    <span style="position:absolute;bottom:-4px;right:-4px;background:#23264d;color:#fff;font-size:9.5px;padding:1px 5px;border-radius:99px">
+                      {{ st.imageCount || st.images?.length || 1 }} ภาพ
+                    </span>
+                  </div>
+                </td>
+                <td>
+                  <div style="font-family:monospace;font-size:11.5px;font-weight:700;color:#ee4d2d">{{ st.sku }}</div>
+                  <div style="font-weight:600;font-size:13px;color:#23264d">{{ st.nameTh }}</div>
+                  <div style="font-size:11.5px;color:#64748b;max-width:380px">{{ st.shortDescription }}</div>
+                </td>
+                <td><span class="erp-chip">{{ st.brandSlug }}</span></td>
+                <td>
+                  <strong style="color:#ee4d2d">{{ fmt(st.price) }}</strong>
+                  <div v-if="st.originalPrice > st.price" style="font-size:11px;color:#94a3b8;text-decoration:line-through">
+                    {{ fmt(st.originalPrice) }} (-{{ st.discountPct }}%)
+                  </div>
+                </td>
+                <td>
+                  <span class="erp-chip erp-chip--rose" style="font-size:11px">{{ st.promoTag || 'ราคาพิเศษ Shopee' }}</span>
+                  <div v-if="st.freebieText" style="font-size:11px;color:#0e9f6e;margin-top:3px">🎁 {{ st.freebieText }}</div>
+                </td>
+                <td>
+                  <span v-if="st.action === 'create'" class="erp-chip erp-chip--mint">+ รุ่นใหม่ (เพิ่มเข้าเว็บ)</span>
+                  <span v-else class="erp-chip erp-chip--violet">↻ มีแล้ว ({{ st.existingSku }} · ซิงก์ข้อมูล)</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Staged Promotions List -->
+        <div v-if="optImportPromotions && stagedReport.promotions?.length" style="margin-top:14px">
+          <div style="font-size:12.5px;font-weight:700;color:#23264d;margin-bottom:8px">
+            🎁 รายการแคมเปญโปรโมชั่นจาก Shopee ที่จะซิงก์เข้าหน้า /promotions และหน้าแรก:
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px">
+            <label
+              v-for="pr in stagedReport.promotions"
+              :key="pr.slug"
+              style="display:flex;gap:10px;align-items:flex-start;padding:10px 12px;background:#ffffff;border:1px solid #e9ebf6;border-radius:10px;cursor:pointer"
+            >
+              <input v-model="selectedStagedPromos" type="checkbox" :value="pr.slug" style="margin-top:3px" />
+              <div style="font-size:12px">
+                <div style="font-weight:700;color:#23264d">{{ pr.titleTh }}</div>
+                <div style="color:#64748b;margin-top:2px">{{ pr.discountLabel }} · โค้ด <code>{{ pr.couponCode }}</code> · เชื่อม {{ pr.skus?.length || 0 }} รุ่น</div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Final Confirm Action -->
+        <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:16px">
+          <button type="button" class="erp-btn" @click="stagedReport = null; quickShopeeOpen = false">ปิดหน้าต่างตรวจสอบ</button>
+          <button
+            type="button"
+            class="erp-btn erp-btn--primary"
+            style="background:#ee4d2d;border-color:#ee4d2d"
+            :disabled="quickShopeeSaving"
+            @click="commitSelectedShopeeImport"
+          >
+            {{ quickShopeeSaving ? 'กำลังดึงข้อมูลเข้าเว็บไซต์...' : `✅ 2. ยืนยันดึงข้อมูลที่เลือก (${selectedStagedSkus.length} สินค้า + ${optImportPromotions ? selectedStagedPromos.length : 0} โปรโมชั่น)` }}
+          </button>
+        </div>
       </div>
     </div>
 

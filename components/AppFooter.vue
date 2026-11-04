@@ -14,16 +14,6 @@ function scrollToTop() {
     <!-- Upper Main Footer: Official Thailand Distributor — บริษัท อินเตอร์ไทมส์ จำกัด -->
     <div class="op-ftr__main">
       <div class="container op-ftr__inner">
-        <!-- Official Inter Times Blue Logo at Bottom (inter time จะอยู่ด้านล่าง) -->
-        <div class="op-ftr__company-logo-wrap">
-          <img
-            src="/images/logos/inter-times-blue.jpg"
-            alt="บริษัท อินเตอร์ไทมส์ จำกัด (Inter Times Co., Ltd.)"
-            class="op-ftr__company-logo"
-            loading="lazy"
-          />
-        </div>
-
         <!-- Official Address & Phone -->
         <div class="op-ftr__distributors">
           <h3 class="op-ftr__company-name">
@@ -105,6 +95,7 @@ function scrollToTop() {
         <nav class="op-ftr__quick" aria-label="Boutique links">
           <NuxtLink :to="localePath('/')">{{ locale === 'th' ? 'หน้าแรก' : 'Home' }}</NuxtLink>
           <NuxtLink :to="localePath('/promotions')">{{ locale === 'th' ? 'โปรโมชั่น' : 'Promotions' }}</NuxtLink>
+          <NuxtLink :to="localePath('/reviews')">{{ locale === 'th' ? 'บทความ-รีวิวสินค้า' : 'Articles & Reviews' }}</NuxtLink>
           <NuxtLink :to="localePath('/products')">Collections</NuxtLink>
           <NuxtLink :to="localePath('/brands/olympianus')">Olym Pianus</NuxtLink>
           <NuxtLink :to="localePath('/brands/olympia-star')">Olympia Star</NuxtLink>

@@ -1582,6 +1582,438 @@ export function defaultTreePages(allProducts: Record<string, any>[]) {
       sortOrder: 52
     },
 
+    // ==================== ROOT 5.5: บทความ & รีวิวเรือนเวลา (ARTICLES & WATCH REVIEWS) ====================
+    {
+      slug: 'site-reviews',
+      parentSlug: null,
+      pageType: 'system_page',
+      routePath: '/reviews',
+      category: 'main_menu',
+      heroEyebrow: 'HOROLOGICAL JOURNAL & VERIFIED REVIEWS',
+      title: 'บทความ & รีวิวสินค้า (Articles & Watch Reviews)',
+      titleTh: 'บทความเจาะลึก & รีวิวเรือนเวลาจริงบนข้อมือ',
+      titleEn: 'Horological Articles & Hands-On Watch Reviews',
+      summary: 'รวมบทความความรู้นาฬิกา รีวิวเจาะลึกจากการใช้งานจริง คู่มือเปรียบเทียบกลไก และเสียงตอบรับจากผู้ครอบครองเรือนเวลา Olym Pianus, Olympia Star และ Ogival',
+      summaryEn: 'In-depth hands-on watch reviews, movement comparisons, horology care guides, and verified owner testimonials.',
+      contentTh: `<p>เจาะลึกทุกรายละเอียดของเรือนเวลาแท้โดยทีมผู้เชี่ยวชาญ <strong>บริษัท อินเตอร์ไทมส์ จำกัด</strong> ทั้งวัสดุสแตนเลส 316L กระจกแซฟไฟร์แท้ กลไกออโตเมติกและสวิสควอตซ์ พร้อมเชื่อมโยงเรือนเวลารุ่นจริงให้เลือกชมทันที</p>`,
+      banner: '/images/op/hero-diver-dark.jpg',
+      styleConfig: { fontFamily: 'Prompt', headingColor: '#ffffff', textColor: '#23264d', accentColor: '#1d2088', bgColor: '#101444', overlayOpacity: 0.6, headingSize: 'xl' },
+      productIds: [...byBrand('olympianus', 2, '899832'), ...byBrand('ogival', 2)],
+      seoTitle: 'บทความและรีวิวนาฬิกา Olym Pianus, Olympia Star, Ogival | OPWatch Thailand',
+      seoDescription: 'อ่านรีวิวเจาะลึกนาฬิกาของแท้ คู่มือเลือกซื้อเปรียบเทียบกลไก Automatic vs Quartz และรีวิวผู้ใช้งานจริง โดย บริษัท อินเตอร์ไทมส์ จำกัด',
+      seoKeywords: 'รีวิวนาฬิกา OP, รีวิว Olym Pianus, รีวิว Ogival, รีวิว Olympia Star, บทความนาฬิกา',
+      status: 'published',
+      sortOrder: 60
+    },
+    {
+      slug: 'review-op-899832ags-diver',
+      parentSlug: 'site-reviews',
+      pageType: 'article_review',
+      routePath: '/reviews/review-op-899832ags-diver',
+      brandSlug: 'olympianus',
+      seriesKey: 'sport-diver',
+      category: 'hands-on-review',
+      heroEyebrow: 'HANDS-ON WATCH REVIEW · OLYM PIANUS SPORT DIVER',
+      title: 'รีวิวเจาะลึก Olym Pianus 899832AGS Sport Diver Automatic',
+      titleTh: 'รีวิวเจาะลึก Olym Pianus 899832AGS — สปอร์ตไดเวอร์ขอบเซรามิก กระจกแซฟไฟร์แท้ ที่คุ้มค่าที่สุดในงบไม่ถึงหมื่น',
+      titleEn: 'Hands-On Review: Olym Pianus 899832AGS Automatic Ceramic Bezel Diver',
+      summary: 'ทดสอบสวมใส่จริงกับเรือนเวลาสปอร์ตออโตเมติกยอดนิยมอันดับ 1 ของค่าย OP มาพร้อมขอบเซรามิกเงางาม เลนส์ขยายวันที่บนกระจกแซฟไฟร์แท้ และพรายน้ำสว่างคมชัดในที่มืด',
+      summaryEn: 'Real-world wrist test of OP’s #1 automatic sport diver featuring a ceramic unidirectional bezel, cyclops sapphire crystal, and screw-down crown.',
+      contentTh: `
+        <h2>ความประทับใจแรกเมื่อสัมผัสตัวเรือนจริงบนข้อมือ</h2>
+        <p>หากพูดถึงนาฬิกาสปอร์ตออโตเมติกในระดับราคา 4,900–7,600 บาท ที่ให้สเปกเทียบชั้นนาฬิกาหลักหมื่นปลาย <strong>Olym Pianus 899832AGS</strong> คือรุ่นที่นักสะสมชาวไทยพูดถึงมากที่สุด ทันทีที่หยิบขึ้นสวมบนข้อมือ ขนาดตัวเรือน <strong>40 มิลลิเมตร</strong> ให้สัดส่วนที่ลงตัวกับข้อมือชายไทย (16–18.5 ซม.) ไม่เทอะทะและสามารถสอดเข้าใต้ปลายแขนเสื้อเชิ้ตได้อย่างแนบเนียน</p>
+        <h3>1. ขอบหน้าปัดเซรามิก & กระจกแซฟไฟร์แท้พร้อม Cyclops</h3>
+        <p>จุดเด่นที่สร้างความแตกต่างทันทีคือ <strong>ขอบ Bezel เซรามิกแท้</strong> ที่ให้ความเงาลึกสะท้อนแสงอย่างมีมิติ ทนทานต่อรอยขีดข่วนและสีไม่ซีดจางตามกาลเวลา จับคู่กับกระจกหน้าปัด <strong>Sapphire Crystal แท้</strong> พร้อมเลนส์นูนขยายวันที่ตำแหน่ง 3 นาฬิกา ช่วยให้อ่านค่าวันที่ได้ชัดเจนแม้มองเพียงเสี้ยววินาที</p>
+        <h3>2. ขุมพลัง Japanese Automatic ทนทาน ดูแลรักษาง่าย</h3>
+        <p>ภายในขับเคลื่อนด้วยกลไกออโตเมติกมาตรฐานญี่ปุ่น รองรับทั้งการขึ้นลานอัตโนมัติจากการขยับข้อมือ การหมุนเม็ดมะยมขึ้นลานด้วยมือ (Hand-winding) และระบบหยุดเข็มวินาทีเมื่อดึงตั้งเวลา (Hacking Seconds) เม็ดมะยมและฝาหลังเป็นแบบขันเกลียวแน่นหนา มั่นใจได้ในการใช้งานชีวิตประจำวัน</p>
+        <h3>สรุปผลการรีวิว (Verdict)</h3>
+        <p>ด้วยงานประกอบสายสแตนเลสสตีลตัน 316L กระจกแซฟไฟร์แท้ ขอบเซรามิก และการรับประกันศูนย์ไทย 2 ปีโดย <strong>บริษัท อินเตอร์ไทมส์ จำกัด</strong> ทำให้รุ่น 899832AGS ครองแชมป์ความคุ้มค่าอันดับ 1 สำหรับผู้ที่กำลังมองหานาฬิกาจักรกลเรือนเก่งที่ใส่ได้ทุกวัน</p>
+      `,
+      contentEn: `
+        <h2>First Impressions on the Wrist</h2>
+        <p>In the sub-10,000 THB mechanical category, the <strong>Olym Pianus 899832AGS</strong> stands in a league of its own. Its 40mm 316L stainless steel case wears effortlessly on Asian wrists while delivering a glossy ceramic bezel, genuine Sapphire Crystal with Cyclops date magnifier, and reliable Japanese automatic movement with hacking and hand-winding.</p>
+      `,
+      banner: '/images/op/banner-899832ags.jpg',
+      gallery: ['/images/op/hero-diver-dark.jpg', '/images/op/watch-899831-green.png', '/images/op/square-diver-glow.jpg'],
+      styleConfig: {
+        fontFamily: 'Prompt',
+        headingColor: '#ffffff',
+        textColor: '#1e2438',
+        accentColor: '#1d2088',
+        bgColor: '#0e1638',
+        overlayOpacity: 0.58,
+        headingSize: 'xl',
+        rating: 4.9,
+        author: 'ทีมผู้เชี่ยวชาญเรือนเวลา อินเตอร์ไทมส์',
+        publishedAt: '2026-11-01',
+        readMinutes: 5,
+        testedSku: '899832AGS',
+        verdictScore: { design: 9.7, movement: 9.5, material: 9.8, value: 9.9 },
+        pros: ['ขอบ Bezel เซรามิกเงางามกันรอยขีดข่วน', 'กระจก Sapphire Crystal แท้พร้อมเลนส์ขยายวันที่', 'กลไก Japanese Automatic ขึ้นลานมือและแฮ็กเข็มได้', 'รับประกันศูนย์ไทย 2 ปี พร้อมบริการตัดสายฟรี']
+      },
+      productIds: byBrand('olympianus', 4, '89983'),
+      ctaText: 'ชมเรือนเวลาซีรีส์ 899832 ทั้งหมด',
+      ctaUrl: '/products?brand=olympianus&q=89983',
+      seoTitle: 'รีวิว Olym Pianus 899832AGS สปอร์ตไดเวอร์ออโตเมติก ขอบเซรามิก ของแท้ศูนย์ไทย',
+      seoDescription: 'รีวิวเจาะลึกจากการสวมใส่จริง Olym Pianus 899832AGS สปอร์ตไดเวอร์ขอบเซรามิก กระจกแซฟไฟร์แท้ เครื่องออโตเมติกญี่ปุ่น คุ้มค่าแค่ไหน อ่านสรุปครบที่นี่',
+      seoKeywords: 'รีวิว Olym Pianus 899832AGS, รีวิวนาฬิกา OP Submariner, นาฬิกาออโตเมติกขอบเซรามิก',
+      aseoSummary: 'Olym Pianus 899832AGS ได้คะแนนรีวิวรวม 4.9/5 โดดเด่นด้วยขอบเซรามิก กระจกแซฟไฟร์แท้ เม็ดมะยมขันเกลียว และกลไก Japanese Automatic ในงบสุดคุ้มค่าพร้อมประกันศูนย์ไทย 2 ปี',
+      aseoFaqs: [
+        { q: 'Olym Pianus 899832AGS ใช้กระจกอะไร กันรอยจริงไหม?', a: 'ใช้กระจกหน้าปัด Sapphire Crystal แท้ ซึ่งมีความแข็งระดับ 9 Mohs รองจากเพชร ป้องกันรอยขีดข่วนจากการใช้งานในชีวิตประจำวันได้ดีเยี่ยม' },
+        { q: 'ขนาดข้อมือ 16 ซม. ใส่รุ่น 899832AGS ได้ไหม?', a: 'ใส่ได้พอดีครับ ตัวเรือนขนาด 40 มม. ขาสายโค้งรับข้อมือ และสามารถระบุขนาดข้อมือให้ช่างศูนย์ตัดสายให้ฟรีก่อนจัดส่งได้ทันที' }
+      ],
+      status: 'published',
+      sortOrder: 61
+    },
+    {
+      slug: 'review-ogival-358-skeleton-lucky-fish',
+      parentSlug: 'site-reviews',
+      pageType: 'article_review',
+      routePath: '/reviews/review-ogival-358-skeleton-lucky-fish',
+      brandSlug: 'ogival',
+      seriesKey: 'lucky-fish',
+      category: 'hands-on-review',
+      heroEyebrow: 'SWISS HAUTE HORLOGERIE REVIEW · OGIVAL 1903',
+      title: 'รีวิว Ogival 358 Lucky Fish Skeleton Automatic',
+      titleTh: 'สัมผัสงานศิลป์สวิสบนข้อมือ: รีวิว Ogival 358 Skeleton Lucky Fish ตำนานปลากระโดดแห่งความโชคดีตั้งแต่ปี 1903',
+      titleEn: 'Review: Ogival 358 Swiss Skeleton Lucky Jumping Fish Masterpiece',
+      summary: 'เปิดมุมมองระดับมาโครกับงานแกะสลักสะพานจักรกลสวิสแท้ ลวดลายมงคลอันวิจิตรที่นักสะสมและผู้บริหารเลือกสวมใส่เพื่อเสริมสิริมงคลและบารมี',
+      summaryEn: 'Macro inspection of Ogival’s open-worked Swiss automatic skeleton calibre, hand-finished bridges, and lucky jumping fish emblem.',
+      contentTh: `
+        <h2>มรดกเรือนเวลาสวิสกว่า 120 ปี จากเมือง La Chaux-de-Fonds</h2>
+        <p>ก่อตั้งขึ้นในปี ค.ศ. 1903 โดย René Brandt แบรนด์ <strong>Ogival (โอจิวัล)</strong> มีสัญลักษณ์ประจำตัวคือ <strong>“ปลากระโดดแห่งความโชคดี” (Lucky Jumping Fish)</strong> ซึ่งเป็นสัญลักษณ์มงคลแห่งความรัก ความมั่งคั่ง และความสำเร็จก้าวหน้า ในซีรีส์ <strong>Ogival 358 Skeleton</strong> ช่างนาฬิกาได้ยกระดับหน้าปัดให้กลายเป็นผืนผ้าใบทางศิลปะที่เคลื่อนไหวได้จริง</p>
+        <h3>งานฉลุโครงสร้างสะพานจักรระดับไมครอน</h3>
+        <p>เมื่อส่องผ่านกล้องขยาย จะพบรายละเอียดการแกะสลักลวดลายบนสะพานจักรเคลือบทองชมพูอย่างประณีต เผยให้เห็นฟันเฟือง สปริงสายใย และชุดจักรกรอกที่ขยับสอดประสานกันทุกเสี้ยววินาที ครอบทับด้วยกระจก <strong>Domed Sapphire Crystal</strong> ทรงโค้งที่เคลือบตัดแสงสะท้อน ช่วยให้มองเห็นมิติความลึกของกลไกได้อย่างชัดเจน</p>
+        <h3>เหมาะสำหรับใคร?</h3>
+        <p>เหมาะอย่างยิ่งสำหรับผู้บริหาร นักธุรกิจ ผู้ที่ชื่นชอบศิลปะจักรกลสวิสแท้ รวมถึงการมอบเป็นของขวัญชิ้นสำคัญในโอกาสเลื่อนตำแหน่ง ครบรอบธุรกิจ หรือเกษียณอายุราชการ</p>
+      `,
+      contentEn: `
+        <h2>Over 120 Years of Swiss Artistry</h2>
+        <p>Founded in 1903 in La Chaux-de-Fonds, <strong>Ogival</strong> combines Swiss mechanical watchmaking with auspicious fine-art skeleton engraving beneath domed Sapphire Crystal.</p>
+      `,
+      banner: '/images/op/hero-ceramic-dark.jpg',
+      gallery: ['/images/op/openheart-stones.jpg', '/images/op/portrait-8909amk.jpg'],
+      styleConfig: {
+        fontFamily: 'IBM Plex Sans Thai',
+        headingColor: '#ffffff',
+        textColor: '#231f20',
+        accentColor: '#b8860b',
+        bgColor: '#1d1612',
+        overlayOpacity: 0.6,
+        headingSize: 'xl',
+        rating: 5.0,
+        author: 'กองบรรณาธิการเรือนเวลาสวิส OPWatch',
+        publishedAt: '2026-10-29',
+        readMinutes: 6,
+        testedSku: '358.61AGR-GL',
+        verdictScore: { design: 9.9, movement: 9.8, material: 9.9, value: 9.6 },
+        pros: ['ขุมพลัง Swiss Automatic ฉลุโครงสร้างทั้งหน้า-หลัง', 'งานแกะสลักลวดลายมงคลระดับงานสะสม', 'กระจก Domed Sapphire Crystal คมชัดทุกมุมมอง', 'กล่องไม้หรูพร้อมใบรับประกันศูนย์ไทย 2 ปีเต็ม']
+      },
+      productIds: byBrand('ogival', 4, '358'),
+      ctaText: 'สำรวจคอลเลกชัน Ogival Skeleton',
+      ctaUrl: '/brands/ogival',
+      seoTitle: 'รีวิวนาฬิกา Ogival 358 Skeleton ปลาโชคดี สวิสแท้ 1903 | OPWatch',
+      seoDescription: 'รีวิวเจาะลึก Ogival 358 Lucky Fish Skeleton นาฬิกาสวิสแท้ฉลุลายจักรกลมงคล งานฝีมือระดับมาสเตอร์พีซ นำเข้าโดย บริษัท อินเตอร์ไทมส์ จำกัด',
+      seoKeywords: 'รีวิว Ogival, นาฬิกาปลาโชคดี Ogival, Ogival 358 Skeleton รีวิว',
+      aseoSummary: 'Ogival 358 Skeleton ได้รับคะแนนเต็ม 5.0/5 จากงานฉลุสะพานจักรสวิสแท้ กระจกแซฟไฟร์ทรงโดม และเอกลักษณ์ปลากระโดดมงคลตั้งแต่ปี 1903',
+      aseoFaqs: [
+        { q: 'นาฬิกา Ogival เป็นแบรนด์ประเทศอะไร?', a: 'Ogival ก่อตั้งขึ้นที่เมือง La Chaux-de-Fonds ประเทศสวิตเซอร์แลนด์ ตั้งแต่ปี ค.ศ. 1903 และจัดจำหน่ายอย่างเป็นทางการในประเทศไทยโดย บริษัท อินเตอร์ไทมส์ จำกัด' }
+      ],
+      status: 'published',
+      sortOrder: 62
+    },
+    {
+      slug: 'review-op-99141-open-heart',
+      parentSlug: 'site-reviews',
+      pageType: 'article_review',
+      routePath: '/reviews/review-op-99141-open-heart',
+      brandSlug: 'olympianus',
+      seriesKey: 'open-heart',
+      category: 'hands-on-review',
+      heroEyebrow: 'MECHANICAL DRESS REVIEW · OPEN-HEART SERIES',
+      title: 'รีวิว Olym Pianus Open-Heart Series (99141 & 990)',
+      titleTh: 'รีวิว Olym Pianus Open-Heart (ซีรีส์ 99141 & 990) — เสน่ห์หน้าปัดโชว์หัวใจจักรกลที่ใส่ทำงานได้หล่อภูมิฐานทุกวัน',
+      titleEn: 'Review: Olym Pianus 99141 & 990 Open-Heart Automatic Dress Series',
+      summary: 'ชมจังหวะการเต้นของ Balance Wheel บนหน้าปัดแบบไม่ต้องพลิกฝาหลัง ผสานเข็มทรงใบดาบสุดคลาสสิกและกระจกแซฟไฟร์แท้กันรอย',
+      contentTh: `
+        <h2>เมื่อความคลาสสิกของนาฬิกาเดรสมาพบกับชีวิตชีวาของจักรกล</h2>
+        <p>สำหรับผู้ที่หลงใหลในนาฬิกาจักรกลแต่อยากได้ลุคสุภาพภูมิฐานสำหรับใส่ทำงาน <strong>Olym Pianus ซีรีส์ 99141 และ 990 Open-Heart</strong> ตอบโจทย์ได้อย่างสมบูรณ์แบบ ด้วยช่องหน้าต่างวงกลมบริเวณ 9 นาฬิกา ที่เผยให้เห็นหัวใจของกลไก (Balance Wheel) หมุนไปกลับด้วยความถี่สูงอย่างต่อเนื่อง</p>
+        <h3>งานหน้าปัด Sunburst และเข็ม Dauphine</h3>
+        <p>หน้าปัดขัดลายรัศมีพระอาทิตย์ (Sunburst) เล่นแสงสวยงามคู่กับเข็มทรง Dauphine เจียระไนเหลี่ยมคมชัด บางรุ่นในตระกูล 99141 ยังมาพร้อมเข็มแสดงพลังงานสำรอง (Power Reserve Indicator) ช่วยให้ทราบพลังงานลานคงเหลือได้ทันที</p>
+      `,
+      banner: '/images/op/portrait-99141agnsk.jpg',
+      gallery: ['/images/op/openheart-stones.jpg', '/images/op/watch-990-083-blue.png', '/images/op/watch-990-163-black.png'],
+      styleConfig: {
+        fontFamily: 'Prompt',
+        headingColor: '#ffffff',
+        textColor: '#1e2438',
+        accentColor: '#1d2088',
+        bgColor: '#15193d',
+        overlayOpacity: 0.58,
+        headingSize: 'xl',
+        rating: 4.9,
+        author: 'ทีมผู้เชี่ยวชาญเรือนเวลา อินเตอร์ไทมส์',
+        publishedAt: '2026-10-25',
+        readMinutes: 4,
+        testedSku: '99141-71AGSK',
+        verdictScore: { design: 9.8, movement: 9.5, material: 9.7, value: 9.8 },
+        pros: ['ช่อง Open-Heart โชว์การทำงานของจักรกรอกชัดเจน', 'กระจก Sapphire Crystal แท้ใสคมชัด', 'ใส่เข้ากับชุดสูทและเสื้อเชิ้ตทำงานได้ลงตัว', 'ฝาหลังเปลือยโชว์โรเตอร์ออโตเมติก']
+      },
+      productIds: byBrand('olympianus', 4, '99'),
+      ctaText: 'ชมรุ่น Open-Heart ทั้งหมด',
+      ctaUrl: '/products?brand=olympianus&q=99',
+      seoTitle: 'รีวิว Olym Pianus Open-Heart 99141 & 990 นาฬิกาโชว์กลไกของแท้',
+      seoDescription: 'รีวิวนาฬิกาผู้ชาย Olym Pianus Open-Heart โชว์กลไกออโตเมติกหน้าปัดแซฟไฟร์แท้ ดีไซน์หรูใส่ทำงานคุ้มค่าที่สุด',
+      seoKeywords: 'รีวิว OP Open Heart, Olym Pianus 99141 รีวิว, นาฬิกาโชว์กลไกผู้ชาย',
+      status: 'published',
+      sortOrder: 63
+    },
+    {
+      slug: 'review-olympia-star-swiss-slim',
+      parentSlug: 'site-reviews',
+      pageType: 'article_review',
+      routePath: '/reviews/review-olympia-star-swiss-slim',
+      brandSlug: 'olympia-star',
+      seriesKey: 'swiss-slim',
+      category: 'hands-on-review',
+      heroEyebrow: 'SWISS MOVEMENT REVIEW · OLYMPIA STAR',
+      title: 'รีวิว Olympia Star Swiss Quartz Sapphire',
+      titleTh: 'เจาะลึก Olympia Star (OPA Series) — ความบางเฉียบและกลไกสวิสแท้ ภายใต้ตรามงกุฎช่อมะกอกคู่',
+      titleEn: 'Hands-On Review: Olympia Star Swiss Movement Slim Sapphire Collection',
+      summary: 'ทำไม Olympia Star ถึงเป็นขวัญใจคนวัยทำงานที่ต้องการนาฬิกาเครื่องสวิสแท้ น้ำหนักเบา ไม่ต้องตั้งเวลาบ่อย และได้กระจกแซฟไฟร์กันรอยทุกเรือน',
+      contentTh: `
+        <h2>ความแตกต่างระหว่าง Olym Pianus และ Olympia Star</h2>
+        <p>คำถามยอดฮิตจากลูกค้าหน้าร้านคือสองแบรนด์นี้ต่างกันอย่างไร คำตอบที่ชัดเจนคือ <strong>Olympia Star (รหัสรุ่นขึ้นต้นด้วย OPA หรือ 580xx)</strong> คือสายผลิตภัณฑ์ที่บรรจุ <strong>กลไกสวิสแท้ (Swiss Movement)</strong> โดดเด่นด้านความบางเฉียบของตัวเรือน น้ำหนักเบา และความเที่ยงตรงระดับสูงโดยไม่ต้องกังวลเรื่องลานหมดแม้ไม่ได้สวมใส่หลายวัน</p>
+        <h3>จุดเด่นจากการใช้งานจริง</h3>
+        <ul>
+          <li>ตัวเรือนบางพิเศษ สวมใส่สบายตลอดวันทั้งรุ่นสายสแตนเลสถักละเอียดและรุ่นสายหนังแท้</li>
+          <li>กระจกหน้าปัด <strong>Sapphire Crystal แท้</strong> ทุกรุ่น ทนรอยขีดข่วนจากโต๊ะทำงานหรือซิปกระเป๋า</li>
+          <li>อัตราความคลาดเคลื่อนต่ำมากตามมาตรฐานเครื่องสวิสควอตซ์</li>
+        </ul>
+      `,
+      banner: '/images/op/lifestyle-men.jpg',
+      gallery: ['/images/op/watch-130-06-white.png', '/images/op/watch-130-06-black.png'],
+      styleConfig: {
+        fontFamily: 'Prompt',
+        headingColor: '#ffffff',
+        textColor: '#1e2438',
+        accentColor: '#1d2088',
+        bgColor: '#11183c',
+        overlayOpacity: 0.6,
+        headingSize: 'xl',
+        rating: 4.8,
+        author: 'ทีมผู้เชี่ยวชาญเรือนเวลา อินเตอร์ไทมส์',
+        publishedAt: '2026-10-21',
+        readMinutes: 4,
+        testedSku: 'OPA58012MSK',
+        verdictScore: { design: 9.5, movement: 9.8, material: 9.7, value: 9.7 },
+        pros: ['บรรจุกลไก Swiss Movement เที่ยงตรงสูง', 'ตัวเรือนบางเฉียบ น้ำหนักเบา สวมใส่สบาย', 'กระจก Sapphire Crystal แท้กันรอยทุกเรือน', 'ดูแลรักษาง่าย หยิบใส่ได้ทันทีทุกเช้า']
+      },
+      productIds: byBrand('olympia-star', 6),
+      ctaText: 'ชมเรือนเวลา Olympia Star ทั้งหมด',
+      ctaUrl: '/brands/olympia-star',
+      seoTitle: 'รีวิว Olympia Star นาฬิกาเครื่องสวิสแท้ ต่างจาก Olym Pianus อย่างไร | OPWatch',
+      seoDescription: 'เจาะลึกรีวิวนาฬิกา Olympia Star เครื่องสวิสแท้ บางเฉียบ กระจกแซฟไฟร์ เปรียบเทียบจุดเด่นชัดๆ ก่อนตัดสินใจซื้อ',
+      seoKeywords: 'รีวิว Olympia Star, Olympia Star กับ Olym Pianus ต่างกันยังไง, นาฬิกาเครื่องสวิสราคาคุ้ม',
+      status: 'published',
+      sortOrder: 64
+    },
+    {
+      slug: 'guide-automatic-vs-quartz',
+      parentSlug: 'site-reviews',
+      pageType: 'article_review',
+      routePath: '/reviews/guide-automatic-vs-quartz',
+      brandSlug: '',
+      category: 'comparison',
+      heroEyebrow: 'BUYER’S GUIDE & MOVEMENT COMPARISON',
+      title: 'เปรียบเทียบกลไก Automatic vs Quartz เลือกแบบไหนดี?',
+      titleTh: 'คู่มือเลือกซื้อนาฬิกา: กลไก Automatic vs Quartz ต่างกันอย่างไร เลือกแบบไหนให้ตอบโจทย์ไลฟ์สไตล์ของคุณ?',
+      titleEn: 'Automatic vs. Quartz Watch Movements: Which One Fits Your Lifestyle?',
+      summary: 'สรุปข้อดี-ข้อสังเกตแบบเข้าใจง่ายใน 4 นาที ระหว่างเสน่ห์เข็มเดินเรียบของนาฬิกาออโตเมติก กับความเที่ยงตรงพร้อมใช้ตลอดเวลาของระบบควอตซ์',
+      contentTh: `
+        <h2>เข้าใจหัวใจของนาฬิกาทั้ง 2 ระบบก่อนตัดสินใจเลือก</h2>
+        <p>การเลือกนาฬิกาคู่ใจสักเรือน นอกจากดีไซน์หน้าปัดและขนาดตัวเรือนแล้ว <strong>“ระบบกลไกขับเคลื่อน”</strong> คือหัวใจสำคัญที่จะกำหนดประสบการณ์การใช้งานในทุกๆ วัน</p>
+        <h3>1. นาฬิกาออโตเมติก (Automatic Mechanical)</h3>
+        <ul>
+          <li><strong>หลักการทำงาน:</strong> ใช้พลังงานจากการแกว่งตัวของตุ้มเหวี่ยง (Rotor) ตามการขยับข้อมือ ไม่ต้องใช้ถ่าน</li>
+          <li><strong>เสน่ห์เฉพาะตัว:</strong> เข็มวินาทีเดินเรียบสมูท มีชีวิตชีวา และมักมาพร้อมฝาหลังเปลือยหรือช่อง Open-Heart โชว์ฟันเฟือง</li>
+          <li><strong>เหมาะกับใคร:</strong> ผู้ที่ใส่เป็นประจำเกือบทุกวัน และชื่นชอบศิลปะงานจักรกลดั้งเดิม เช่น รุ่น <em>Olym Pianus 899832AGS</em> หรือ <em>Ogival Skeleton</em></li>
+        </ul>
+        <h3>2. นาฬิกาควอตซ์ (Precision Quartz)</h3>
+        <ul>
+          <li><strong>หลักการทำงาน:</strong> ใช้พลังงานแบตเตอรี่ส่งผ่านผลึกควอตซ์ความถี่สูง มีความเที่ยงตรงแม่นยำระดับบวกลบไม่กี่วินาทีต่อเดือน</li>
+          <li><strong>จุดเด่นสำคัญ:</strong> ตัวเรือนบาง น้ำหนักเบา วางไว้หลายวันก็ยังเดินตรงเวลา หยิบขึ้นใส่ไปทำงานได้ทันที</li>
+          <li><strong>เหมาะกับใคร:</strong> ผู้ที่สลับใส่นาฬิกาหลายเรือน หรือเน้นความคล่องตัวสูงสุด เช่น <em>Olympia Star Swiss Quartz</em> และ <em>OP Slim Classic</em></li>
+        </ul>
+      `,
+      banner: '/images/op/lifestyle-sport.jpg',
+      gallery: ['/images/op/portrait-8934msk.jpg', '/images/op/watch-130-06-white.png'],
+      styleConfig: {
+        fontFamily: 'Prompt',
+        headingColor: '#ffffff',
+        textColor: '#1e2438',
+        accentColor: '#1d2088',
+        bgColor: '#101638',
+        overlayOpacity: 0.58,
+        headingSize: 'xl',
+        rating: 4.9,
+        author: 'ช่างเทคนิคอาวุโส ศูนย์บริการอินเตอร์ไทมส์',
+        publishedAt: '2026-10-18',
+        readMinutes: 4,
+        verdictScore: { design: 9.6, movement: 9.8, material: 9.7, value: 9.8 },
+        pros: ['เข้าใจความต่างของ Automatic และ Quartz ชัดเจน', 'ช่วยเลือกรุ่นที่ตรงกับพฤติกรรมการสวมใส่จริง', 'แนะนำรุ่นยอดนิยมครบทั้งสองระบบกลไก']
+      },
+      productIds: [...byBrand('olympianus', 2, '89983'), ...byBrand('olympia-star', 2)],
+      ctaText: 'เลือกชมนาฬิกาครบทุกกลไก',
+      ctaUrl: '/products',
+      seoTitle: 'นาฬิกา Automatic กับ Quartz ต่างกันอย่างไร เลือกแบบไหนดี | บทความ OPWatch',
+      seoDescription: 'เปรียบเทียบข้อดีนาฬิกา Automatic vs Quartz แบบเข้าใจง่าย พร้อมคำแนะนำจากช่างผู้ชำนาญการ บริษัท อินเตอร์ไทมส์ จำกัด',
+      seoKeywords: 'นาฬิกา Automatic กับ Quartz, เลือกซื้อนาฬิกาแบบไหนดี, นาฬิกาออโตเมติกคืออะไร',
+      status: 'published',
+      sortOrder: 65
+    },
+    {
+      slug: 'guide-sapphire-crystal-test',
+      parentSlug: 'site-reviews',
+      pageType: 'article_review',
+      routePath: '/reviews/guide-sapphire-crystal-test',
+      brandSlug: 'olympianus',
+      category: 'buyers-guide',
+      heroEyebrow: 'HOROLOGY MATERIAL KNOWLEDGE',
+      title: 'ทำไมกระจก Sapphire Crystal ถึงสำคัญต่อความงามระยะยาว?',
+      titleTh: 'ทำไมกระจก Sapphire Crystal ถึงเป็นหัวใจสำคัญของนาฬิกาหรู? รู้จักความแข็งระดับ 9 Mohs ที่มาใน OPWatch ทุกเรือน',
+      titleEn: 'Why Sapphire Crystal Matters: Scratch Resistance & Long-Term Clarity',
+      summary: 'เจาะลึกความแตกต่างระหว่างกระจกแซฟไฟร์แท้ กระจกมิเนอรัล และอะคริลิก พร้อมเหตุผลว่าทำไมนาฬิกา Olym Pianus, Olympia Star และ Ogival ถึงเลือกใช้กระจกแซฟไฟร์แท้',
+      contentTh: `
+        <h2>หน้าปัดใสเหมือนวันแรกที่ซื้อ แม้ผ่านการใช้งานหลายปี</h2>
+        <p>รอยขีดข่วนบนกระจกหน้าปัดคือสิ่งที่ทำให้นาฬิกาดูเก่าเร็วที่สุด ด้วยเหตุนี้ <strong>Olym Pianus, Olympia Star และ Ogival</strong> จึงเลือกติดตั้งกระจก <strong>Sapphire Crystal สังเคราะห์ความบริสุทธิ์สูง</strong> ซึ่งมีค่าความแข็งตามสเกล Mohs สูงถึงระดับ 9 (เป็นรองเพียงเพชรแท้ที่ระดับ 10 เท่านั้น)</p>
+        <h3>ข้อดีที่คุณสัมผัสได้จริง</h3>
+        <ul>
+          <li><strong>ทนต่อรอยขีดข่วนในชีวิตประจำวัน:</strong> กุญแจ โต๊ะทำงาน หรือเหรียญโลหะแทบไม่สามารถสร้างรอยบนผิวกระจกแซฟไฟร์ได้</li>
+          <li><strong>ความใสและมิติแสงเหนือระดับ:</strong> ช่วยขับสีหน้าปัด Sunburst และประกายคริสตัลให้ดูโดดเด่นคมชัดตลอดเวลา</li>
+        </ul>
+      `,
+      banner: '/images/op/hero-gold-stones.jpg',
+      gallery: ['/images/op/portrait-82671m.jpg', '/images/op/watch-899833-black.png'],
+      styleConfig: {
+        fontFamily: 'Prompt',
+        headingColor: '#ffffff',
+        textColor: '#1e2438',
+        accentColor: '#1d2088',
+        bgColor: '#14193c',
+        overlayOpacity: 0.58,
+        headingSize: 'xl',
+        rating: 4.9,
+        author: 'ทีมผู้เชี่ยวชาญเรือนเวลา อินเตอร์ไทมส์',
+        publishedAt: '2026-10-12',
+        readMinutes: 4,
+        verdictScore: { design: 9.7, movement: 9.5, material: 10.0, value: 9.9 },
+        pros: ['ความแข็งระดับ 9 Mohs รองจากเพชรแท้', 'คงความใสคมชัดเหมือนใหม่ยาวนานหลายปี', 'คุ้มค่าเหนือระดับราคาเมื่อเทียบแบรนด์ทั่วไปในตลาด']
+      },
+      productIds: byBrand('olympianus', 4),
+      ctaText: 'ชมนาฬิกากระจกแซฟไฟร์แท้ทั้งหมด',
+      ctaUrl: '/products',
+      seoTitle: 'กระจก Sapphire Crystal ดียังไง ทำไมนาฬิกาหรูต้องใช้ | OPWatch Thailand',
+      seoDescription: 'ทำความรู้จักกระจกนาฬิกา Sapphire Crystal ความแข็งระดับ 9 Mohs กันรอยขีดข่วน ที่ติดตั้งในนาฬิกา OP และ Ogival ของแท้ศูนย์ไทย',
+      seoKeywords: 'กระจก Sapphire Crystal คือ, กระจกแซฟไฟร์กันรอยไหม, นาฬิกากระจกแซฟไฟร์',
+      status: 'published',
+      sortOrder: 66
+    },
+    {
+      slug: 'review-couple-and-lady-jewelry',
+      parentSlug: 'site-reviews',
+      pageType: 'article_review',
+      routePath: '/reviews/review-couple-and-lady-jewelry',
+      brandSlug: 'ogival',
+      category: 'hands-on-review',
+      heroEyebrow: 'LADIES JEWELRY & GIFT REVIEW',
+      title: 'รีวิวนาฬิกาจิวเวลรี่สุภาพสตรี & นาฬิกาคู่รักยอดนิยม',
+      titleTh: 'รีวิวนาฬิกาผู้หญิง & นาฬิกาคู่รัก (Ogival Camellia & OP Lady Jewelry) — ของขวัญล้ำค่าพร้อมบริการห่อของขวัญโบว์ Royal Sapphire ฟรี',
+      titleEn: 'Review: Ogival Camellia & OP Lady Jewelry Watches — The Perfect Luxury Gift',
+      summary: 'คัดสรรเรือนเวลาสุภาพสตรีหน้าปัดดอกคามิลเลีย มุกแท้ และคริสตัลเจียระไน พร้อมไอเดียจับคู่นาฬิกา His & Hers สำหรับวันครบรอบและโอกาสสำคัญ',
+      contentTh: `
+        <h2>มากกว่าเครื่องบอกเวลา คือเครื่องประดับข้อมือที่สื่อความหมายลึกซึ้ง</h2>
+        <p>ในกลุ่มนาฬิกาสุภาพสตรี <strong>Ogival Camellia Series</strong> และ <strong>Olym Pianus Lady Jewelry</strong> ได้รับเสียงชื่นชมอย่างล้นหลามจากความละเอียดอ่อนของหน้าปัดเปลือกหอยมุกธรรมชาติ (Mother of Pearl) ที่เปลี่ยนเฉดสีตามมุมแสง ล้อมรอบด้วยคริสตัลเจียระไนและตัวเรือนสแตนเลสขนาด 26–32 มม. ที่ขับผิวข้อมือให้ดูสว่างสง่างาม</p>
+        <h3>บริการพิเศษเมื่อสั่งซื้อเป็นของขวัญที่ OPWatch.co.th</h3>
+        <p>ทุกคำสั่งซื้อสามารถติ๊กเลือกรับ <strong>บริการห่อของขวัญโบว์ซาตินสีน้ำเงิน Royal Sapphire พร้อมการ์ดอวยพรพิมพ์ข้อความส่วนตัวได้ฟรี</strong> ในหน้าชำระเงิน พร้อมจัดส่งด่วนถึงมือผู้รับอย่างประทับใจ</p>
+      `,
+      banner: '/images/op/lifestyle-lady.jpg',
+      gallery: ['/images/op/watch-82672-lady.png', '/images/op/watch-990-45-lady.png', '/images/op/square-gold-stones.jpg'],
+      styleConfig: {
+        fontFamily: 'Prompt',
+        headingColor: '#ffffff',
+        textColor: '#1e2438',
+        accentColor: '#be185d',
+        bgColor: '#23132c',
+        overlayOpacity: 0.56,
+        headingSize: 'xl',
+        rating: 4.9,
+        author: 'สไตล์ลิสต์เรือนเวลา OPWatch Boutique',
+        publishedAt: '2026-10-08',
+        readMinutes: 4,
+        testedSku: '68322LK / Camellia',
+        verdictScore: { design: 9.9, movement: 9.6, material: 9.8, value: 9.8 },
+        pros: ['ดีไซน์ประดับคริสตัลและหน้าปัดมุกงดงามดุจจิวเวลรี่', 'ขนาดตัวเรือนพอดีกับข้อมือสุภาพสตรีชาวไทย', 'ฟรีบริการห่อของขวัญโบว์ Royal Sapphire และการ์ดอวยพร']
+      },
+      productIds: [...byBrand('olympianus', 2, 'L'), ...byBrand('ogival', 2, 'L')],
+      ctaText: 'ชมคอลเลกชันสุภาพสตรีทั้งหมด',
+      ctaUrl: '/products?category=women-watches',
+      seoTitle: 'รีวิวนาฬิกาผู้หญิง Ogival Camellia & Olym Pianus Lady ของขวัญสุดหรู | OPWatch',
+      seoDescription: 'รีวิวนาฬิกาจิวเวลรี่ผู้หญิงและนาฬิกาคู่รักของแท้ กระจกแซฟไฟร์ พร้อมบริการห่อของขวัญและการ์ดอวยพรฟรีจาก OPWatch.co.th',
+      seoKeywords: 'รีวิวนาฬิกาผู้หญิง OP, Ogival Camellia รีวิว, นาฬิกาของขวัญแฟน',
+      status: 'published',
+      sortOrder: 67
+    },
+    {
+      slug: 'guide-watch-care-inter-times',
+      parentSlug: 'site-reviews',
+      pageType: 'article_review',
+      routePath: '/reviews/guide-watch-care-inter-times',
+      brandSlug: '',
+      category: 'horology-care',
+      heroEyebrow: 'OFFICIAL SERVICE CENTER CARE GUIDE',
+      title: 'คู่มือการดูแลนาฬิกาและการตั้งวันที่อย่างถูกวิธี',
+      titleTh: '5 เทคนิคดูแลรักษานาฬิกาคู่ใจให้เดินเที่ยงตรงยาวนานนับสิบปี (คำแนะนำตรงจากช่างศูนย์ บริษัท อินเตอร์ไทมส์ จำกัด)',
+      titleEn: '5 Essential Watch Care Tips from Inter Times Master Watchmakers',
+      summary: 'เรียนรู้ช่วงเวลาต้องห้ามในการตั้งวันที่ (Danger Zone 21:00–03:00 น.) การป้องกันสนามแม่เหล็ก การดูแลซีลกันน้ำ และการลงทะเบียน E-Warranty ออนไลน์',
+      contentTh: `
+        <h2>ดูแลถูกวิธี ยืดอายุกลไกให้เที่ยงตรงยาวนาน</h2>
+        <p>ทีมช่างผู้ชำนาญการประจำศูนย์บริการ <strong>บริษัท อินเตอร์ไทมส์ จำกัด (ถนนเพชรบุรีตัดใหม่ ซอย 35)</strong> รวบรวมคำแนะนำสำคัญที่เจ้าของนาฬิกาทุกท่านควรทราบดังนี้:</p>
+        <ol>
+          <li><strong>หลีกเลี่ยงการตั้งวันที่ช่วง 21:00 – 03:00 น.:</strong> ช่วงเวลาดังกล่าวชุดเฟืองเปลี่ยนวันที่กำลังขบกันอยู่ การหมุนเปลี่ยนวันที่แบบเร่งด่วนอาจทำให้เฟืองเสียหายได้ แนะนำให้หมุนเข็มชั่วโมงลงมาที่ 06:00 น. ก่อนค่อยปรับวันที่</li>
+          <li><strong>ขันเม็ดมะยมให้สนิททุกครั้งหลังตั้งเวลา:</strong> สำหรับรุ่นสปอร์ตเม็ดมะยมขันเกลียว ต้องกดและหมุนเกลียวล็อกให้สุดเพื่อป้องกันความชื้นเข้าตัวเรือน</li>
+          <li><strong>วางห่างจากสนามแม่เหล็กแรงสูง:</strong> เช่น ลำโพง แท่นชาร์จไร้สาย หรือเคสแม่เหล็ก ซึ่งอาจทำให้สายใยกลไกเดินเร็วผิดปกติ</li>
+          <li><strong>เช็ดทำความสะอาดสายด้วยผ้านุ่มหลังสวมใส่:</strong> ช่วยลดคราบเหงื่อและคงความเงางามของสแตนเลสสตีล 316L</li>
+          <li><strong>ตรวจเช็กซีลยางกันน้ำทุก 2–3 ปี:</strong> สามารถส่งตรวจเช็กมาตรฐานและแจ้งซ่อมออนไลน์ได้ที่หน้า <a href="/warranty">Warranty & Repair</a></li>
+        </ol>
+      `,
+      banner: '/images/op/portrait-8909amk.jpg',
+      gallery: ['/images/op/portrait-8934msk.jpg', '/images/op/hero-diver-dark.jpg'],
+      styleConfig: {
+        fontFamily: 'Prompt',
+        headingColor: '#ffffff',
+        textColor: '#1e2438',
+        accentColor: '#1d2088',
+        bgColor: '#101736',
+        overlayOpacity: 0.6,
+        headingSize: 'xl',
+        rating: 5.0,
+        author: 'หัวหน้าศูนย์บริการซ่อมบำรุง บริษัท อินเตอร์ไทมส์ จำกัด',
+        publishedAt: '2026-10-02',
+        readMinutes: 5,
+        verdictScore: { design: 9.6, movement: 9.9, material: 9.8, value: 10.0 },
+        pros: ['ป้องกันเฟืองวันที่ชำรุดด้วยเทคนิคตั้งเวลาที่ถูกต้อง', 'รักษาประสิทธิภาพซีลกันน้ำและความเที่ยงตรงระยะยาว', 'มีศูนย์บริการมาตรฐานถนนเพชรบุรีตัดใหม่ดูแลโดยตรง']
+      },
+      productIds: byBrand('olympianus', 4, '89'),
+      ctaText: 'ลงทะเบียน E-Warranty / แจ้งซ่อมออนไลน์',
+      ctaUrl: '/warranty',
+      seoTitle: 'วิธีดูแลนาฬิกาและข้อห้ามในการตั้งวันที่นาฬิกาออโตเมติก | ศูนย์บริการอินเตอร์ไทมส์',
+      seoDescription: '5 วิธีดูแลนาฬิกาข้อมือและวิธีตั้งวันที่อย่างถูกต้องไม่ให้เฟืองเสีย โดยทีมช่างศูนย์บริการ บริษัท อินเตอร์ไทมส์ จำกัด',
+      seoKeywords: 'วิธีดูแลนาฬิกาออโตเมติก, ห้ามตั้งวันที่นาฬิกากี่โมง, ศูนย์ซ่อมนาฬิกา OP อินเตอร์ไทมส์',
+      status: 'published',
+      sortOrder: 68
+    },
+
     // ==================== ROOT 6: นโยบายกฎหมายและเงื่อนไข (LEGAL GROUP) ====================
     {
       slug: 'legal-center',
@@ -1606,5 +2038,63 @@ export function defaultTreePages(allProducts: Record<string, any>[]) {
     }
   ]
 }
+
+export function defaultCustomerReviews(allProducts: Record<string, any>[]) {
+  const findProdId = (brand: string, kw = '', fallbackIdx = 0): number => {
+    const brandProds = allProducts.filter((p) => p.brand === brand && p.status === 'active')
+    if (kw) {
+      const m = brandProds.find((p) => `${p.sku || ''} ${p.nameTh || ''} ${p.name || ''}`.toLowerCase().includes(kw.toLowerCase()))
+      if (m) return Number(m.id)
+    }
+    const fb = brandProds[fallbackIdx] || allProducts[fallbackIdx] || allProducts[0]
+    return fb ? Number(fb.id) : 1
+  }
+
+  return [
+    {
+      productId: findProdId('olympianus', '899832', 0),
+      customerName: 'คุณธนวัฒน์ พงศ์ไพบูลย์ (กรุงเทพฯ)',
+      rating: 5,
+      comment: 'ได้รับเรือนเวลา 899832AGS เรียบร้อยครับ ขอบเซรามิกเงาสวยมาก กระจกแซฟไฟร์ใสกริ๊บ ทางร้านตัดสายตามขนาดข้อมือ 17 ซม. มาให้พอดีเป๊ะ พร้อมใบรับประกันบริษัท อินเตอร์ไทมส์ ครบชุด ประทับใจมากครับ',
+      status: 'approved'
+    },
+    {
+      productId: findProdId('olympianus', '99141', 1),
+      customerName: 'คุณกิตติพงศ์ วัฒนากุล (นนทบุรี)',
+      rating: 5,
+      comment: 'รุ่น Open-Heart หน้าปัดจริงสวยกว่าในรูปอีกครับ มองเห็นกลไกเดินเพลินตามาก ใส่คู่กับเชิ้ตทำงานมีแต่คนทักว่าดูหรูเกินราคาไปมาก จัดส่งไวแพ็กกันกระแทกแน่นหนาครับ',
+      status: 'approved'
+    },
+    {
+      productId: findProdId('ogival', '358', 0),
+      customerName: 'คุณวรพจน์ อัศวเมธี (เชียงใหม่)',
+      rating: 5,
+      comment: 'สั่ง Ogival Skeleton เป็นของขวัญให้คุณพ่อในโอกาสเกษียณ งานแกะสลักหน้าปัดสวิสละเอียดวิจิตรมาก กล่องไม้หรูและการ์ดอวยพรที่ทางบูติกห่อมาให้เรียบร้อยสวยงามระดับห้างชั้นนำเลยครับ',
+      status: 'approved'
+    },
+    {
+      productId: findProdId('olympia-star', '580', 0),
+      customerName: 'คุณพิมพ์ชนก ศิริวรรณ (ขอนแก่น)',
+      rating: 5,
+      comment: 'เลือก Olympia Star เครื่องสวิสเพราะอยากได้เรือนบางๆ น้ำหนักเบา ใส่สบายข้อมือมากค่ะ เดินตรงเป๊ะไม่ต้องคอยตั้งเวลาใหม่ ลงทะเบียน E-Warranty ออนไลน์ผ่านหน้าเว็บได้สะดวกรวดเร็วมากค่ะ',
+      status: 'approved'
+    },
+    {
+      productId: findProdId('olympianus', '8909', 2),
+      customerName: 'คุณณัฐพล รัตนโชติ (ชลบุรี)',
+      rating: 5,
+      comment: 'เป็นเรือนที่ 3 ที่ซื้อจากศูนย์อินเตอร์ไทมส์ครับ มั่นใจของแท้ 100% กระจกแซฟไฟร์ทนรอยจริงๆ เรือนเก่าใส่มา 3 ปีหน้าปัดยังใสเหมือนใหม่อยู่เลย ใช้คูปองลดเพิ่มหน้าเว็บคุ้มมากครับ',
+      status: 'approved'
+    },
+    {
+      productId: findProdId('ogival', '', 1),
+      customerName: 'คุณศศิธร เจริญทรัพย์ (ภูเก็ต)',
+      rating: 5,
+      comment: 'ประทับใจการให้คำแนะนำของแอดมินและงานตัวเรือนจริงของ Ogival มากค่ะ เพชรและคริสตัลเล่นไฟสวยมาก มีใบรับประกันศูนย์ไทยอุ่นใจเรื่องบริการหลังการขายระยะยาวค่ะ',
+      status: 'approved'
+    }
+  ]
+}
+
 
 

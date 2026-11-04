@@ -19,6 +19,7 @@ export default defineNuxtConfig({
         { name: 'theme-color', content: '#1d2088' }
       ],
       link: [
+        { rel: 'icon', type: 'image/png', href: '/images/logos/opwatch-emblem-color.png' },
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
         { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
         {

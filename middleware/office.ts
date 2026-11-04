@@ -2,6 +2,7 @@ const ROUTE_PERMISSIONS: Array<{ prefix: string; perms: string[] }> = [
   { prefix: '/office/staff', perms: ['staff_manage'] }, // ceo & it_admin have '*'
   { prefix: '/office/settings', perms: ['settings_manage'] }, // ceo & it_admin have '*'
   { prefix: '/office/customers', perms: ['customers'] },
+  { prefix: '/office/reviews', perms: ['pages'] },
   { prefix: '/office/pages', perms: ['pages'] },
   { prefix: '/office/warehouse', perms: ['warehouse', 'warehouse_5ch', 'warehouse_dealer', 'dealer_portal'] },
   { prefix: '/office/warranty', perms: ['warranty'] },

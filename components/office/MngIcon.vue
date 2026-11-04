@@ -158,6 +158,10 @@ const props = withDefaults(
     <template v-else-if="name === 'wrench'">
       <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
     </template>
+    <template v-else-if="name === 'doc' || name === 'review'">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <path d="M14 2v6h6M8 13h8M8 17h5" />
+    </template>
     <template v-else-if="name === 'tree'">
       <rect x="3" y="3" width="6" height="5" rx="1.2" />
       <rect x="14" y="9" width="7" height="5" rx="1.2" />
