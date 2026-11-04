@@ -246,7 +246,7 @@ function builtinGenerate(payload: AiTaskPayload): Record<string, any> {
     const topic = String(inp.prompt || inp.summary || titleTh).trim()
 
     const paletteByType = brandSlug === 'ogival'
-      ? { fontFamily: 'IBM Plex Sans Thai', headingColor: '#fff8dc', textColor: '#261f1d', accentColor: '#c59b27', bgColor: '#231710', overlayOpacity: 0.58, headingSize: 'xl' }
+      ? { fontFamily: 'IBM Plex Sans Thai', headingColor: '#ffffff', textColor: '#261f1d', accentColor: '#c59b27', bgColor: '#231710', overlayOpacity: 0.58, headingSize: 'xl' }
       : pageType === 'promo_story'
         ? { fontFamily: 'Prompt', headingColor: '#ffffff', textColor: '#1e2438', accentColor: '#e11d48', bgColor: '#1f122b', overlayOpacity: 0.56, headingSize: 'xl' }
         : { fontFamily: 'Prompt', headingColor: '#ffffff', textColor: '#1e2438', accentColor: '#1d2088', bgColor: '#0e1535', overlayOpacity: 0.55, headingSize: 'xl' }

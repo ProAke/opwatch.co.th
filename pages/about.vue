@@ -185,7 +185,7 @@ const pillars = computed(() => [
   max-width: 640px;
   font-family: var(--font-display);
   font-size: 19px;
-  color: rgba(255, 255, 255, 0.88);
+  color: #ffffff;
   line-height: 1.75;
 }
 

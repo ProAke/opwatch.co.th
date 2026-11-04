@@ -59,12 +59,17 @@ definePageMeta({ middleware: 'auth' })
 </script>
 
 <template>
-  <section class="section">
-    <div class="container">
-      <p class="eyebrow">{{ t('nav.account') }}</p>
-      <h1 class="page-title" style="margin: 14px 0 8px">{{ t('account.welcome') }}, {{ customer?.name || '—' }}</h1>
-      <p class="muted" style="margin-bottom: 40px">{{ t('account.memberSince') }} {{ formatDate(customer?.createdAt, localeTag) }}</p>
+  <div>
+    <section class="op-page-hero">
+      <div class="container">
+        <p class="eyebrow">{{ t('nav.account') }}</p>
+        <h1 class="page-title">{{ t('account.welcome') }}, {{ customer?.name || '—' }}</h1>
+        <p class="op-page-hero__sub">{{ t('account.memberSince') }} {{ formatDate(customer?.createdAt, localeTag) }}</p>
+      </div>
+    </section>
 
+    <section class="section">
+      <div class="container">
       <!-- Membership stats -->
       <div class="stats">
         <div class="stat">
@@ -144,8 +149,9 @@ definePageMeta({ middleware: 'auth' })
           </div>
         </aside>
       </div>
-    </div>
-  </section>
+      </div>
+    </section>
+  </div>
 </template>
 
 <style scoped>

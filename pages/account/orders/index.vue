@@ -17,11 +17,16 @@ definePageMeta({ middleware: 'auth' })
 </script>
 
 <template>
-  <section class="section">
-    <div class="container">
-      <p class="eyebrow">{{ t('nav.account') }}</p>
-      <h1 class="page-title" style="margin: 14px 0 40px">{{ t('account.orders') }}</h1>
+  <div>
+    <section class="op-page-hero">
+      <div class="container">
+        <p class="eyebrow">{{ t('nav.account') }}</p>
+        <h1 class="page-title">{{ t('account.orders') }}</h1>
+      </div>
+    </section>
 
+    <section class="section">
+      <div class="container">
       <div v-if="pending && !orders.length" class="muted">{{ t('common.loading') }}</div>
 
       <div v-else-if="!orders.length" class="empty">
@@ -57,8 +62,9 @@ definePageMeta({ middleware: 'auth' })
           </div>
         </div>
       </div>
-    </div>
-  </section>
+      </div>
+    </section>
+  </div>
 </template>
 
 <style scoped>

@@ -147,10 +147,10 @@ function goPage(p: number) {
         <div class="op-brand__logo-badge">
           <img :src="brandLogo" :alt="brandTitle" class="op-brand__logo-img" />
         </div>
-        <span v-if="brandGate?.heroEyebrow" style="display:block;font-size:11.5px;letter-spacing:0.1em;color:#f3d689;font-weight:700;margin-bottom:6px">
+        <span v-if="brandGate?.heroEyebrow" style="display:block;font-size:11.5px;letter-spacing:0.1em;color:#ffffff;font-weight:700;margin-bottom:6px">
           {{ brandGate.heroEyebrow }}
         </span>
-        <h1 class="page-title" :style="brandGate?.styleConfig?.headingColor ? { color: brandGate.styleConfig.headingColor } : undefined">
+        <h1 class="page-title" style="color:#ffffff">
           {{ brandTitle }}
         </h1>
         <p v-if="brandStory">{{ brandStory }}</p>
@@ -324,7 +324,7 @@ function goPage(p: number) {
   max-width: 720px;
   font-family: var(--font-display);
   font-size: 19px;
-  color: rgba(255, 255, 255, 0.88);
+  color: #ffffff;
   line-height: 1.8;
 }
 

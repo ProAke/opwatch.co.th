@@ -57,7 +57,7 @@ useHead(() => ({
   <div class="op-track">
     <section class="op-track__hero">
       <div class="container">
-        <span class="eyebrow" style="color:#a5b4fc">REAL-TIME SHIPMENT TRACKING</span>
+        <span class="eyebrow" style="color:#ffffff">REAL-TIME SHIPMENT TRACKING</span>
         <h1>{{ locale === 'th' ? 'ติดตามสถานะคำสั่งซื้อ & เลขพัสดุจัดส่ง' : 'Track Your Order & Parcel Status' }}</h1>
         <p>{{ locale === 'th' ? 'กรอกหมายเลขคำสั่งซื้อ (เช่น OP-2026...) เพื่อตรวจสอบขั้นตอนการยืนยันออเดอร์ เลขพัสดุขนส่ง และรายละเอียดสินค้า' : 'Enter your OPWatch order number (e.g. OP-2026...) to check confirmation and courier tracking.' }}</p>
       </div>
@@ -141,10 +141,10 @@ useHead(() => ({
 .op-track__hero {
   background: linear-gradient(135deg, #101444 0%, #1d2088 100%);
   color: #ffffff;
-  padding: 120px 0 46px;
+  padding: 64px 0 46px;
 }
-.op-track__hero h1 { font-family: var(--font-display); font-size: clamp(1.9rem, 3vw, 2.6rem); margin-top: 8px; }
-.op-track__hero p { max-width: 680px; opacity: 0.9; margin-top: 8px; }
+.op-track__hero h1 { color: #ffffff; font-family: var(--font-display); font-size: clamp(1.9rem, 3vw, 2.6rem); margin-top: 8px; }
+.op-track__hero p { color: #ffffff; max-width: 680px; opacity: 0.94; margin-top: 8px; }
 .op-track__form { display: grid; grid-template-columns: 1fr 1fr auto; gap: 12px; }
 .op-track__steps {
   display: grid;

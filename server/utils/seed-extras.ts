@@ -1279,7 +1279,7 @@ export function defaultTreePages(allProducts: Record<string, any>[]) {
       gallery: ['/images/op/portrait-8934msk.jpg', '/images/op/portrait-99141agnsk.jpg'],
       styleConfig: {
         fontFamily: 'IBM Plex Sans Thai',
-        headingColor: '#fff8eb',
+        headingColor: '#ffffff',
         textColor: '#2a2438',
         accentColor: '#b7791f',
         bgColor: '#1f1629',
@@ -1423,7 +1423,7 @@ export function defaultTreePages(allProducts: Record<string, any>[]) {
       banner: '/images/op/portrait-8909amk.jpg',
       styleConfig: {
         fontFamily: 'IBM Plex Sans Thai',
-        headingColor: '#fffaf0',
+        headingColor: '#ffffff',
         textColor: '#261f1d',
         accentColor: '#b8860b',
         bgColor: '#231710',
@@ -1459,7 +1459,7 @@ export function defaultTreePages(allProducts: Record<string, any>[]) {
       banner: '/images/op/openheart-stones.jpg',
       styleConfig: {
         fontFamily: 'IBM Plex Sans Thai',
-        headingColor: '#fff8dc',
+        headingColor: '#ffffff',
         textColor: '#2a2118',
         accentColor: '#c59b27',
         bgColor: '#261a12',
@@ -1565,7 +1565,7 @@ export function defaultTreePages(allProducts: Record<string, any>[]) {
       banner: '/images/op/hero-gold-stones.jpg',
       styleConfig: {
         fontFamily: 'Prompt',
-        headingColor: '#fff9eb',
+        headingColor: '#ffffff',
         textColor: '#282032',
         accentColor: '#c9a84c',
         bgColor: '#291c34',

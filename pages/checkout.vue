@@ -156,15 +156,23 @@ useHead({ title: `${t('checkout.title')} — ${site.value.name}` })
 </script>
 
 <template>
-  <section class="section" style="padding-top: calc(var(--header-h) + 36px)">
-    <div class="container">
+  <div>
+    <section class="op-page-hero">
+      <div class="container">
+        <p class="eyebrow">{{ placedOrder ? t('checkout.success') : t('nav.cart') }}</p>
+        <h1 class="page-title">{{ placedOrder ? t('checkout.success') : t('checkout.title') }}</h1>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
       <!-- Success state -->
       <div v-if="placedOrder" class="success">
         <div class="success__icon">
           <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m5 13 4 4L19 7" /></svg>
         </div>
         <p class="eyebrow" style="justify-content: center">{{ t('checkout.success') }}</p>
-        <h1 class="page-title" style="text-align: center; margin: 14px 0 10px">{{ t('checkout.success') }}</h1>
+        <h2 class="serif" style="text-align: center; margin: 14px 0 10px; font-size: 28px">{{ t('checkout.success') }}</h2>
         <p class="muted center" style="margin-bottom: 20px">{{ t('checkout.successBody') }}</p>
         <div class="success__no">{{ placedOrder.orderNo }}</div>
 
@@ -186,9 +194,6 @@ useHead({ title: `${t('checkout.title')} — ${site.value.name}` })
 
       <!-- Checkout form -->
       <template v-else>
-        <p class="eyebrow">{{ t('nav.cart') }}</p>
-        <h1 class="page-title" style="margin: 12px 0 34px">{{ t('checkout.title') }}</h1>
-
         <div class="checkout">
           <div class="checkout__form">
             <!-- Contact -->
@@ -375,8 +380,9 @@ useHead({ title: `${t('checkout.title')} — ${site.value.name}` })
           </aside>
         </div>
       </template>
-    </div>
-  </section>
+      </div>
+    </section>
+  </div>
 </template>
 
 <style scoped>

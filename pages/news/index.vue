@@ -165,14 +165,14 @@ const liveCampaigns = computed(() => campaignsRes.value?.items || campaignsRes.v
   font-family: var(--font-roman);
   font-size: 11px;
   letter-spacing: 0.3em;
-  color: var(--champagne-soft);
+  color: #ffffff;
 }
 .op-news__hero-body h1 { color: #ffffff; }
 .op-news__hero-body p {
   max-width: 580px;
   font-family: var(--font-display);
   font-size: 18.5px;
-  color: rgba(255, 255, 255, 0.88);
+  color: #ffffff;
 }
 
 .op-news__grid {

@@ -7,7 +7,9 @@ const router = useRouter()
 const route = useRoute()
 
 const mobileOpen = ref(false)
+const mobileServicesOpen = ref(true)
 const collectionsOpen = ref(false)
+const servicesOpen = ref(false)
 const searchOpen = ref(false)
 const searchQuery = ref('')
 const scrolled = ref(false)
@@ -26,16 +28,43 @@ const isHeroPage = computed(() => {
   return p === '/' || p === '/about' || p === '/news' || p === '/contact' || p === '/products' || p.startsWith('/brands/')
 })
 
+const isServicesRoute = computed(() => {
+  const p = route.path.replace(/^\/en(\/|$)/, '/').replace(/\/+$/, '') || '/'
+  return p === '/services' || p === '/branches' || p === '/warranty' || p === '/track'
+})
+
 /* When scrolled or on inner white pages, header uses olympianus.com #ffffff header_color */
-const isLightBar = computed(() => scrolled.value || !isHeroPage.value || collectionsOpen.value || searchOpen.value)
+const isLightBar = computed(() => scrolled.value || !isHeroPage.value || collectionsOpen.value || servicesOpen.value || searchOpen.value)
 
 function submitSearch() {
   const q = searchQuery.value.trim()
   searchOpen.value = false
   mobileOpen.value = false
   collectionsOpen.value = false
+  servicesOpen.value = false
   router.push({ path: localePath('/products'), query: q ? { q } : {} })
 }
+
+const serviceSubItems = computed(() => [
+  {
+    key: 'services-branches',
+    to: '/services',
+    title: locale.value === 'th' ? 'Services & Branches · สิทธิพิเศษ & สาขา' : 'Services & Branches',
+    desc: locale.value === 'th' ? 'ศูนย์บริการมาตรฐาน & เคาน์เตอร์สาขาทั่วประเทศไทย' : 'Authorized Service Centers & Boutiques Across Thailand'
+  },
+  {
+    key: 'warranty-repair',
+    to: '/warranty',
+    title: locale.value === 'th' ? 'Warranty & Repair · แจ้งซ่อม & รับประกัน' : 'Warranty & Repair',
+    desc: locale.value === 'th' ? 'ลงทะเบียน E-Warranty ออนไลน์ & ติดตามสถานะงานซ่อม' : 'Online E-Warranty Registration & Watch Repair Tracking'
+  },
+  {
+    key: 'track-order',
+    to: '/track',
+    title: locale.value === 'th' ? 'Track Order · ติดตามคำสั่งซื้อ' : 'Track Order',
+    desc: locale.value === 'th' ? 'เช็คสถานะคำสั่งซื้อ & หมายเลขพัสดุจัดส่งแบบเรียลไทม์' : 'Real-Time Order Confirmation & Courier Tracking'
+  }
+])
 
 const opCollections = computed(() => [
   { label: locale.value === 'th' ? 'Men Watch · นาฬิกาผู้ชาย' : 'Men Watch', query: { category: 'men-watches' } },
@@ -55,6 +84,7 @@ const brandHouses = computed(() => [
 watch(() => route.fullPath, () => {
   mobileOpen.value = false
   collectionsOpen.value = false
+  servicesOpen.value = false
   searchOpen.value = false
 })
 </script>
@@ -66,7 +96,7 @@ watch(() => route.fullPath, () => {
       'is-transparent': !isLightBar,
       'is-light': isLightBar
     }"
-    @mouseleave="collectionsOpen = false"
+    @mouseleave="collectionsOpen = false; servicesOpen = false"
   >
     <div class="container op-hdr__row">
       <!-- Left: Authentic Olym Pianus Crown Shield + Script Logo -->
@@ -76,13 +106,17 @@ watch(() => route.fullPath, () => {
 
       <!-- Center: Exact olympianus.com Navigation Structure -->
       <nav class="op-hdr__nav" aria-label="Primary">
-        <NuxtLink :to="localePath('/about')" class="op-hdr__link">
+        <NuxtLink
+          :to="localePath('/about')"
+          class="op-hdr__link"
+          @mouseenter="collectionsOpen = false; servicesOpen = false"
+        >
           {{ locale === 'th' ? 'About' : 'About' }}
         </NuxtLink>
 
         <div
           class="op-hdr__dropdown-wrap"
-          @mouseenter="collectionsOpen = true"
+          @mouseenter="collectionsOpen = true; servicesOpen = false"
         >
           <NuxtLink
             :to="localePath('/products')"
@@ -96,23 +130,82 @@ watch(() => route.fullPath, () => {
           </NuxtLink>
         </div>
 
-        <NuxtLink :to="localePath('/promotions')" class="op-hdr__link op-hdr__link--promo">
+        <NuxtLink
+          :to="localePath('/promotions')"
+          class="op-hdr__link op-hdr__link--promo"
+          @mouseenter="collectionsOpen = false; servicesOpen = false"
+        >
           {{ locale === 'th' ? 'โปรโมชั่น' : 'Promotions' }}
         </NuxtLink>
 
-        <NuxtLink :to="localePath('/services')" class="op-hdr__link">
-          {{ locale === 'th' ? 'สิทธิพิเศษ & สาขา' : 'Services & Branches' }}
+        <!-- Services Sub-Menu: Services & Branches · Warranty & Repair · Track Order -->
+        <div
+          class="op-hdr__dropdown-wrap op-hdr__dropdown-wrap--services"
+          @mouseenter="servicesOpen = true; collectionsOpen = false"
+          @mouseleave="servicesOpen = false"
+        >
+          <NuxtLink
+            :to="localePath('/services')"
+            class="op-hdr__link op-hdr__link--has-sub"
+            :class="{ 'router-link-active': isServicesRoute || servicesOpen }"
+            :aria-expanded="servicesOpen"
+          >
+            {{ locale === 'th' ? 'Services' : 'Services' }}
+            <svg
+              width="10"
+              height="10"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              class="op-hdr__chev"
+              :class="{ 'is-open': servicesOpen }"
+            >
+              <path d="m6 9 6 6 6-6" />
+            </svg>
+          </NuxtLink>
+
+          <Transition name="fade-drop">
+            <div
+              v-if="servicesOpen"
+              class="op-svc-dropdown"
+              role="menu"
+              aria-label="Services Sub-Menu"
+            >
+              <p class="op-svc-dropdown__eyebrow">
+                {{ locale === 'th' ? 'OPWATCH SERVICES · บริการหลังการขาย' : 'AUTHORIZED CLIENT SERVICES' }}
+              </p>
+              <NuxtLink
+                v-for="item in serviceSubItems"
+                :key="item.key"
+                :to="localePath(item.to)"
+                class="op-svc-dropdown__item"
+                role="menuitem"
+                @click="servicesOpen = false"
+              >
+                <div class="op-svc-dropdown__text">
+                  <strong>{{ item.title }}</strong>
+                  <span>{{ item.desc }}</span>
+                </div>
+                <span class="op-svc-dropdown__arrow">→</span>
+              </NuxtLink>
+            </div>
+          </Transition>
+        </div>
+
+        <NuxtLink
+          :to="localePath('/news')"
+          class="op-hdr__link"
+          @mouseenter="collectionsOpen = false; servicesOpen = false"
+        >
+          News
         </NuxtLink>
 
-        <NuxtLink :to="localePath('/warranty')" class="op-hdr__link">
-          {{ locale === 'th' ? 'แจ้งซ่อม & รับประกัน' : 'Warranty & Repair' }}
-        </NuxtLink>
-
-        <NuxtLink :to="localePath('/track')" class="op-hdr__link">
-          {{ locale === 'th' ? 'เช็คพัสดุ' : 'Track Order' }}
-        </NuxtLink>
-
-        <NuxtLink :to="localePath('/contact')" class="op-hdr__link">
+        <NuxtLink
+          :to="localePath('/contact')"
+          class="op-hdr__link"
+          @mouseenter="collectionsOpen = false; servicesOpen = false"
+        >
           {{ locale === 'th' ? 'Contact' : 'Contact' }}
         </NuxtLink>
       </nav>
@@ -253,9 +346,38 @@ watch(() => route.fullPath, () => {
               ✦ {{ b.name }} ({{ b.tag }})
             </NuxtLink>
             <NuxtLink :to="localePath('/promotions')">{{ locale === 'th' ? 'โปรโมชั่น & คูปองส่วนลด' : 'Promotions & Vouchers' }}</NuxtLink>
-            <NuxtLink :to="localePath('/warranty')">{{ locale === 'th' ? 'ลงทะเบียนรับประกัน & แจ้งซ่อมออนไลน์' : 'Online Warranty & Repair' }}</NuxtLink>
-            <NuxtLink :to="localePath('/services')">{{ locale === 'th' ? 'บริการพิเศษ & เช็คสาขาใกล้บ้าน' : 'Boutique Services & Branches' }}</NuxtLink>
-            <NuxtLink :to="localePath('/track')">{{ locale === 'th' ? 'ติดตามสถานะคำสั่งซื้อ' : 'Track Order' }}</NuxtLink>
+
+            <!-- Mobile Services Collapsible Sub-Menu -->
+            <button
+              type="button"
+              class="op-mobile__group-btn"
+              :aria-expanded="mobileServicesOpen"
+              @click="mobileServicesOpen = !mobileServicesOpen"
+            >
+              <span>Services</span>
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                :class="{ 'is-open': mobileServicesOpen }"
+              >
+                <path d="m6 9 6 6 6-6" />
+              </svg>
+            </button>
+            <template v-if="mobileServicesOpen">
+              <NuxtLink
+                v-for="item in serviceSubItems"
+                :key="item.key"
+                :to="localePath(item.to)"
+                class="op-mobile__sub"
+              >
+                — {{ item.title }}
+              </NuxtLink>
+            </template>
+
             <NuxtLink :to="localePath('/news')">News</NuxtLink>
             <NuxtLink :to="localePath('/contact')">Contact</NuxtLink>
             <NuxtLink :to="localePath(isAuthenticated ? '/account' : '/account/login')">
@@ -313,7 +435,94 @@ watch(() => route.fullPath, () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 44px;
+  gap: clamp(22px, 2.6vw, 40px);
+}
+.op-hdr__dropdown-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+.op-hdr__chev {
+  transition: transform 0.22s ease;
+}
+.op-hdr__chev.is-open {
+  transform: rotate(180deg);
+}
+
+/* Services Sub-Menu Dropdown */
+.op-svc-dropdown {
+  position: absolute;
+  top: calc(100% + 14px);
+  left: -24px;
+  width: 360px;
+  background: #ffffff;
+  border: 1px solid var(--line-strong);
+  border-top: 2.5px solid var(--sapphire);
+  padding: 18px 20px 14px;
+  box-shadow: var(--shadow-lg);
+  z-index: 60;
+  color: var(--ink);
+}
+.op-svc-dropdown::before {
+  content: '';
+  position: absolute;
+  top: -18px;
+  left: 0;
+  right: 0;
+  height: 18px;
+}
+.op-svc-dropdown__eyebrow {
+  font-family: var(--font-roman);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--sapphire);
+  margin: 0 0 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--sand);
+}
+.op-svc-dropdown__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 10px;
+  border-bottom: 1px solid var(--sand);
+  transition: background 0.2s, padding-left 0.2s;
+}
+.op-svc-dropdown__item:last-child {
+  border-bottom: 0;
+}
+.op-svc-dropdown__item:hover {
+  background: #f5f7fd;
+  padding-left: 14px;
+}
+.op-svc-dropdown__text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.op-svc-dropdown__text strong {
+  font-family: var(--font-sans);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: 0.02em;
+}
+.op-svc-dropdown__item:hover .op-svc-dropdown__text strong {
+  color: var(--sapphire);
+}
+.op-svc-dropdown__text span {
+  font-size: 11.5px;
+  color: var(--ink-muted);
+  line-height: 1.4;
+}
+.op-svc-dropdown__arrow {
+  font-size: 13px;
+  color: var(--sapphire);
+  opacity: 0.7;
+  flex: none;
 }
 .op-hdr__link {
   font-family: var(--font-roman);
@@ -611,6 +820,29 @@ watch(() => route.fullPath, () => {
   font-family: var(--font-display);
   font-size: 17px;
   letter-spacing: 0.08em;
+}
+.op-mobile__group-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--sand);
+  padding: 12px 0;
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: 17px;
+  letter-spacing: 0.08em;
+  text-align: left;
+  cursor: pointer;
+}
+.op-mobile__group-btn svg {
+  transition: transform 0.2s ease;
+  color: var(--sapphire);
+}
+.op-mobile__group-btn svg.is-open {
+  transform: rotate(180deg);
 }
 .op-mobile__links a.op-mobile__sub {
   padding-left: 14px;

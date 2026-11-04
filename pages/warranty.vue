@@ -491,15 +491,16 @@ useHead({
   display: inline-block;
   padding: 5px 14px;
   border-radius: 999px;
-  background: rgba(201, 168, 76, 0.22);
-  border: 1px solid rgba(201, 168, 76, 0.55);
-  color: #f4d98c;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  color: #ffffff;
   font-size: 11.5px;
   font-weight: 700;
   letter-spacing: 0.08em;
   margin-bottom: 12px;
 }
 .wrt-hero h1 {
+  color: #ffffff;
   margin: 0 0 10px;
   font-size: clamp(26px, 4vw, 38px);
   font-weight: 700;
@@ -507,7 +508,8 @@ useHead({
 .wrt-hero p {
   margin: 0 auto 24px;
   max-width: 720px;
-  color: rgba(255, 255, 255, 0.86);
+  color: #ffffff;
+  opacity: 0.94;
   font-size: 15px;
   line-height: 1.6;
 }

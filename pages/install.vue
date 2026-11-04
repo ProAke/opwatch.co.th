@@ -366,17 +366,17 @@ definePageMeta({ layout: false })
 <style scoped>
 .inst { display: grid; grid-template-columns: 0.9fr 1.1fr; min-height: 100vh; }
 
-.inst__brand { background: var(--ink); color: #f4f0e8; padding: 56px; display: flex; align-items: center; position: relative; overflow: hidden; }
-.inst__brand::after { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 20% 20%, rgba(169,132,78,0.22), transparent 55%); }
+.inst__brand { background: linear-gradient(135deg, #101444 0%, #1d2088 100%); color: #ffffff; padding: 56px; display: flex; align-items: center; position: relative; overflow: hidden; }
+.inst__brand::after { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 20% 20%, rgba(255,255,255,0.12), transparent 55%); }
 .inst__brandinner { position: relative; z-index: 2; }
 .brandrow { display: flex; align-items: center; gap: 10px; margin-bottom: 60px; }
-.brandmark { font-family: var(--font-display); font-size: 20px; font-weight: 600; color: var(--gold); border: 1px solid var(--gold); border-radius: 50%; width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center; }
-.brandword { font-family: var(--font-display); font-size: 22px; font-weight: 600; letter-spacing: 0.1em; }
-.inst__headline { font-size: clamp(2.4rem, 4vw, 3.4rem); line-height: 1.1; }
-.inst__lede { color: #b3ac9e; margin-top: 18px; font-size: 15px; line-height: 1.8; max-width: 400px; }
-.inst__points { list-style: none; padding: 0; margin: 34px 0 0; display: flex; flex-direction: column; gap: 12px; font-size: 14px; color: #cfc8b9; }
-.inst__points li::before { content: '—'; color: var(--gold); margin-right: 10px; }
-.inst__foot { margin-top: 60px; color: #6f695e; }
+.brandmark { font-family: var(--font-display); font-size: 20px; font-weight: 600; color: #ffffff; border: 1px solid rgba(255,255,255,0.65); border-radius: 50%; width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center; }
+.brandword { font-family: var(--font-display); font-size: 22px; font-weight: 600; letter-spacing: 0.1em; color: #ffffff; }
+.inst__headline { color: #ffffff; font-size: clamp(2.4rem, 4vw, 3.4rem); line-height: 1.1; }
+.inst__lede { color: rgba(255,255,255,0.92); margin-top: 18px; font-size: 15px; line-height: 1.8; max-width: 400px; }
+.inst__points { list-style: none; padding: 0; margin: 34px 0 0; display: flex; flex-direction: column; gap: 12px; font-size: 14px; color: #ffffff; }
+.inst__points li::before { content: '—'; color: #ffffff; margin-right: 10px; }
+.inst__foot { margin-top: 60px; color: rgba(255,255,255,0.75); }
 
 .inst__panel { background: var(--ivory); padding: 56px 64px; display: flex; align-items: center; justify-content: center; }
 .wizard { width: 100%; max-width: 540px; }

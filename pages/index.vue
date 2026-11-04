@@ -788,7 +788,7 @@ onBeforeUnmount(() => {
 .op-hero__sub {
   font-family: var(--font-display);
   font-size: 15.5px;
-  color: rgba(255, 255, 255, 0.88);
+  color: #ffffff;
 }
 .op-hero__shop {
   font-family: var(--font-roman);
@@ -796,7 +796,7 @@ onBeforeUnmount(() => {
   font-weight: 600;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: var(--champagne-soft);
+  color: #ffffff;
   margin-top: 3px;
 }
 
@@ -930,7 +930,7 @@ onBeforeUnmount(() => {
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.3em;
-  color: var(--champagne-soft);
+  color: #ffffff;
 }
 .op-feature-banner__content h2 {
   color: #ffffff;
@@ -942,7 +942,7 @@ onBeforeUnmount(() => {
 }
 .op-feature-banner__content p {
   font-family: var(--font-display);
-  color: rgba(255, 255, 255, 0.88);
+  color: #ffffff;
   font-size: 18px;
   line-height: 1.75;
 }
@@ -996,7 +996,7 @@ onBeforeUnmount(() => {
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.28em;
-  color: var(--champagne-soft);
+  color: #ffffff;
 }
 .op-lifestyle__cap h3 {
   color: #ffffff;
@@ -1392,14 +1392,16 @@ onBeforeUnmount(() => {
   margin-bottom: 8px;
 }
 .op-promo-hero-card__overlay h3 {
+  color: #ffffff;
   font-family: var(--font-display);
   font-size: clamp(1.35rem, 2.2vw, 1.85rem);
   font-weight: 600;
   line-height: 1.28;
 }
 .op-promo-hero-card__overlay p {
+  color: #ffffff;
   font-size: 13.5px;
-  opacity: 0.9;
+  opacity: 0.94;
   margin-top: 6px;
   max-width: 620px;
 }

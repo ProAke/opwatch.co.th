@@ -78,7 +78,7 @@ useHead(() => ({
     <!-- Hero Header -->
     <section class="op-promos-hero">
       <div class="container">
-        <span class="eyebrow" style="color:#a5b4fc">OFFICIAL OMNICHANNEL CAMPAIGNS</span>
+        <span class="eyebrow" style="color:#ffffff">OFFICIAL OMNICHANNEL CAMPAIGNS</span>
         <h1>
           {{ locale === 'th' ? 'ศูนย์รวมโปรโมชั่นทุกช่องทางจำหน่าย' : 'Official Promotions Across All Channels' }}
         </h1>
@@ -284,17 +284,19 @@ useHead(() => ({
 .op-promos-hero {
   background: linear-gradient(135deg, #0d1038 0%, #1d2088 65%, #16196b 100%);
   color: #ffffff;
-  padding: 120px 0 48px;
+  padding: 64px 0 48px;
 }
 .op-promos-hero h1 {
+  color: #ffffff;
   font-family: var(--font-display);
   font-size: clamp(2rem, 3.6vw, 3rem);
   margin-top: 8px;
 }
 .op-promos-hero p {
+  color: #ffffff;
   max-width: 760px;
   font-size: 15px;
-  opacity: 0.9;
+  opacity: 0.94;
   margin-top: 10px;
   line-height: 1.7;
 }

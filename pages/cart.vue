@@ -18,11 +18,16 @@ useHead({ title: `${t('cart.title')} — ${site.value.name}` })
 </script>
 
 <template>
-  <section class="section">
-    <div class="container">
-      <p class="eyebrow">{{ t('nav.cart') }}</p>
-      <h1 class="page-title" style="margin: 14px 0 44px">{{ t('cart.title') }}</h1>
+  <div>
+    <section class="op-page-hero">
+      <div class="container">
+        <p class="eyebrow">{{ t('nav.cart') }}</p>
+        <h1 class="page-title">{{ t('cart.title') }}</h1>
+      </div>
+    </section>
 
+    <section class="section">
+      <div class="container">
       <div v-if="!cart.items.value.length" class="empty">
         <svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" style="color: var(--ink-faint)">
           <path d="M3 4h2l2.4 12.2a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.6L21 8H6" />
@@ -81,8 +86,9 @@ useHead({ title: `${t('cart.title')} — ${site.value.name}` })
           <NuxtLink :to="localePath('/checkout')" class="btn btn--gold btn--block">{{ t('cart.checkout') }}</NuxtLink>
         </aside>
       </div>
-    </div>
-  </section>
+      </div>
+    </section>
+  </div>
 </template>
 
 <style scoped>
