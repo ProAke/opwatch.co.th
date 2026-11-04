@@ -126,6 +126,15 @@ const navSections = computed(() => {
       groupTh: 'โครงสร้างเว็บ Tree · เจ้าหน้าที่ · ตั้งค่า',
       items: [
         can('pages') && {
+          to: '/office/reviews',
+          label: 'บทความ & รีวิวสินค้า',
+          sub: 'รีวิวเจาะลึก · AI เขียนรีวิว · รีวิวลูกค้า',
+          icon: 'doc',
+          tone: 'mint',
+          badge: 'NEW',
+          badgeTone: 'mint'
+        },
+        can('pages') && {
           to: '/office/pages',
           label: 'เนื้อหาเว็บ (Tree Menu CMS)',
           sub: 'หน้ากั้นแบรนด์ · Story ซีรีส์ · AI',

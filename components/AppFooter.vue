@@ -105,6 +105,7 @@ function scrollToTop() {
         <nav class="op-ftr__quick" aria-label="Boutique links">
           <NuxtLink :to="localePath('/')">{{ locale === 'th' ? 'หน้าแรก' : 'Home' }}</NuxtLink>
           <NuxtLink :to="localePath('/promotions')">{{ locale === 'th' ? 'โปรโมชั่น' : 'Promotions' }}</NuxtLink>
+          <NuxtLink :to="localePath('/reviews')">{{ locale === 'th' ? 'บทความ-รีวิวสินค้า' : 'Articles & Reviews' }}</NuxtLink>
           <NuxtLink :to="localePath('/products')">Collections</NuxtLink>
           <NuxtLink :to="localePath('/brands/olympianus')">Olym Pianus</NuxtLink>
           <NuxtLink :to="localePath('/brands/olympia-star')">Olympia Star</NuxtLink>

@@ -194,6 +194,15 @@ watch(() => route.fullPath, () => {
         </div>
 
         <NuxtLink
+          :to="localePath('/reviews')"
+          class="op-hdr__link"
+          :class="{ 'router-link-active': route.path.includes('/reviews') }"
+          @mouseenter="collectionsOpen = false; servicesOpen = false"
+        >
+          {{ locale === 'th' ? 'บทความ-รีวิวสินค้า' : 'Reviews' }}
+        </NuxtLink>
+
+        <NuxtLink
           :to="localePath('/news')"
           class="op-hdr__link"
           @mouseenter="collectionsOpen = false; servicesOpen = false"
@@ -378,6 +387,9 @@ watch(() => route.fullPath, () => {
               </NuxtLink>
             </template>
 
+            <NuxtLink :to="localePath('/reviews')">
+              {{ locale === 'th' ? 'บทความ - รีวิวสินค้า' : 'Articles & Watch Reviews' }}
+            </NuxtLink>
             <NuxtLink :to="localePath('/news')">News</NuxtLink>
             <NuxtLink :to="localePath('/contact')">Contact</NuxtLink>
             <NuxtLink :to="localePath(isAuthenticated ? '/account' : '/account/login')">

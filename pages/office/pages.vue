@@ -26,6 +26,7 @@ const pageTypeMeta: Record<string, { label: string; badge: string; icon: string 
   system_page: { label: 'หน้าหลักเว็บไซต์', badge: 'b-blue', icon: '🌐' },
   brand_gate: { label: 'หน้ากั้นแบรนด์สินค้า', badge: 'b-purple', icon: '🏛' },
   series_story: { label: 'Story ประจำซีรีส์', badge: 'b-mint', icon: '⌚' },
+  article_review: { label: 'บทความ-รีวิวสินค้า', badge: 'b-mint', icon: '★' },
   promo_story: { label: 'เรื่องโปรโมชั่น', badge: 'b-pink', icon: '🎁' },
   custom_landing: { label: 'หน้าสร้างใหม่ + เชื่อมสินค้า', badge: 'b-amber', icon: '✨' },
   legal: { label: 'นโยบาย / กฎหมาย', badge: 'b-gray', icon: '📜' }
@@ -440,6 +441,7 @@ async function deleteCurrentPage() {
 
 const previewLink = computed(() => {
   if (form.pageType === 'brand_gate' && form.brandSlug) return `/brands/${form.brandSlug}`
+  if (form.pageType === 'article_review' && form.slug) return `/reviews/${form.slug}`
   if (form.pageType === 'system_page' && form.routePath) return form.routePath
   if (form.slug) return `/pages/${form.slug}`
   return '/'

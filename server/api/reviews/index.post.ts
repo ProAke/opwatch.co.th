@@ -1,21 +1,24 @@
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
-  const store = useStore()
-  const productId = Number(body?.productId)
-  if (!productId) throw createError({ statusCode: 400, statusMessage: 'productId required' })
-
-  const product = await store.findById('products', productId)
-  if (!product) throw createError({ statusCode: 404, statusMessage: 'Product not found' })
-
+  const customerName = String(body?.customerName || 'ผู้ใช้งานจริง').trim()
   const comment = String(body?.comment || '').trim()
-  if (!comment) throw createError({ statusCode: 400, statusMessage: 'comment required' })
+  if (!comment || comment.length < 4) {
+    throw createError({ statusCode: 400, statusMessage: 'กรุณาระบุข้อความรีวิวอย่างน้อย 4 ตัวอักษร' })
+  }
 
-  const review = await store.create('reviews', {
+  const store = useStore()
+  let productId = Number(body?.productId || 0)
+  if (!productId) {
+    const firstProd = (await store.all('products').catch(() => []))[0]
+    productId = firstProd ? Number(firstProd.id) : 1
+  }
+
+  const created = await store.create('reviews', {
     productId,
-    customerName: String(body?.customerName || 'Anonymous').trim().slice(0, 160),
+    customerName,
     rating: Math.min(5, Math.max(1, Number(body?.rating) || 5)),
-    comment: comment.slice(0, 2000),
+    comment,
     status: 'approved'
   })
-  return { review }
+  return { ok: true, review: created }
 })

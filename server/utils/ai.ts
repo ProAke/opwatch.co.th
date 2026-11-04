@@ -5,6 +5,7 @@ export interface AiTaskPayload {
     | 'product_full'
     | 'product_seo'
     | 'page_full'
+    | 'article_review'
     | 'promo_copy'
     | 'coupon_copy'
     | 'calendar_plan'
@@ -234,6 +235,63 @@ function builtinGenerate(payload: AiTaskPayload): Record<string, any> {
       seoKeywords,
       aseoSummary,
       aseoFaqs
+    }
+  }
+
+  if (payload.task === 'article_review') {
+    const brandSlug = String(inp.brandSlug || 'olympianus').trim()
+    const brandLabel = brandSlug === 'ogival' ? 'Ogival Swiss Since 1903' : brandSlug === 'olympia-star' ? 'Olympia Star Swiss' : 'Olym Pianus (OP)'
+    const testedSku = String(inp.testedSku || inp.sku || '899832AGS').trim()
+    const category = String(inp.category || 'hands-on-review').trim()
+    const titleTh = String(inp.titleTh || inp.title || `รีวิวเจาะลึก ${brandLabel} รุ่น ${testedSku} — สัมผัสจริงบนข้อมือ`).trim()
+    const titleEn = String(inp.titleEn || `Hands-On Review: ${brandLabel} ${testedSku} Sapphire Timepiece`).trim()
+    const focus = String(inp.prompt || inp.summary || 'ความคุ้มค่า กระจกแซฟไฟร์แท้ และความประณีตของตัวเรือน').trim()
+
+    const bodyTh = `
+<h2>สัมผัสแรกและภาพรวมการออกแบบบนข้อมือจริง</h2>
+<p>จากการทดสอบสวมใส่จริงของ <strong>${brandLabel} รุ่น ${testedSku}</strong> จุดเด่นที่สัมผัสได้ทันทีคือความพิถีพิถันของงานขัดแต่งตัวเรือนสแตนเลสสตีล 316L และการวางสัดส่วนหน้าปัดที่รับกับข้อมือคนไทยได้อย่างสมดุล ตอบโจทย์หัวข้อ <em>“${focus}”</em> ได้อย่างน่าประทับใจ</p>
+<h3>กระจก Sapphire Crystal แท้ และความเที่ยงตรงของกลไก</h3>
+<p>หน้าปัดได้รับการปกป้องด้วยกระจก <strong>Sapphire Crystal แท้</strong> ความแข็งระดับ 9 Mohs ช่วยคงความใสคมชัดไร้รอยขีดข่วนในระยะยาว พร้อมกลไกคุณภาพสูงที่ผ่านการตรวจสอบมาตรฐานความเที่ยงตรงโดยทีมช่างผู้เชี่ยวชาญของ <strong>บริษัท อินเตอร์ไทมส์ จำกัด</strong></p>
+<h3>สรุปความคุ้มค่า (Horologist Verdict)</h3>
+<ul>
+  <li><strong>วัสดุระดับพรีเมียม:</strong> ตัวเรือน 316L Stainless Steel จับคู่กระจกแซฟไฟร์แท้กันรอย</li>
+  <li><strong>สวมใส่ได้หลากหลายโอกาส:</strong> เข้าได้ทั้งชุดทำงานผู้บริหารและวันพักผ่อน</li>
+  <li><strong>อุ่นใจบริการหลังการขาย:</strong> รับประกันศูนย์ไทย 2 ปีเต็ม ลงทะเบียน E-Warranty ออนไลน์ได้ทันที</li>
+</ul>`.trim()
+
+    return {
+      heroEyebrow: category === 'buyers-guide' ? 'HOROLOGY BUYER’S GUIDE' : `HANDS-ON WATCH REVIEW · ${brandLabel.toUpperCase()}`,
+      title: titleTh,
+      titleTh,
+      titleEn,
+      category,
+      summary: `เจาะลึกทุกรายละเอียดจากการใช้งานจริงของ ${brandLabel} ${testedSku} ทั้งวัสดุตัวเรือน กระจกแซฟไฟร์ ความเที่ยงตรงของกลไก และความคุ้มค่าพร้อมรับประกันศูนย์ไทย 2 ปี`,
+      summaryEn: `Comprehensive hands-on review of the ${brandLabel} ${testedSku} covering case finishing, sapphire crystal, movement accuracy, and value.`,
+      contentTh: bodyTh,
+      contentEn: `<h2>Hands-On Verdict: ${titleEn}</h2><p>Crafted in 316L stainless steel with genuine scratch-resistant Sapphire Crystal and backed by a 2-year official Thailand warranty from Inter Times Co., Ltd.</p>`,
+      styleConfig: {
+        fontFamily: 'Prompt',
+        headingColor: '#ffffff',
+        textColor: '#1e2438',
+        accentColor: '#1d2088',
+        bgColor: '#101638',
+        overlayOpacity: 0.58,
+        headingSize: 'xl',
+        rating: 4.9,
+        author: 'ทีมผู้เชี่ยวชาญเรือนเวลา อินเตอร์ไทมส์',
+        publishedAt: new Date().toISOString().slice(0, 10),
+        readMinutes: 5,
+        testedSku,
+        verdictScore: { design: 9.7, movement: 9.6, material: 9.8, value: 9.9 },
+        pros: ['กระจก Sapphire Crystal แท้กันรอยขีดข่วน', 'ตัวเรือนสแตนเลสสตีล 316L งานขัดแต่งประณีต', 'รับประกันศูนย์ไทย 2 ปี บริษัท อินเตอร์ไทมส์ จำกัด']
+      },
+      seoTitle: `${titleTh} | บทความรีวิว OPWatch Thailand`,
+      seoDescription: `อ่านรีวิวเจาะลึก ${brandLabel} ${testedSku} ทดสอบจริงบนข้อมือ สเปกกระจกแซฟไฟร์ คะแนนความคุ้มค่า และราคาศูนย์ไทย`,
+      seoKeywords: `รีวิว ${testedSku}, รีวิว ${brandLabel}, นาฬิกากระจกแซฟไฟร์, OPWatch รีวิว`,
+      aseoSummary: `${brandLabel} รุ่น ${testedSku} ได้รับคะแนนรีวิว 4.9/5 โดดเด่นด้วยกระจกแซฟไฟร์แท้ ตัวเรือน 316L และการรับประกันศูนย์ไทย 2 ปี`,
+      aseoFaqs: [
+        { q: `รุ่น ${testedSku} รับประกันกี่ปี?`, a: 'รับประกันศูนย์ไทยอย่างเป็นทางการ 2 ปีเต็ม โดย บริษัท อินเตอร์ไทมส์ จำกัด พร้อมลงทะเบียน E-Warranty ออนไลน์ได้ทันที' }
+      ]
     }
   }
 

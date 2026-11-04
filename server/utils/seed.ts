@@ -14,8 +14,10 @@ import {
   defaultOfficers,
   defaultWarranties,
   defaultRepairs,
-  defaultTreePages
+  defaultTreePages,
+  defaultCustomerReviews
 } from './seed-extras'
+import { commitShopeeCatalogImport, SHOPEE_SHOP_232486539_META } from './shopee'
 
 export interface SeedBrand {
   slug: string
@@ -1113,6 +1115,19 @@ export async function ensureEnterpriseEntities(store: Store): Promise<void> {
           prodUpdated++
         }
       }
+
+      // 3B. Sync confirmed Shopee Official Shop 232486539 recommended items, images, content & promotions
+      const currentPromos = await store.all('promotions').catch(() => [])
+      if (!currentPromos.some((pr: any) => pr.slug === 'shopee-232486539-recommended-deals')) {
+        await commitShopeeCatalogImport(store, {
+          url: SHOPEE_SHOP_232486539_META.recommendationUrl,
+          importImages: true,
+          importContent: true,
+          importPromotions: true
+        })
+        prodUpdated++
+      }
+
       const freshProds = prodUpdated > 0 ? await store.all('products') : prods
 
       // 4. Seed Dealer's Own Inventory (`dealer_stocks`)
@@ -1161,6 +1176,14 @@ export async function ensureEnterpriseEntities(store: Store): Promise<void> {
       if (existingRepairs.length === 0) {
         for (const rep of defaultRepairs()) {
           await store.create('repairs', rep)
+        }
+      }
+
+      // 5B. Seed Verified Customer Product Reviews (`reviews`)
+      const existingReviews = await store.all('reviews').catch(() => [])
+      if (existingReviews.length === 0 && freshProds.length > 0) {
+        for (const rv of defaultCustomerReviews(freshProds)) {
+          await store.create('reviews', rv)
         }
       }
 
