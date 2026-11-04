@@ -1,8 +1,19 @@
 import { resolveAiProvider } from '../../../utils/ai'
 
 export default defineEventHandler(async (event) => {
-  await requireAdmin(event)
+  const officer = await requireAdmin(event)
   const cfg = getConfig()
+  const isFullAdmin = officer.role === 'ceo' || officer.role === 'it_admin'
+
+  if (!isFullAdmin) {
+    return {
+      site: {
+        name: cfg.site.name,
+        erpThemeColor: cfg.site.erpThemeColor || '#6C5CE7'
+      }
+    }
+  }
+
   const aiResolved = resolveAiProvider()
 
   return {

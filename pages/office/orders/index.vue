@@ -3,6 +3,7 @@ definePageMeta({ layout: 'office', middleware: ['office'] })
 
 const localePath = useLocalePath()
 const { site } = useSite()
+const { isDealer, officer } = useOfficeAuth()
 const toast = useToast()
 
 const statusFilter = ref('')
@@ -66,9 +67,22 @@ async function quickDispatch(o: any) {
   }
 }
 
+async function quickConfirmPickup(o: any) {
+  try {
+    await $fetch(`/api/admin/orders/${o.id}`, {
+      method: 'PUT',
+      body: { status: 'delivered', note: `ลูกค้ารับสินค้าหน้าร้านเรียบร้อย (${officer.value?.dealerName || officer.value?.name || 'Dealer'})` }
+    })
+    toast.success(`บันทึกการรับสินค้าหน้าร้าน ${o.orderNo} เรียบร้อย!`)
+    await refresh()
+  } catch {
+    toast.error('บันทึกสถานะการรับสินค้าไม่สำเร็จ')
+  }
+}
+
 function statusChip(st: string) {
-  if (st === 'completed') return 'erp-chip--mint'
-  if (st === 'paid') return 'erp-chip--violet'
+  if (st === 'completed' || st === 'delivered') return 'erp-chip--mint'
+  if (st === 'paid' || st === 'confirmed') return 'erp-chip--violet'
   if (st === 'shipped') return 'erp-chip--cyan'
   if (st === 'cancelled') return 'erp-chip--rose'
   return 'erp-chip--amber'
@@ -83,10 +97,16 @@ useHead({ title: 'บริหารจัดการคำสั่งซื�
   <div>
     <div class="erp-page-head">
       <div>
-        <div class="erp-kicker">MODULE 7.4 · ORDER FULFILLMENT &amp; LOGISTICS</div>
-        <h1 class="erp-h1">บริหารจัดการสั่งสินค้า (Order &amp; Dispatch Center)</h1>
+        <div class="erp-kicker">{{ isDealer ? 'DEALER PORTAL · CLICK & COLLECT' : 'MODULE 7.4 · ORDER FULFILLMENT & LOGISTICS' }}</div>
+        <h1 class="erp-h1">
+          {{ isDealer ? 'การรับสินค้าหน้าร้าน (In-Store Pickup Portal)' : 'บริหารจัดการสั่งสินค้าและการส่งสินค้า (Order & Dispatch Center)' }}
+        </h1>
         <p class="erp-sub">
-          ภาพรวมยอดขาย ยืนยันคำสั่งซื้อ บันทึกขนส่งและเลขพัสดุจัดส่ง พร้อมติดตามสถานะคำสั่งซื้อแบบครบวงจร
+          {{
+            isDealer
+              ? `รายการที่ลูกค้าเลือกมารับสินค้าที่หน้าร้านตัวแทนจำหน่าย (${officer?.dealerName || officer?.branchSlug || 'สาขาพาร์ทเนอร์'})`
+              : 'ภาพรวมยอดขาย ยืนยันคำสั่งซื้อ บันทึกขนส่งและเลขพัสดุจัดส่ง พร้อมติดตามสถานะคำสั่งซื้อแบบครบวงจร'
+          }}
         </p>
       </div>
       <button type="button" class="erp-btn" @click="refresh()">↻ รีเฟรชคำสั่งซื้อ</button>
@@ -95,9 +115,9 @@ useHead({ title: 'บริหารจัดการคำสั่งซื�
     <!-- Sales & Fulfillment KPIs -->
     <div class="erp-kpis">
       <div class="erp-kpi">
-        <div class="erp-kpi__label">ยอดขายตามตัวกรอง</div>
-        <div class="erp-kpi__val">{{ fmt(summary.revenue) }}</div>
-        <div class="erp-kpi__meta">ทั้งหมด {{ summary.totalCount }} คำสั่งซื้อ</div>
+        <div class="erp-kpi__label">{{ isDealer ? 'รายการรับสินค้าหน้าร้านทั้งหมด' : 'ยอดขายตามตัวกรอง' }}</div>
+        <div class="erp-kpi__val">{{ isDealer ? `${summary.totalCount} รายการ` : fmt(summary.revenue) }}</div>
+        <div class="erp-kpi__meta">{{ isDealer ? 'เฉพาะรายการ Click & Collect' : `ทั้งหมด ${summary.totalCount} คำสั่งซื้อ` }}</div>
       </div>
       <div class="erp-kpi">
         <div class="erp-kpi__label">1. รอยืนยันคำสั่งซื้อ</div>
@@ -167,7 +187,18 @@ useHead({ title: 'บริหารจัดการคำสั่งซื�
                 <span class="erp-chip" :class="statusChip(o.status)">{{ o.status }}</span>
               </td>
               <td>
-                <div v-if="o.trackingNo" style="font-size:12px">
+                <div v-if="isDealer" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+                  <span class="erp-chip erp-chip--mint">📍 {{ o.branchSlug || 'รับที่หน้าร้าน' }}</span>
+                  <button
+                    v-if="o.status !== 'delivered' && o.status !== 'completed' && o.status !== 'cancelled'"
+                    type="button"
+                    class="erp-btn erp-btn--sm erp-btn--primary"
+                    @click="quickConfirmPickup(o)"
+                  >
+                    ✓ ยืนยันลูกค้ารับสินค้าแล้ว
+                  </button>
+                </div>
+                <div v-else-if="o.trackingNo" style="font-size:12px">
                   <strong style="color:#0e9f6e">{{ o.carrier || 'Express' }}:</strong>
                   <code style="margin-left:4px;color:#6c5ce7">{{ o.trackingNo }}</code>
                 </div>

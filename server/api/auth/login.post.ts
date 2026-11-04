@@ -6,44 +6,41 @@ export default defineEventHandler(async (event) => {
   const email = String(body?.email || '').trim().toLowerCase()
   const password = String(body?.password || '')
 
-  const store = useStore()
-  let customer = await store.findOne('customers', { where: { email } })
-
-  // Self-heal admin customer row if config/site.config.json matches
-  const cfgAdminEmail = String(cfg.admin?.email || '').trim().toLowerCase()
-  if (!customer && cfgAdminEmail && email === cfgAdminEmail && cfg.admin?.passwordHash) {
-    const validCfgAdmin = await verifyPassword(password, cfg.admin.passwordHash)
-    if (validCfgAdmin) {
-      customer = await store.create('customers', {
-        name: 'Administrator',
-        email: cfgAdminEmail,
-        passwordHash: cfg.admin.passwordHash,
-        isAdmin: true,
-        points: 0,
-        totalSpent: 0
-      })
-    }
+  if (!email || !password) {
+    throw createError({ statusCode: 400, statusMessage: 'auth.invalidCredentials' })
   }
 
+  const store = useStore()
+  const customer = await store.findOne('customers', { where: { email } })
+
   if (!customer) {
+    // Check if an officer/dealer accidentally tried logging in via the storefront member login
+    const officer = await store.findOne('officers', { where: { email } })
+    if (officer) {
+      throw createError({
+        statusCode: 403,
+        statusMessage: 'บัญชีเจ้าหน้าที่และตัวแทนจำหน่าย กรุณาเข้าสู่ระบบที่หน้าจัดการหลังบ้าน (/office/login)'
+      })
+    }
     throw createError({ statusCode: 401, statusMessage: 'auth.invalidCredentials' })
   }
 
-  let valid = await verifyPassword(password, customer.passwordHash)
-  if (!valid && cfgAdminEmail && email === cfgAdminEmail && cfg.admin?.passwordHash) {
-    valid = await verifyPassword(password, cfg.admin.passwordHash)
-    if (valid) {
-      customer = (await store.update('customers', Number(customer.id), {
-        passwordHash: cfg.admin.passwordHash,
-        isAdmin: true
-      })) || customer
-    }
+  if (customer.status === 'suspended') {
+    throw createError({ statusCode: 403, statusMessage: 'บัญชีสมาชิกถูกระงับการใช้งานชั่วคราว' })
   }
 
+  // Strictly block legacy admin/staff rows that were migrated out of `customers` from acting as admin
+  const valid = await verifyPassword(password, customer.passwordHash)
   if (!valid) {
     throw createError({ statusCode: 401, statusMessage: 'auth.invalidCredentials' })
   }
 
-  await createSession(event, Number(customer.id), !!customer.isAdmin)
+  await store.update('customers', Number(customer.id), {
+    lastLoginAt: new Date().toISOString(),
+    isAdmin: false,
+    role: 'member'
+  })
+
+  await createSession(event, Number(customer.id), false)
   return { customer: publicUser(customer) }
 })

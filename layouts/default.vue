@@ -24,6 +24,7 @@ watch(
 
     <main :class="{ 'main--offset': !isHeroPage }">
       <slot />
+      <CmsRouteEnhancer />
     </main>
 
     <AppFooter />

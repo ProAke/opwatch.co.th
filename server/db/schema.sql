@@ -379,4 +379,96 @@ CREATE TABLE `ai_runs` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE `officers` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `code` VARCHAR(40) NULL,
+  `name` VARCHAR(180) NOT NULL,
+  `email` VARCHAR(190) NOT NULL,
+  `password_hash` VARCHAR(255) NOT NULL,
+  `phone` VARCHAR(60) NULL,
+  `role` VARCHAR(40) NOT NULL DEFAULT 'marketing_sales',
+  `department` VARCHAR(120) NULL,
+  `position` VARCHAR(120) NULL,
+  `dealer_code` VARCHAR(60) NULL,
+  `dealer_name` VARCHAR(200) NULL,
+  `dealer_tier` VARCHAR(40) NULL,
+  `discount_pct` DECIMAL(5,2) NOT NULL DEFAULT 0.00,
+  `branch_slug` VARCHAR(120) NULL,
+  `permissions` JSON NULL,
+  `status` VARCHAR(24) NOT NULL DEFAULT 'active',
+  `last_login_at` VARCHAR(40) NULL,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `officers_email_unique` (`email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `dealer_stocks` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `officer_id` INT NOT NULL DEFAULT 0,
+  `dealer_code` VARCHAR(60) NOT NULL,
+  `product_id` INT NOT NULL,
+  `sku` VARCHAR(100) NULL,
+  `on_hand` INT NOT NULL DEFAULT 0,
+  `reserved` INT NOT NULL DEFAULT 0,
+  `reorder_point` INT NOT NULL DEFAULT 2,
+  `notes` VARCHAR(320) NULL,
+  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `warranties` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `warranty_no` VARCHAR(48) NOT NULL,
+  `customer_name` VARCHAR(180) NOT NULL,
+  `phone` VARCHAR(60) NOT NULL,
+  `email` VARCHAR(180) NULL,
+  `line_id` VARCHAR(80) NULL,
+  `brand_slug` VARCHAR(80) NOT NULL DEFAULT 'olympianus',
+  `product_sku` VARCHAR(120) NOT NULL,
+  `product_name` VARCHAR(240) NULL,
+  `serial_no` VARCHAR(120) NOT NULL,
+  `purchase_date` VARCHAR(20) NOT NULL,
+  `purchase_channel` VARCHAR(48) NOT NULL DEFAULT 'website',
+  `dealer_or_branch` VARCHAR(200) NULL,
+  `receipt_image` VARCHAR(500) NULL,
+  `watch_image` VARCHAR(500) NULL,
+  `warranty_until` VARCHAR(20) NULL,
+  `registered_by_dealer` VARCHAR(120) NULL,
+  `status` VARCHAR(24) NOT NULL DEFAULT 'verified',
+  `admin_note` TEXT NULL,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `warranties_no_unique` (`warranty_no`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `repairs` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `ticket_no` VARCHAR(48) NOT NULL,
+  `warranty_no` VARCHAR(48) NULL,
+  `customer_name` VARCHAR(180) NOT NULL,
+  `phone` VARCHAR(60) NOT NULL,
+  `email` VARCHAR(180) NULL,
+  `line_id` VARCHAR(80) NULL,
+  `brand_slug` VARCHAR(80) NOT NULL DEFAULT 'olympianus',
+  `product_sku` VARCHAR(120) NOT NULL,
+  `product_name` VARCHAR(240) NULL,
+  `serial_no` VARCHAR(120) NULL,
+  `service_type` VARCHAR(60) NOT NULL DEFAULT 'warranty_claim',
+  `symptom` TEXT NOT NULL,
+  `images` JSON NULL,
+  `dropoff_method` VARCHAR(48) NOT NULL DEFAULT 'head_office',
+  `branch_slug` VARCHAR(120) NULL,
+  `estimated_cost` DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+  `tracking_return` VARCHAR(80) NULL,
+  `status` VARCHAR(32) NOT NULL DEFAULT 'received',
+  `technician_note` TEXT NULL,
+  `submitted_by_dealer` VARCHAR(120) NULL,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `repairs_ticket_unique` (`ticket_no`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 SET FOREIGN_KEY_CHECKS = 1;

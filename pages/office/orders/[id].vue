@@ -4,6 +4,7 @@ definePageMeta({ layout: 'office', middleware: ['office'] })
 const route = useRoute()
 const localePath = useLocalePath()
 const { site } = useSite()
+const { isDealer } = useOfficeAuth()
 const toast = useToast()
 
 const id = computed(() => Number(route.params.id))
@@ -188,20 +189,23 @@ useHead({ title: 'รายละเอียดคำสั่งซื้อ &
 
       <!-- Right: Confirm & Carrier Dispatch Form -->
       <div class="erp-panel" style="height:fit-content">
-        <div class="erp-panel__title" style="margin-bottom:14px">จัดการสถานะ &amp; บันทึกเลขพัสดุจัดส่ง</div>
+        <div class="erp-panel__title" style="margin-bottom:14px">
+          {{ isDealer ? 'ยืนยันการรับสินค้าหน้าร้าน (In-Store Pickup)' : 'จัดการสถานะ & บันทึกเลขพัสดุจัดส่ง' }}
+        </div>
 
         <div class="erp-field" style="margin-bottom:12px">
           <label class="erp-label">สถานะคำสั่งซื้อ</label>
           <select v-model="form.status" class="erp-select">
             <option value="pending">pending — รอยืนยันคำสั่งซื้อ</option>
-            <option value="paid">paid — ยืนยันคำสั่งซื้อ / ชำระเงินแล้ว</option>
-            <option value="shipped">shipped — จัดส่งสินค้าออกแล้ว</option>
-            <option value="completed">completed — ลูกค้าได้รับสินค้าเรียบร้อย</option>
-            <option value="cancelled">cancelled — ยกเลิกรายการ</option>
+            <option value="paid">paid — ยืนยันคำสั่งซื้อ / พร้อมรับสินค้า</option>
+            <option v-if="!isDealer" value="shipped">shipped — จัดส่งสินค้าออกแล้ว</option>
+            <option value="delivered">delivered — ลูกค้ารับสินค้าหน้าร้านเรียบร้อย</option>
+            <option value="completed">completed — ส่งมอบสำเร็จสมบูรณ์</option>
+            <option v-if="!isDealer" value="cancelled">cancelled — ยกเลิกรายการ</option>
           </select>
         </div>
 
-        <div class="erp-field" style="margin-bottom:12px">
+        <div v-if="!isDealer" class="erp-field" style="margin-bottom:12px">
           <label class="erp-label">บริษัทขนส่ง (Carrier)</label>
           <select v-model="form.carrier" class="erp-select">
             <option value="Kerry Express">Kerry Express</option>
@@ -213,7 +217,7 @@ useHead({ title: 'รายละเอียดคำสั่งซื้อ &
           </select>
         </div>
 
-        <div class="erp-field" style="margin-bottom:12px">
+        <div v-if="!isDealer" class="erp-field" style="margin-bottom:12px">
           <label class="erp-label">หมายเลขพัสดุ (Tracking Number)</label>
           <input v-model="form.trackingNo" class="erp-input" placeholder="เช่น KEX2026998877TH" />
         </div>

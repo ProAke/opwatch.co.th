@@ -11,6 +11,7 @@ export interface AiTaskPayload {
     | 'event_detail'
     | 'brand_copy'
     | 'order_reply'
+    | 'warranty_reply'
     | 'site_copy'
     | 'freeform_draft'
     | 'shopee_enrich'
@@ -237,16 +238,48 @@ function builtinGenerate(payload: AiTaskPayload): Record<string, any> {
   }
 
   if (payload.task === 'page_full') {
-    const titleTh = String(inp.titleTh || inp.title || 'ข้อมูลบริการ OPWatch Thailand').trim()
-    const titleEn = String(inp.titleEn || inp.slug || 'OPWatch Official Information').trim()
+    const pageType = String(inp.pageType || 'series_story').trim()
+    const brandSlug = String(inp.brandSlug || 'olympianus').trim()
+    const brandLabel = brandSlug === 'ogival' ? 'Ogival Swiss Since 1903' : brandSlug === 'olympia-star' ? 'Olympia Star Swiss' : 'Olym Pianus (OP)'
+    const titleTh = String(inp.titleTh || inp.title || `${brandLabel} Exclusive Story`).trim()
+    const titleEn = String(inp.titleEn || inp.slug || `${brandLabel} Official Story`).trim()
     const topic = String(inp.prompt || inp.summary || titleTh).trim()
-    return {
-      title: titleTh,
-      titleTh,
-      titleEn,
-      summary: `${titleTh} — มาตรฐานบริการอย่างเป็นทางการจาก บริษัท อินเตอร์ไทมส์ จำกัด ตัวแทนจำหน่าย Olym Pianus, Olympia Star และ Ogival ในประเทศไทย`,
-      summaryEn: `${titleEn} — Official Thailand boutique policy and service commitment by Inter Times Co., Ltd.`,
-      contentTh: `
+
+    const paletteByType = brandSlug === 'ogival'
+      ? { fontFamily: 'IBM Plex Sans Thai', headingColor: '#fff8dc', textColor: '#261f1d', accentColor: '#c59b27', bgColor: '#231710', overlayOpacity: 0.58, headingSize: 'xl' }
+      : pageType === 'promo_story'
+        ? { fontFamily: 'Prompt', headingColor: '#ffffff', textColor: '#1e2438', accentColor: '#e11d48', bgColor: '#1f122b', overlayOpacity: 0.56, headingSize: 'xl' }
+        : { fontFamily: 'Prompt', headingColor: '#ffffff', textColor: '#1e2438', accentColor: '#1d2088', bgColor: '#0e1535', overlayOpacity: 0.55, headingSize: 'xl' }
+
+    const heroEyebrow = pageType === 'brand_gate'
+      ? `BRAND PAVILION · ${brandLabel.toUpperCase()}`
+      : pageType === 'series_story'
+        ? `SERIES STORY · ${brandLabel.toUpperCase()}`
+        : pageType === 'promo_story'
+          ? 'EXCLUSIVE CAMPAIGN STORY · OPWATCH THAILAND'
+          : 'OFFICIAL BOUTIQUE · INTER TIMES CO., LTD.'
+
+    const storyBodyTh = pageType === 'series_story' || pageType === 'brand_gate'
+      ? `
+<h2>จิตวิญญาณแห่งเรือนเวลา: ${titleTh}</h2>
+<p>ถ่ายทอดเอกลักษณ์แห่ง <strong>${brandLabel}</strong> ภายใต้แนวคิด <em>“${topic}”</em> คัดสรรวัสดุตัวเรือนสเตนเลสสตีลเกรดศัลยกรรม 316L ผสานกระจก <strong>Sapphire Crystal แท้</strong> กันรอยขีดข่วน เพื่อมอบความสง่างามเหนือกาลเวลาบนข้อมือคุณ</p>
+<h3>จุดเด่นเฉพาะตัวของคอลเลกชันนี้</h3>
+<ul>
+  <li><strong>งานขัดแต่งประณีตระดับบูติก:</strong> สลับผิวเงาและผิวซาติน รับแสงสวยงามทุกองศา</li>
+  <li><strong>ความเที่ยงตรงที่ไว้วางใจได้:</strong> ผ่านการตรวจเช็กมาตรฐานโดยทีมช่าง บริษัท อินเตอร์ไทมส์ จำกัด ก่อนส่งมอบทุกเรือน</li>
+  <li><strong>รับประกันศูนย์ไทย 2 ปีเต็ม:</strong> พร้อมสิทธิ์ลงทะเบียน E-Warranty ออนไลน์และบริการตัดสายฟรี</li>
+</ul>
+<p>เลือกชมเรือนเวลารุ่นที่เชื่อมโยงกับเรื่องราวประจำซีรีส์นี้ได้จากรายการสินค้าด้านล่างทันที</p>`.trim()
+      : pageType === 'promo_story'
+        ? `
+<h2>เบื้องหลังแคมเปญพิเศษ: ${titleTh}</h2>
+<p>แคมเปญ <em>“${topic}”</em> จัดทำขึ้นเพื่อมอบสิทธิพิเศษสูงสุดแก่คนรักนาฬิกาในประเทศไทย โดยคัดสรรเรือนเวลารุ่นยอดนิยมจาก <strong>Olym Pianus</strong>, <strong>Olympia Star</strong> และ <strong>Ogival</strong> มาจัดข้อเสนอพิเศษเฉพาะช่วงเวลานี้เท่านั้น</p>
+<ul>
+  <li>รับส่วนลดพิเศษและคูปองสะสมแต้ม OP Point พร้อมบริการห่อของขวัญระดับบูติกฟรี</li>
+  <li>เลือกรับสินค้าหน้าร้าน (Click & Collect) ณ สาขาใกล้บ้าน หรือจัดส่งด่วนพร้อมประกันภัยทั่วไทย</li>
+  <li>ทุกเรือนมาพร้อมกล่องแท้ คู่มือ และใบรับประกันศูนย์ไทย 2 ปี โดย บริษัท อินเตอร์ไทมส์ จำกัด</li>
+</ul>`.trim()
+        : `
 <h2>${titleTh}</h2>
 <p><strong>บริษัท อินเตอร์ไทมส์ จำกัด</strong> มุ่งมั่นส่งมอบประสบการณ์การเลือกซื้อเรือนเวลาของแท้ระดับพรีเมียมสำหรับลูกค้าในประเทศไทย ภายใต้หัวข้อ <em>“${topic}”</em> ด้วยมาตรฐานความโปร่งใส ความปลอดภัย และการดูแลหลังการขายโดยทีมช่างผู้เชี่ยวชาญ</p>
 <h3>สิทธิประโยชน์และมาตรฐานการดูแลลูกค้า</h3>
@@ -254,23 +287,52 @@ function builtinGenerate(payload: AiTaskPayload): Record<string, any> {
   <li>การันตีสินค้าของแท้ 100% ทุกเรือน พร้อมใบรับประกันศูนย์ไทยนาน 2 ปีเต็ม</li>
   <li>บริการห่อของขวัญพรีเมียม ปรับขนาดสายนาฬิกาฟรี และรับสินค้าที่สาขาใกล้บ้าน (Click & Collect)</li>
   <li>ศูนย์บริการลูกค้าสัมพันธ์ โทร. <strong>02 251 5777</strong> หรือ LINE Official: <strong>opwatch.th</strong></li>
-</ul>`.trim(),
+</ul>`.trim()
+
+    return {
+      heroEyebrow,
+      title: titleTh,
+      titleTh,
+      titleEn,
+      summary: `${titleTh} — เรื่องราวและข้อมูลทางการจาก บริษัท อินเตอร์ไทมส์ จำกัด ตัวแทนจำหน่าย ${brandLabel} อย่างเป็นทางการในประเทศไทย`,
+      summaryEn: `${titleEn} — Official Thailand horology story and curated collection by Inter Times Co., Ltd.`,
+      contentTh: storyBodyTh,
       contentEn: `
 <h2>${titleEn}</h2>
-<p><strong>Inter Times Co., Ltd.</strong> is dedicated to delivering authentic horological excellence across Thailand regarding <em>"${topic}"</em>, backed by certified watchmakers and nationwide customer care.</p>
+<p><strong>Inter Times Co., Ltd.</strong> presents <em>"${topic}"</em> — showcasing authentic ${brandLabel} craftsmanship with Sapphire Crystal protection and certified 2-Year Thailand Official Warranty.</p>
 <ul>
   <li>100% Authentic Olym Pianus, Olympia Star & Ogival watches with 2-Year Thailand Official Warranty.</li>
   <li>Complimentary luxury gift wrapping, wrist strap sizing, and department-store Click & Collect.</li>
   <li>Direct Concierge Support: Tel. <strong>02 251 5777</strong> · LINE ID: <strong>opwatch.th</strong>.</li>
 </ul>`.trim(),
+      ctaText: pageType === 'promo_story' ? 'ช้อปรุ่นร่วมรายการทันที' : `ชมเรือนเวลาในคอลเลกชันนี้`,
+      ctaUrl: brandSlug ? `/products?brand=${brandSlug}` : '/products',
+      styleConfig: paletteByType,
       seoTitle: `${titleTh} | OPWatch Thailand · บริษัท อินเตอร์ไทมส์ จำกัด`,
-      seoDescription: `${titleTh} ข้อมูลทางการจาก บริษัท อินเตอร์ไทมส์ จำกัด ตัวแทนจำหน่ายนาฬิกา Olym Pianus, Olympia Star และ Ogival ในประเทศไทย โทร 02 251 5777`,
-      seoKeywords: `${titleTh}, OPWatch, บริษัท อินเตอร์ไทมส์ จำกัด, Olym Pianus, Olympia Star, Ogival`,
-      aseoSummary: `${titleTh} จัดทำโดย บริษัท อินเตอร์ไทมส์ จำกัด ผู้นำเข้าและจัดจำหน่ายนาฬิกา Olym Pianus, Olympia Star และ Ogival อย่างเป็นทางการในประเทศไทย เพื่อคุ้มครองสิทธิ์และมอบบริการระดับพรีเมียมแก่ลูกค้าทุกท่าน`,
+      seoDescription: `${titleTh} สัมผัสเรื่องราวและเลือกช้อปนาฬิกาของแท้ศูนย์ไทย ${brandLabel} รับประกัน 2 ปีเต็ม โดย บริษัท อินเตอร์ไทมส์ จำกัด`,
+      seoKeywords: `${titleTh}, ${brandLabel}, นาฬิกาแซฟไฟร์แท้, OPWatch, บริษัท อินเตอร์ไทมส์ จำกัด`,
+      aseoSummary: `${titleTh} นำเสนอเรื่องราวเอกลักษณ์และรุ่นนาฬิกาที่เกี่ยวข้องของ ${brandLabel} จัดจำหน่ายอย่างเป็นทางการในประเทศไทยโดย บริษัท อินเตอร์ไทมส์ จำกัด พร้อมรับประกันศูนย์ไทย 2 ปี`,
       aseoFaqs: [
-        { q: `สอบถามข้อมูลเพิ่มเติมเกี่ยวกับ ${titleTh} ได้ทางใด?`, a: 'ติดต่อศูนย์บริการ บริษัท อินเตอร์ไทมส์ จำกัด โทร. 02 251 5777 หรือ LINE ID: opwatch.th' },
-        { q: 'สิทธิพิเศษเมื่อสั่งซื้อผ่านเว็บไซต์ opwatch.co.th มีอะไรบ้าง?', a: 'รับประกันศูนย์ไทย 2 ปีเต็ม บริการห่อของขวัญฟรี สะสมแต้ม OP Point และจัดส่งฟรีพร้อมประกันภัยตามเงื่อนไข' }
+        { q: `${titleTh} มีจุดเด่นอย่างไร?`, a: `โดดเด่นด้วยกระจกแซฟไฟร์แท้ ตัวเรือนสเตนเลสสตีล 316L และการรับประกันศูนย์ไทย 2 ปีเต็มโดย บริษัท อินเตอร์ไทมส์ จำกัด` },
+        { q: 'สั่งซื้อหรือลงทะเบียนรับประกันออนไลน์ได้ที่ไหน?', a: 'สั่งซื้อได้ผ่านเว็บไซต์ opwatch.co.th และลงทะเบียน E-Warranty ออนไลน์ได้ที่หน้า /warranty ตลอด 24 ชั่วโมง' }
       ]
+    }
+  }
+
+  if (payload.task === 'warranty_reply') {
+    const code = String(inp.code || 'WRT/REP').trim()
+    const customerName = String(inp.customerName || 'คุณลูกค้า').trim()
+    const sku = String(inp.productSku || 'เรือนเวลาของท่าน').trim()
+    const status = String(inp.status || 'verified').trim()
+    const statusMsg = status === 'verified'
+      ? 'ได้รับการอนุมัติยืนยันความคุ้มครองรับประกันศูนย์ไทย 2 ปีเรียบร้อยแล้ว'
+      : status === 'repairing'
+        ? 'อยู่ระหว่างการตรวจเช็กและปรับตั้งความเที่ยงตรงโดยทีมช่างผู้ชำนาญการประจำศูนย์เพชรบุรีตัดใหม่'
+        : status === 'completed' || status === 'returned'
+          ? 'ดำเนินการซ่อมบำรุงและทดสอบกันน้ำเสร็จสมบูรณ์ พร้อมส่งมอบคืนให้ท่านแล้ว'
+          : 'ได้รับข้อมูลเข้าสู่ระบบศูนย์บริการ บริษัท อินเตอร์ไทมส์ จำกัด เรียบร้อยแล้ว'
+    return {
+      note: `เรียน ${customerName} อ้างอิงหมายเลข ${code} (รุ่น ${sku}): ขณะนี้รายการของท่าน${statusMsg} สอบถามเพิ่มเติม โทร. 02 251 5777 หรือ LINE ID: opwatch.th ขอบพระคุณที่ไว้วางใจ OPWatch Thailand ค่ะ`
     }
   }
 

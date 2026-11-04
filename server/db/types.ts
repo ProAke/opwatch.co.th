@@ -3,6 +3,10 @@ export type Entity =
   | 'categories'
   | 'products'
   | 'customers'
+  | 'officers'
+  | 'dealer_stocks'
+  | 'warranties'
+  | 'repairs'
   | 'orders'
   | 'order_items'
   | 'reviews'
@@ -24,7 +28,8 @@ export type OrderStatus =
   | 'cancelled'
   | 'refunded'
 
-export type StaffRole = 'ceo' | 'admin' | 'staff' | 'member'
+export type OfficeRole = 'ceo' | 'it_admin' | 'marketing_sales' | 'warehouse' | 'dealer'
+export type StaffRole = OfficeRole | 'admin' | 'staff' | 'member'
 
 export interface FindOptions {
   where?: Record<string, any>
@@ -65,10 +70,11 @@ export const COLUMNS: Record<Entity, string[]> = {
   ],
   products: [
     'id', 'sku', 'name', 'name_en', 'name_th', 'slug',
-    'brand_id', 'brand', 'category_id',
-    'price', 'original_price', 'price_compare', 'currency',
+    'brand_id', 'brand', 'category_id', 'series_slug',
+    'price', 'dealer_price', 'original_price', 'price_compare', 'currency',
     'images', 'short_description', 'description', 'description_en', 'description_th',
-    'specs', 'stock', 'status', 'badges', 'featured', 'sort_order',
+    'specs', 'stock', 'stock_web', 'stock_shopee', 'stock_lazada', 'stock_tiktok', 'stock_dealer',
+    'status', 'badges', 'featured', 'sort_order',
     'seo_title', 'seo_description', 'seo_keywords', 'aseo_summary', 'aseo_faqs',
     'shopee_url', 'shopee_item_id', 'video_url', 'gift_wrap_available', 'points_multiplier',
     'created_at', 'updated_at'
@@ -77,6 +83,30 @@ export const COLUMNS: Record<Entity, string[]> = {
     'id', 'name', 'email', 'password_hash', 'phone', 'address', 'city', 'postal_code', 'country',
     'is_admin', 'role', 'department', 'position', 'permissions', 'status', 'last_login_at',
     'points', 'total_spent', 'created_at'
+  ],
+  officers: [
+    'id', 'code', 'name', 'email', 'password_hash', 'phone',
+    'role', 'department', 'position',
+    'dealer_code', 'dealer_name', 'dealer_tier', 'discount_pct', 'branch_slug',
+    'permissions', 'status', 'last_login_at', 'created_at', 'updated_at'
+  ],
+  dealer_stocks: [
+    'id', 'officer_id', 'dealer_code', 'product_id', 'sku',
+    'on_hand', 'reserved', 'reorder_point', 'notes', 'updated_at'
+  ],
+  warranties: [
+    'id', 'warranty_no', 'customer_name', 'phone', 'email', 'line_id',
+    'brand_slug', 'product_sku', 'product_name', 'serial_no',
+    'purchase_date', 'purchase_channel', 'dealer_or_branch',
+    'receipt_image', 'watch_image', 'warranty_until',
+    'registered_by_dealer', 'status', 'admin_note', 'created_at', 'updated_at'
+  ],
+  repairs: [
+    'id', 'ticket_no', 'warranty_no', 'customer_name', 'phone', 'email', 'line_id',
+    'brand_slug', 'product_sku', 'product_name', 'serial_no',
+    'service_type', 'symptom', 'images', 'dropoff_method', 'branch_slug',
+    'estimated_cost', 'tracking_return', 'status', 'technician_note',
+    'submitted_by_dealer', 'created_at', 'updated_at'
   ],
   orders: [
     'id', 'order_no', 'customer_id', 'customer_name', 'customer_email', 'phone',
@@ -115,8 +145,11 @@ export const COLUMNS: Record<Entity, string[]> = {
     'services', 'sort_order', 'active', 'created_at'
   ],
   pages: [
-    'id', 'slug', 'category', 'title', 'title_th', 'title_en',
-    'summary', 'summary_en', 'content_th', 'content_en', 'banner',
+    'id', 'parent_id', 'slug', 'page_type', 'route_path', 'brand_slug', 'series_key',
+    'category', 'hero_eyebrow', 'title', 'title_th', 'title_en',
+    'summary', 'summary_en', 'content_th', 'content_en',
+    'banner', 'mobile_banner', 'gallery', 'style_config', 'product_ids',
+    'cta_text', 'cta_url',
     'seo_title', 'seo_description', 'seo_keywords', 'og_image', 'canonical_url',
     'aseo_summary', 'aseo_faqs', 'schema_type',
     'status', 'sort_order', 'created_at', 'updated_at'
@@ -141,6 +174,10 @@ export const ENTITIES: Entity[] = [
   'categories',
   'products',
   'customers',
+  'officers',
+  'dealer_stocks',
+  'warranties',
+  'repairs',
   'orders',
   'order_items',
   'reviews',
@@ -181,7 +218,7 @@ export function shape<T extends Record<string, any> | null>(row: T): T {
     }
   }
 
-  const jsonArrayFields = ['images', 'badges', 'productIds', 'services', 'aseoFaqs', 'permissions']
+  const jsonArrayFields = ['images', 'badges', 'productIds', 'services', 'aseoFaqs', 'permissions', 'gallery']
   for (const jf of jsonArrayFields) {
     if (r[jf] && typeof r[jf] === 'string') {
       try {
@@ -196,9 +233,14 @@ export function shape<T extends Record<string, any> | null>(row: T): T {
   if (r.specs && typeof r.specs === 'string') {
     try { r.specs = JSON.parse(r.specs) } catch { r.specs = {} }
   }
+  if (r.styleConfig && typeof r.styleConfig === 'string') {
+    try { r.styleConfig = JSON.parse(r.styleConfig) } catch { r.styleConfig = {} }
+  }
 
   const numericFields = [
-    'price', 'priceCompare', 'originalPrice', 'stock', 'sortOrder',
+    'price', 'dealerPrice', 'priceCompare', 'originalPrice',
+    'stock', 'stockWeb', 'stockShopee', 'stockLazada', 'stockTiktok', 'stockDealer',
+    'sortOrder', 'discountPct', 'onHand', 'reserved', 'reorderPoint', 'estimatedCost', 'officerId',
     'shippingFee', 'discount', 'subtotal', 'total', 'totalSpent',
     'points', 'pointsRedeemed', 'pointsEarned', 'pointsMultiplier',
     'rating', 'quantity', 'brandId', 'categoryId', 'parentId',

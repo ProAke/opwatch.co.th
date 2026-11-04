@@ -2,25 +2,29 @@ import { ENTITIES } from '../../db/types'
 import { ensureCatalogReady } from '../../utils/seed'
 
 const TABLE_LABELS: Record<string, string> = {
-  products: 'สินค้า (products)',
-  brands: 'แบรนด์ (brands)',
+  products: 'สินค้าและสต็อก 5 ช่องทาง (products)',
+  brands: 'แบรนด์หลัก (brands)',
   categories: 'หมวดหมู่ (categories)',
-  orders: 'คำสั่งซื้อ (orders)',
+  officers: 'เจ้าหน้าที่และตัวแทนจำหน่าย (officers)',
+  dealer_stocks: 'คลังสินค้าตัวแทนเอง (dealer_stocks)',
+  warranties: 'ลงทะเบียนรับประกันออนไลน์ (warranties)',
+  repairs: 'ระบบแจ้งซ่อมออนไลน์ (repairs)',
+  customers: 'สมาชิกและลูกค้าหน้าเว็บ (customers)',
+  orders: 'คำสั่งซื้อและการรับหน้าร้าน (orders)',
   order_items: 'รายการในบิล (order_items)',
-  customers: 'สมาชิก & พนักงาน (customers)',
   promotions: 'แคมเปญโปรโมชั่น (promotions)',
   coupons: 'โค้ดคูปอง (coupons)',
-  branches: 'สาขา & จุดรับสินค้า (branches)',
-  pages: 'หน้าเว็บไซต์ CMS (pages)',
+  branches: 'สาขา & เคาน์เตอร์ (branches)',
+  pages: 'โครงสร้างหน้าเว็บ Tree CMS (pages)',
   chats: 'แชทลูกค้า (chats)',
   events: 'ปฏิทินกิจกรรม (events)',
   ai_runs: 'ประวัติสั่งงาน AI (ai_runs)',
   reviews: 'รีวิวสินค้า (reviews)',
-  campaigns: 'คอลเลกชัน (campaigns)'
+  campaigns: 'คอลเลกชันหน้าแรก (campaigns)'
 }
 
 export default defineEventHandler(async (event) => {
-  await requireAdmin(event)
+  await requireRole(event, ['ceo', 'it_admin'])
   const t0 = Date.now()
   const store = useStore()
   await ensureCatalogReady(store)

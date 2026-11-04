@@ -79,9 +79,9 @@ definePageMeta({ middleware: 'auth' })
           <p class="tiny upper faint">{{ t('admin.orders') }}</p>
           <p class="stat__value">{{ orders.length }}</p>
         </div>
-        <NuxtLink v-if="customer?.isAdmin" :to="localePath('/office')" class="stat stat--link">
-          <p class="tiny upper faint">{{ t('admin.dashboard') }}</p>
-          <p class="stat__value">→</p>
+        <NuxtLink :to="localePath('/warranty')" class="stat stat--link">
+          <p class="tiny upper faint">E-Warranty &amp; ซ่อม</p>
+          <p class="stat__value">ลงทะเบียน →</p>
         </NuxtLink>
       </div>
 

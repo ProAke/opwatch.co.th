@@ -1,7 +1,7 @@
 import { ensureCatalogReady } from '../../../utils/seed'
 
 export default defineEventHandler(async (event) => {
-  await requireAdmin(event)
+  await requireOfficer(event, 'promotions_view')
   const store = useStore()
   await ensureCatalogReady(store)
   const raw = await store.find('promotions', { orderBy: 'sortOrder', orderDir: 'asc' })

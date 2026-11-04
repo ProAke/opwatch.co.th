@@ -1,5 +1,5 @@
 export default defineEventHandler(async (event) => {
-  await requireAdmin(event)
+  await requireOfficer(event, 'branches')
   const body = await readBody(event)
   const store = useStore()
   const name = String(body?.nameTh || body?.name || '').trim()

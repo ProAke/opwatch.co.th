@@ -1,5 +1,5 @@
 export default defineEventHandler(async (event) => {
-  await requireAdmin(event)
+  await requireOfficer(event, 'categories')
   const id = Number(getRouterParam(event, 'id'))
   const store = useStore()
   const existing = await store.findById('categories', id)

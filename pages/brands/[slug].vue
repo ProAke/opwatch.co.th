@@ -28,14 +28,20 @@ const { data: res } = await useAsyncData(
       return {
         brand: brandData.brand,
         products: brandData.products || [],
-        subcategories: brandData.subcategories || []
+        subcategories: brandData.subcategories || [],
+        brandGate: brandData.brandGate || null,
+        seriesStories: brandData.seriesStories || [],
+        gateFeaturedProducts: brandData.gateFeaturedProducts || []
       }
     }
     const prodData = await reqFetch<{ items?: any[]; products?: any[] }>(`/api/products?brand=${slug.value}&limit=500`)
     return {
       brand: null,
       products: prodData?.items || prodData?.products || [],
-      subcategories: []
+      subcategories: [],
+      brandGate: null,
+      seriesStories: [],
+      gateFeaturedProducts: []
     }
   },
   { watch: [slug] }
@@ -84,7 +90,11 @@ const availableCategories = computed(() => {
   return Array.from(counts.values())
 })
 
+const brandGate = computed(() => res.value?.brandGate || null)
+const seriesStories = computed<any[]>(() => res.value?.seriesStories || [])
+
 const heroBanner = computed(() => {
+  if (brandGate.value?.banner) return brandGate.value.banner
   if (slug.value === 'ogival') return '/images/op/hero-ceramic-dark.jpg'
   if (slug.value === 'olympia-star' || slug.value === 'opwatch') return '/images/op/hero-gold-stones.jpg'
   return '/images/op/banner-899832ags.jpg'
@@ -98,12 +108,18 @@ const brandLogo = computed(() => {
 })
 
 const brandTitle = computed(() => {
+  if (brandGate.value) {
+    return locale.value === 'en' && brandGate.value.titleEn
+      ? brandGate.value.titleEn
+      : brandGate.value.titleTh || brandGate.value.title
+  }
   const b = res.value?.brand
   if (!b) return slug.value.toUpperCase()
   return locale.value === 'en' && b.nameEn ? b.nameEn : b.nameTh || b.nameEn || b.name
 })
 
 const brandStory = computed(() => {
+  if (brandGate.value?.summary) return brandGate.value.summary
   const b = res.value?.brand
   if (!b) return ''
   return locale.value === 'en' && (b.storyEn || b.descriptionEn)
@@ -120,7 +136,10 @@ function goPage(p: number) {
 </script>
 
 <template>
-  <div class="op-brand">
+  <div
+    class="op-brand"
+    :style="brandGate?.styleConfig?.fontFamily ? { fontFamily: `'${brandGate.styleConfig.fontFamily}', sans-serif` } : undefined"
+  >
     <section class="op-brand__hero">
       <img :src="heroBanner" :alt="brandTitle" class="op-brand__img" />
       <div class="op-brand__scrim" />
@@ -128,8 +147,50 @@ function goPage(p: number) {
         <div class="op-brand__logo-badge">
           <img :src="brandLogo" :alt="brandTitle" class="op-brand__logo-img" />
         </div>
-        <h1 class="page-title">{{ brandTitle }}</h1>
+        <span v-if="brandGate?.heroEyebrow" style="display:block;font-size:11.5px;letter-spacing:0.1em;color:#f3d689;font-weight:700;margin-bottom:6px">
+          {{ brandGate.heroEyebrow }}
+        </span>
+        <h1 class="page-title" :style="brandGate?.styleConfig?.headingColor ? { color: brandGate.styleConfig.headingColor } : undefined">
+          {{ brandTitle }}
+        </h1>
         <p v-if="brandStory">{{ brandStory }}</p>
+      </div>
+    </section>
+
+    <!-- Brand Gate Pavilion & Series Stories Showcase (`หน้ากั้นสำหรับแบรนด์สินค้า` + `มี story ประจำซีรีส์`) -->
+    <section v-if="brandGate?.contentTh || seriesStories.length" class="section" style="background:#ffffff;border-bottom:1px solid #eceff6">
+      <div class="container">
+        <div v-if="brandGate?.contentTh" class="brand-gate-prose" v-html="locale === 'en' && brandGate.contentEn ? brandGate.contentEn : brandGate.contentTh" />
+
+        <div v-if="seriesStories.length" style="margin-top:26px">
+          <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:18px">
+            <div>
+              <span class="eyebrow" style="color:#1d2088">SIGNATURE SERIES STORIES</span>
+              <h2 style="margin:4px 0 0;font-size:clamp(20px,2.8vw,28px);color:#141936">
+                {{ locale === 'th' ? 'เจาะลึกเรื่องราวประจำซีรีส์ยอดนิยม' : 'Explore Signature Series Stories' }}
+              </h2>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px">
+            <NuxtLink
+              v-for="st in seriesStories"
+              :key="st.id || st.slug"
+              :to="localePath(`/pages/${st.slug}`)"
+              style="display:flex;flex-direction:column;border-radius:16px;overflow:hidden;border:1px solid #e4e8f3;background:#fbfcfe;text-decoration:none;color:inherit;box-shadow:0 8px 24px rgba(18,25,60,0.05)"
+            >
+              <img :src="st.banner || heroBanner" :alt="st.titleTh" style="width:100%;height:175px;object-fit:cover" loading="lazy" />
+              <div style="padding:16px 18px;display:flex;flex-direction:column;gap:6px;flex:1">
+                <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;color:#1d2088">{{ st.heroEyebrow || 'SERIES STORY' }}</span>
+                <h3 style="margin:0;font-size:17px;color:#141936">{{ locale === 'en' && st.titleEn ? st.titleEn : st.titleTh || st.title }}</h3>
+                <p style="margin:0;font-size:13.5px;color:#64748b;line-height:1.55">{{ st.summary }}</p>
+                <span style="margin-top:auto;padding-top:8px;font-size:13px;font-weight:600;color:#1d2088">
+                  {{ locale === 'th' ? 'อ่าน Story ซีรีส์และชมรุ่นที่เกี่ยวข้อง →' : 'Read Story & Shop Series →' }}
+                </span>
+              </div>
+            </NuxtLink>
+          </div>
+        </div>
       </div>
     </section>
 

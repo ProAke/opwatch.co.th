@@ -1,14 +1,17 @@
 import { ensureCatalogReady } from '../../../utils/seed'
 
 export default defineEventHandler(async (event) => {
-  await requireAdmin(event)
+  const officer = await requireAdmin(event)
   const store = useStore()
   await ensureCatalogReady(store)
 
-  const [orders, products, customers, orderItems, brands, categories, promotions, coupons, chats, pages, events, aiRuns] = await Promise.all([
+  const [orders, products, customers, officers, warranties, repairs, orderItems, brands, categories, promotions, coupons, chats, pages, events, aiRuns] = await Promise.all([
     store.all('orders'),
     store.all('products'),
     store.all('customers'),
+    store.all('officers').catch(() => []),
+    store.all('warranties').catch(() => []),
+    store.all('repairs').catch(() => []),
     store.all('order_items'),
     store.all('brands'),
     store.all('categories'),
@@ -158,10 +161,31 @@ export default defineEventHandler(async (event) => {
     payMap[m].revenue += Number(o.total || 0)
   }
 
-  const staffCount = customers.filter((c) => c.isAdmin || ['ceo', 'admin', 'staff'].includes(String(c.role))).length
-  const memberCount = Math.max(0, customers.length - staffCount)
+  const staffCount = officers.length
+  const memberCount = customers.length
   const openChats = chats.filter((c: any) => c.status !== 'closed').length
+  const openRepairs = repairs.filter((r: any) => !['completed', 'returned', 'cancelled'].includes(String(r.status))).length
+  const pendingWarranties = warranties.filter((w: any) => w.status === 'pending').length
   const avgOrder = validOrders.length ? Math.round((revenue / validOrders.length) * 100) / 100 : 0
+
+  if (officer.role === 'dealer') {
+    return {
+      driver: store.driver,
+      totals: {
+        pendingOrders: 0,
+        openChats: 0,
+        events: 0,
+        openRepairs,
+        pendingWarranties,
+        warranties: warranties.length,
+        repairs: repairs.length,
+        promotions: promotions.length,
+        products: products.length
+      },
+      recentOrders: [],
+      calendarEvents: []
+    }
+  }
 
   return {
     driver: store.driver,
@@ -176,6 +200,10 @@ export default defineEventHandler(async (event) => {
       members: memberCount,
       staff: staffCount,
       staffCount,
+      warranties: warranties.length,
+      pendingWarranties,
+      repairs: repairs.length,
+      openRepairs,
       products: products.length,
       activeProducts: products.filter((p) => p.status !== 'draft').length,
       promotions: promotions.length,
