@@ -57,11 +57,6 @@ function submitInquiry() {
           <div class="op-contact__list">
             <!-- Official Inter Times Card -->
             <div class="op-contact__card is-featured">
-              <img
-                src="/images/logos/inter-times-blue.jpg"
-                alt="บริษัท อินเตอร์ไทมส์ จำกัด"
-                class="op-contact__company-logo"
-              />
               <h3>{{ locale === 'th' ? 'บริษัท อินเตอร์ไทมส์ จำกัด' : 'Inter Times Co., Ltd. (บริษัท อินเตอร์ไทมส์ จำกัด)' }}</h3>
               <p class="op-contact__addr">
                 <strong>{{ locale === 'th' ? 'ที่อยู่ :' : 'Address :' }}</strong>

@@ -52,7 +52,11 @@ useHead({ title: 'เข้าสู่ระบบเจ้าหน้าท�
   <div class="mng-login">
     <div class="mng-login__card">
       <div class="mng-login__head">
-        <div class="mng-login__logo">OP</div>
+        <img
+          src="/images/logos/opwatch-logo-color.png"
+          alt="Olympia Star Thailand · OPWatch"
+          class="mng-login__logo-img"
+        />
         <div>
           <span class="mng-login__eyebrow">INTER TIMES CO., LTD. · OFFICERS &amp; DEALERS PORTAL</span>
           <h1>OPWatch Workspace</h1>
@@ -141,17 +145,11 @@ useHead({ title: 'เข้าสู่ระบบเจ้าหน้าท�
   gap: 12px;
   margin-bottom: 16px;
 }
-.mng-login__logo {
-  width: 54px;
-  height: 54px;
-  border-radius: 16px;
-  background: linear-gradient(135deg, #8e7cf3 0%, #6c5ce7 60%, #4a3fd1 100%);
-  color: #ffffff;
-  font-size: 20px;
-  font-weight: 700;
-  display: grid;
-  place-items: center;
-  box-shadow: 0 10px 24px rgba(108, 92, 231, 0.28);
+.mng-login__logo-img {
+  height: 76px;
+  width: auto;
+  object-fit: contain;
+  display: block;
 }
 .mng-login__eyebrow {
   display: inline-block;

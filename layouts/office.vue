@@ -306,7 +306,12 @@ onMounted(() => {
     <aside class="mng-sidebar" :class="{ 'is-open': sidebarOpen, 'is-collapsed': sidebarCollapsed }">
       <div class="mng-brand">
         <NuxtLink to="/office" class="mng-brand__link" @click="sidebarOpen = false">
-          <div class="mng-brand__mark">OP</div>
+          <img
+            :src="sidebarCollapsed ? '/images/logos/opwatch-emblem-color.png' : '/images/logos/opwatch-logo-color.png'"
+            alt="OPWatch Official"
+            class="mng-brand__logo"
+            :class="{ 'is-collapsed': sidebarCollapsed }"
+          />
           <div v-if="!sidebarCollapsed" class="mng-brand__txt">
             <strong>OPWATCH ERP</strong>
             <span>ปฏิทิน · สินค้า · AI · อีคอมเมิร์ซ</span>
@@ -704,19 +709,15 @@ onMounted(() => {
   color: inherit;
   min-width: 0;
 }
-.mng-brand__mark {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  background: var(--grad-violet);
-  color: #ffffff;
-  font-weight: 700;
-  font-size: 15px;
-  letter-spacing: 0.04em;
-  display: grid;
-  place-items: center;
+.mng-brand__logo {
+  height: 44px;
+  width: auto;
+  object-fit: contain;
   flex-shrink: 0;
-  box-shadow: 0 8px 18px rgba(108, 92, 231, 0.28);
+  display: block;
+}
+.mng-brand__logo.is-collapsed {
+  height: 32px;
 }
 .mng-brand__txt {
   display: flex;
