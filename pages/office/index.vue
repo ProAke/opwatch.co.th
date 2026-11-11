@@ -1,14 +1,16 @@
 <script setup lang="ts">
 definePageMeta({ layout: 'office', middleware: ['office'] })
 
+const officeAuth = useOfficeAuth()
 const toast = useToast()
 
-const [{ data: stats, refresh: refreshStats }, { data: chatData, refresh: refreshChats }, { data: aiStatus, refresh: refreshAi }, { data: calData }] =
+const [{ data: stats, refresh: refreshStats }, { data: chatData, refresh: refreshChats }, { data: aiStatus, refresh: refreshAi }, { data: calData }, { data: shopeeAudit }] =
   await Promise.all([
     useFetch<any>('/api/admin/stats'),
     useFetch<any>('/api/admin/chats'),
     useFetch<any>('/api/admin/ai/status'),
-    useFetch<any>('/api/admin/calendar')
+    useFetch<any>('/api/admin/calendar'),
+    useFetch<any>('/api/admin/products/shopee-audit', { default: () => null })
   ])
 
 const chartMode = ref<'revenue' | 'orders' | 'bar'>('revenue')
@@ -207,6 +209,51 @@ useHead({ title: 'แดชบอร์ดภาพรวม · OPWatch Smart ER
 
 <template>
   <div class="mng-dash">
+    <!-- Live Shopee `opwatchthailand` Audit & Manual Quick Strip -->
+    <div
+      v-if="shopeeAudit?.summary"
+      style="display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;padding:14px 18px;border-radius:16px;margin-bottom:16px"
+      :style="shopeeAudit.summary.isComplete
+        ? 'background:linear-gradient(135deg,#f0fdf8 0%,#ffffff 100%);border:1.5px solid #22c793'
+        : 'background:linear-gradient(135deg,#fff6f3 0%,#ffffff 100%);border:1.5px solid #ee4d2d'"
+    >
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <span
+          style="font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px"
+          :style="shopeeAudit.summary.isComplete ? 'background:#d1fae5;color:#065f46' : 'background:#ffedd5;color:#c2410c'"
+        >
+          {{ shopeeAudit.summary.isComplete ? '✅ Shopee Sync ครบ 100%' : '⚠️ Shopee opwatchthailand ยังมาไม่ครบ' }}
+        </span>
+        <span style="font-size:13.5px;color:#23264d">
+          <template v-if="!shopeeAudit.summary.isComplete">
+            เทียบกับ <code>shopee.co.th/opwatchthailand</code> ({{ shopeeAudit.summary.totalItems }} รุ่น): ซิงก์แล้ว <b>{{ shopeeAudit.summary.alreadySyncedCount }}</b> รุ่น ·
+            <b style="color:#e11d48">ยังขาดอีก {{ shopeeAudit.summary.missingCount }} รุ่น</b>
+            <template v-if="shopeeAudit.summary.needsPromoSyncCount > 0">
+              + <b style="color:#d97706">รอโปร {{ shopeeAudit.summary.needsPromoSyncCount }} รุ่น</b>
+            </template>
+          </template>
+          <template v-else>
+            ข้อมูลจาก <code>shopee.co.th/opwatchthailand</code> ทั้ง <b>{{ shopeeAudit.summary.totalItems }}/{{ shopeeAudit.summary.totalItems }}</b> ไอเท็ม อยู่ในเว็บไซต์ครบแล้ว!
+          </template>
+        </span>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <NuxtLink
+          to="/office/products?shopee=1"
+          class="erp-btn erp-btn--sm erp-btn--primary"
+          :style="!shopeeAudit.summary.isComplete ? 'background:#ee4d2d;border-color:#ee4d2d' : ''"
+        >
+          {{ !shopeeAudit.summary.isComplete ? '⚡ เปิดปุ่มดึงข้อมูลเข้าเว็บไซต์ →' : '🛍 ดูรายการเทียบ Shopee' }}
+        </NuxtLink>
+        <NuxtLink v-if="officeAuth.hasPermission('settings_manage')" to="/office/settings?tab=security" class="erp-btn erp-btn--sm erp-btn--ghost">
+          🔐 กำหนดรหัสผ่าน
+        </NuxtLink>
+        <NuxtLink to="/office/manual" class="erp-btn erp-btn--sm erp-btn--ghost">
+          📘 คู่มือระบบจัดการเว็บไซต์
+        </NuxtLink>
+      </div>
+    </div>
+
     <!-- ROW 1: 4 PlayDigital KPI Cards -->
     <div class="kpi-row">
       <div class="kpi">

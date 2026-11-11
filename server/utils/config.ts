@@ -44,6 +44,7 @@ export interface SiteConfigBlock {
   erpThemeColor?: string
   autoImageEnhance?: boolean
   driveFolder?: string
+  requireShopeeSyncPassword?: boolean
 }
 
 export interface HermesSlotToken {
@@ -75,6 +76,7 @@ export interface StoreConfig {
   admin: {
     email: string
     passwordHash: string
+    shopeeSyncPasswordHash?: string
   }
   db: {
     driver: 'mysql' | 'json'
@@ -117,7 +119,8 @@ export const DEFAULT_SITE_EXTRAS: Partial<SiteConfigBlock> = {
   promoHomeLimit: 8,
   erpThemeColor: '#6C5CE7',
   autoImageEnhance: true,
-  driveFolder: 'https://drive.google.com/drive/u/0/my-drive'
+  driveFolder: 'https://drive.google.com/drive/u/0/my-drive',
+  requireShopeeSyncPassword: true
 }
 
 export const DEFAULT_AI_CONFIG: AiConfigBlock = {

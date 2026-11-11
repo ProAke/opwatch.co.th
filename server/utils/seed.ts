@@ -17,7 +17,7 @@ import {
   defaultTreePages,
   defaultCustomerReviews
 } from './seed-extras'
-import { commitShopeeCatalogImport, SHOPEE_SHOP_232486539_META } from './shopee'
+import { commitShopeeCatalogImport, SHOPEE_INITIAL_SYNCED_SKUS, SHOPEE_SHOP_232486539_META } from './shopee'
 
 export interface SeedBrand {
   slug: string
@@ -1116,11 +1116,12 @@ export async function ensureEnterpriseEntities(store: Store): Promise<void> {
         }
       }
 
-      // 3B. Sync confirmed Shopee Official Shop 232486539 recommended items, images, content & promotions
+      // 3B. Sync initial 12 Shopee Official Shop 232486539 recommended items (leaving newly discovered opwatchthailand items ready for 1-click pull in /office)
       const currentPromos = await store.all('promotions').catch(() => [])
       if (!currentPromos.some((pr: any) => pr.slug === 'shopee-232486539-recommended-deals')) {
         await commitShopeeCatalogImport(store, {
           url: SHOPEE_SHOP_232486539_META.recommendationUrl,
+          selectedSkus: SHOPEE_INITIAL_SYNCED_SKUS,
           importImages: true,
           importContent: true,
           importPromotions: true
