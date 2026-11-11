@@ -1,13 +1,18 @@
 <script setup lang="ts">
 definePageMeta({ layout: 'office', middleware: ['office'] })
 
+const route = useRoute()
+const officeAuth = useOfficeAuth()
 const toast = useToast()
 const { refresh: refreshPublicSite } = useSite()
-const tab = ref<'company' | 'social' | 'promo' | 'ai' | 'workspace'>('company')
+const tab = ref<'company' | 'social' | 'promo' | 'ai' | 'workspace' | 'security'>(
+  route.query.tab === 'security' ? 'security' : 'company'
+)
 
-const [{ data, refresh }, { data: dbAudit, refresh: refreshAudit }] = await Promise.all([
+const [{ data, refresh }, { data: dbAudit, refresh: refreshAudit }, { data: staffData, refresh: refreshStaff }] = await Promise.all([
   useFetch<any>('/api/admin/settings'),
-  useFetch<any>('/api/admin/db-audit')
+  useFetch<any>('/api/admin/db-audit'),
+  useFetch<any>('/api/admin/staff')
 ])
 
 const siteForm = reactive({
@@ -41,8 +46,19 @@ const siteForm = reactive({
   branchPickupEnabled: true,
   erpThemeColor: '#6C5CE7',
   autoImageEnhance: true,
-  driveFolder: 'https://drive.google.com/drive/u/0/my-drive'
+  driveFolder: 'https://drive.google.com/drive/u/0/my-drive',
+  requireShopeeSyncPassword: true
 })
+
+const securityForm = reactive({
+  newSyncPassword: '',
+  myCurrentPassword: '',
+  myNewPassword: '',
+  myConfirmPassword: ''
+})
+const staffPwMap = reactive<Record<number, string>>({})
+const pwBusyId = ref<number | null>(null)
+const myPwBusy = ref(false)
 
 const aiForm = reactive({
   enabled: true,
@@ -109,17 +125,93 @@ async function saveAllSettings() {
       method: 'PUT',
       body: {
         site: siteForm,
-        ai: aiPayload
+        ai: aiPayload,
+        security: {
+          requireShopeeSyncPassword: siteForm.requireShopeeSyncPassword,
+          shopeeSyncPassword: securityForm.newSyncPassword.trim() || undefined
+        }
       }
     })
     aiForm.apiKey = ''
+    securityForm.newSyncPassword = ''
     await refresh()
     await refreshPublicSite()
-    toast.success('บันทึกการตั้งค่าทั้งหมดเรียบร้อย!')
+    toast.success('บันทึกการตั้งค่าและรหัสผ่านความปลอดภัยทั้งหมดเรียบร้อย!')
   } catch (e: any) {
     toast.error(e?.data?.statusMessage || 'บันทึกการตั้งค่าไม่สำเร็จ')
   } finally {
     saving.value = false
+  }
+}
+
+async function resetShopeeSyncPasswordToDefault() {
+  saving.value = true
+  try {
+    await $fetch('/api/admin/settings', {
+      method: 'PUT',
+      body: {
+        site: siteForm,
+        security: { resetSyncPassword: true }
+      }
+    })
+    securityForm.newSyncPassword = ''
+    await refresh()
+    toast.success('รีเซ็ตรหัสผ่านซิงก์ Shopee กลับเป็นค่าเริ่มต้น (Shopee@2324) แล้ว')
+  } catch (e: any) {
+    toast.error(e?.data?.statusMessage || 'รีเซ็ตรหัสผ่านไม่สำเร็จ')
+  } finally {
+    saving.value = false
+  }
+}
+
+async function saveMyOwnPassword() {
+  if (!securityForm.myCurrentPassword.trim() || securityForm.myNewPassword.trim().length < 6) {
+    toast.error('กรุณากรอกรหัสผ่านปัจจุบัน และรหัสผ่านใหม่อย่างน้อย 6 ตัวอักษร')
+    return
+  }
+  if (securityForm.myNewPassword.trim() !== securityForm.myConfirmPassword.trim()) {
+    toast.error('รหัสผ่านใหม่และยืนยันรหัสผ่านไม่ตรงกัน')
+    return
+  }
+  myPwBusy.value = true
+  try {
+    await $fetch('/api/office/auth/password', {
+      method: 'POST',
+      body: {
+        currentPassword: securityForm.myCurrentPassword.trim(),
+        newPassword: securityForm.myNewPassword.trim()
+      }
+    })
+    securityForm.myCurrentPassword = ''
+    securityForm.myNewPassword = ''
+    securityForm.myConfirmPassword = ''
+    toast.success('เปลี่ยนรหัสผ่านบัญชีของคุณเรียบร้อยแล้ว!')
+  } catch (e: any) {
+    toast.error(e?.data?.statusMessage || 'เปลี่ยนรหัสผ่านไม่สำเร็จ')
+  } finally {
+    myPwBusy.value = false
+  }
+}
+
+async function quickSetStaffPassword(u: any) {
+  const pw = String(staffPwMap[u.id] || '').trim()
+  if (pw.length < 6) {
+    toast.error('กรุณากำหนดรหัสผ่านใหม่อย่างน้อย 6 ตัวอักษร')
+    return
+  }
+  pwBusyId.value = Number(u.id)
+  try {
+    await $fetch(`/api/admin/staff/${u.id}`, {
+      method: 'PUT',
+      body: { password: pw }
+    })
+    staffPwMap[u.id] = ''
+    await refreshStaff()
+    toast.success(`ตั้งรหัสผ่านใหม่ให้ "${u.name}" (${u.email}) เรียบร้อยแล้ว`)
+  } catch (e: any) {
+    toast.error(e?.data?.statusMessage || 'ไม่สามารถเปลี่ยนรหัสผ่านได้')
+  } finally {
+    pwBusyId.value = null
   }
 }
 
@@ -175,6 +267,9 @@ useHead({ title: 'ตั้งค่าทั้งหมด (Unified Master Set
       </button>
       <button type="button" class="erp-tab" :class="{ 'is-active': tab === 'workspace' }" @click="tab = 'workspace'">
         🎨 5. ธีมสีหลังบ้าน &amp; ฐานข้อมูลสด
+      </button>
+      <button type="button" class="erp-tab" :class="{ 'is-active': tab === 'security' }" @click="tab = 'security'">
+        🔐 6. กำหนดรหัสผ่าน &amp; ความปลอดภัย
       </button>
     </div>
 
@@ -360,7 +455,7 @@ useHead({ title: 'ตั้งค่าทั้งหมด (Unified Master Set
     </div>
 
     <!-- TAB 5: MNG WORKSPACE THEME COLOR DOTS & LIVE DB AUDIT -->
-    <div v-else class="erp-panel">
+    <div v-else-if="tab === 'workspace'" class="erp-panel">
       <div class="erp-panel__head">
         <div>
           <div class="erp-panel__title">🎨 ธีมสีหลักของระบบหลังบ้าน (PlayDigital Accent Theme)</div>
@@ -421,6 +516,138 @@ useHead({ title: 'ตั้งค่าทั้งหมด (Unified Master Set
           <span>{{ m.ok ? '🟢' : '🔴' }} {{ m.label }}</span>
           <b style="font-family:'JetBrains Mono',monospace;color:var(--violet)">{{ m.rows }}</b>
         </div>
+      </div>
+    </div>
+
+    <!-- TAB 6: PASSWORD MANAGEMENT & SHOPEE SYNC SECURITY -->
+    <div v-else class="erp-panel">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:18px">
+        <div>
+          <div class="erp-panel__title">🔐 ศูนย์กำหนดรหัสผ่านระบบจัดการเว็บไซต์ &amp; รหัสยืนยันปุ่มดึงข้อมูล Shopee</div>
+          <div style="font-size:12.5px;color:#8a8fb1">
+            บริหารรหัสผ่านเข้าสู่ระบบหลังบ้านทั้ง 5 บทบาท และรหัสผ่านป้องกันปุ่มดึงข้อมูลสินค้าชุดใหญ่จาก Shopee Official
+          </div>
+        </div>
+        <NuxtLink to="/office/manual" class="erp-btn erp-btn--ghost erp-btn--sm">
+          📘 เปิดคู่มือการใช้งานรหัสผ่าน &amp; ระบบหลังบ้าน →
+        </NuxtLink>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px;margin-bottom:20px">
+        <!-- 6.1 Shopee Sync Password Protection -->
+        <div style="padding:18px;border-radius:14px;background:#fffaf7;border:1.5px solid #fed7aa">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px">
+            <div>
+              <strong style="color:#9a3412;font-size:14.5px">🛍 รหัสผ่านปุ่มดึงข้อมูล Shopee เข้าเว็บไซต์</strong>
+              <div style="font-size:12px;color:#7c2d12">
+                สถานะปัจจุบัน:
+                <b>{{ data?.security?.hasCustomSyncPassword ? 'กำหนดรหัสเฉพาะเองแล้ว' : `ค่าเริ่มต้น (${data?.security?.defaultSyncPasswordHint || 'Shopee@2324'})` }}</b>
+              </div>
+            </div>
+            <button
+              type="button"
+              class="switch"
+              :class="{ on: siteForm.requireShopeeSyncPassword }"
+              title="เปิด/ปิดการถามรหัสผ่านก่อนดึงข้อมูล Shopee"
+              @click="siteForm.requireShopeeSyncPassword = !siteForm.requireShopeeSyncPassword"
+            />
+          </div>
+
+          <div class="erp-field" style="margin-bottom:10px">
+            <label class="erp-label">กำหนดรหัสผ่านยืนยันการดึงข้อมูล Shopee ใหม่ (4 ตัวอักษรขึ้นไป)</label>
+            <input
+              v-model="securityForm.newSyncPassword"
+              type="password"
+              class="erp-input"
+              placeholder="เว้นว่างหากไม่เปลี่ยน (ค่าเริ่มต้น Shopee@2324)"
+            />
+          </div>
+
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button type="button" class="erp-btn erp-btn--primary erp-btn--sm" :disabled="saving" @click="saveAllSettings">
+              💾 บันทึกตั้งค่ารหัสซิงก์ Shopee
+            </button>
+            <button
+              v-if="data?.security?.hasCustomSyncPassword"
+              type="button"
+              class="erp-btn erp-btn--ghost erp-btn--sm"
+              :disabled="saving"
+              @click="resetShopeeSyncPasswordToDefault"
+            >
+              รีเซ็ตกลับเป็น Shopee@2324
+            </button>
+          </div>
+        </div>
+
+        <!-- 6.2 Change Own Officer Password -->
+        <div style="padding:18px;border-radius:14px;background:#f8f7ff;border:1.5px solid #ddd6fe">
+          <strong style="color:#4c1d95;font-size:14.5px">🔑 เปลี่ยนรหัสผ่านบัญชีของฉัน ({{ officeAuth.officer.value?.email }})</strong>
+          <div style="font-size:12px;color:#6d28d9;margin-bottom:10px">
+            บทบาทปัจจุบัน: {{ officeAuth.officer.value?.roleLabelTh }}
+          </div>
+          <div class="erp-field" style="margin-bottom:8px">
+            <input v-model="securityForm.myCurrentPassword" type="password" class="erp-input" placeholder="รหัสผ่านปัจจุบัน" />
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+            <input v-model="securityForm.myNewPassword" type="password" class="erp-input" placeholder="รหัสผ่านใหม่ (6+ ตัว)" />
+            <input v-model="securityForm.myConfirmPassword" type="password" class="erp-input" placeholder="ยืนยันรหัสผ่านใหม่" />
+          </div>
+          <button type="button" class="erp-btn erp-btn--violet erp-btn--sm" :disabled="myPwBusy" @click="saveMyOwnPassword">
+            {{ myPwBusy ? 'กำลังบันทึก...' : '🔑 อัปเดตรหัสผ่านบัญชีของฉัน' }}
+          </button>
+        </div>
+      </div>
+
+      <!-- 6.3 Quick Password Configuration for All 5-Role Staff & Dealers -->
+      <div class="erp-panel__head">
+        <div>
+          <div class="erp-panel__title">👥 กำหนดรหัสผ่านใหม่ให้เจ้าหน้าที่และตัวแทนจำหน่ายทั้ง 5 บทบาท</div>
+          <div style="font-size:12px;color:#8a8fb1">
+            พิมพ์รหัสผ่านใหม่ในช่องด้านขวาของแต่ละบัญชีแล้วกด "ตั้งรหัสใหม่" ได้ทันที (ความยาวอย่างน้อย 6 ตัวอักษร)
+          </div>
+        </div>
+        <NuxtLink to="/office/staff" class="erp-btn erp-btn--ghost erp-btn--sm">+ เพิ่ม/จัดการสิทธิ์เจ้าหน้าที่ →</NuxtLink>
+      </div>
+
+      <div class="erp-table-wrap">
+        <table class="erp-table">
+          <thead>
+            <tr>
+              <th>รหัส</th>
+              <th>ชื่อเจ้าหน้าที่ / ตัวแทนจำหน่าย</th>
+              <th>อีเมลสำหรับล็อกอิน (/office/login)</th>
+              <th>บทบาท</th>
+              <th>กำหนดรหัสผ่านใหม่ทันที</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="u in staffData?.items || []" :key="u.id">
+              <td><code>{{ u.dealerCode || u.code }}</code></td>
+              <td style="font-weight:600">{{ u.name }}</td>
+              <td><code>{{ u.email }}</code></td>
+              <td><span class="erp-chip erp-chip--violet">{{ u.roleLabelTh || u.role }}</span></td>
+              <td>
+                <div style="display:flex;gap:6px;align-items:center;max-width:300px">
+                  <input
+                    v-model="staffPwMap[u.id]"
+                    type="password"
+                    class="erp-input"
+                    style="padding:6px 10px;font-size:12.5px"
+                    placeholder="รหัสผ่านใหม่ (6+ ตัว)"
+                  />
+                  <button
+                    type="button"
+                    class="erp-btn erp-btn--primary erp-btn--sm"
+                    :disabled="pwBusyId === Number(u.id)"
+                    @click="quickSetStaffPassword(u)"
+                  >
+                    {{ pwBusyId === Number(u.id) ? '...' : 'ตั้งรหัสใหม่' }}
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </div>

@@ -69,6 +69,41 @@ function countByRole(r: string) {
 const showModal = ref(false)
 const saving = ref(false)
 const editingId = ref<number | null>(null)
+
+// Quick Password Reset Modal for any Officer / Dealer
+const quickPwOpen = ref(false)
+const quickPwTarget = ref<any>(null)
+const quickPwValue = ref('')
+const quickPwSaving = ref(false)
+
+function openQuickPw(u: any) {
+  quickPwTarget.value = u
+  quickPwValue.value = ''
+  quickPwOpen.value = true
+}
+
+async function submitQuickPw() {
+  if (!quickPwTarget.value) return
+  if (quickPwValue.value.trim().length < 6) {
+    toast.error('กรุณากำหนดรหัสผ่านอย่างน้อย 6 ตัวอักษร')
+    return
+  }
+  quickPwSaving.value = true
+  try {
+    await $fetch(`/api/admin/staff/${quickPwTarget.value.id}`, {
+      method: 'PUT',
+      body: { password: quickPwValue.value.trim() }
+    })
+    toast.success(`กำหนดรหัสผ่านใหม่ให้ "${quickPwTarget.value.name}" (${quickPwTarget.value.email}) สำเร็จ`)
+    quickPwOpen.value = false
+    quickPwValue.value = ''
+    await refresh()
+  } catch (e: any) {
+    toast.error(e?.data?.statusMessage || 'ไม่สามารถเปลี่ยนรหัสผ่านได้')
+  } finally {
+    quickPwSaving.value = false
+  }
+}
 const form = reactive({
   code: '',
   name: '',
@@ -186,6 +221,12 @@ useHead({ title: 'เจ้าหน้าที่และตัวแทน�
         </p>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <NuxtLink to="/office/manual" class="erp-btn erp-btn--ghost">
+          📘 คู่มือระบบ &amp; รหัสผ่าน
+        </NuxtLink>
+        <NuxtLink to="/office/settings?tab=security" class="erp-btn erp-btn--ghost">
+          🔐 รหัสซิงก์ Shopee
+        </NuxtLink>
         <NuxtLink to="/office/customers" class="erp-btn erp-btn--ghost">
           ดูข้อมูลสมาชิก &amp; ลูกค้าหน้าเว็บ →
         </NuxtLink>
@@ -295,7 +336,10 @@ useHead({ title: 'เจ้าหน้าที่และตัวแทน�
                 {{ u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleString('th-TH') : 'พร้อมใช้งาน' }}
               </td>
               <td style="text-align:right">
-                <div style="display:inline-flex;gap:6px">
+                <div style="display:inline-flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">
+                  <button type="button" class="erp-btn erp-btn--violet erp-btn--sm" @click="openQuickPw(u)">
+                    🔑 ตั้งรหัสผ่าน
+                  </button>
                   <button type="button" class="erp-btn erp-btn--ghost erp-btn--sm" @click="openEdit(u)">แก้ไขสิทธิ์</button>
                   <button
                     v-if="Number(officeAuth.officer.value?.id) !== Number(u.id)"
@@ -418,6 +462,37 @@ useHead({ title: 'เจ้าหน้าที่และตัวแทน�
             {{ saving ? 'กำลังบันทึก...' : '💾 บันทึกสิทธิ์และข้อมูล' }}
           </button>
         </div>
+      </div>
+    </div>
+
+    <!-- Quick Set Password Modal -->
+    <div v-if="quickPwOpen && quickPwTarget" class="rbac-modal-bg" @click.self="quickPwOpen = false">
+      <div class="rbac-modal" style="max-width:440px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <h3 style="margin:0;font-size:17.5px;color:#23264d">🔑 กำหนดรหัสผ่านใหม่</h3>
+          <button type="button" class="erp-btn erp-btn--ghost erp-btn--sm" @click="quickPwOpen = false">✕</button>
+        </div>
+        <p style="margin:0 0 12px;font-size:13px;color:#64748b">
+          บัญชี: <strong>{{ quickPwTarget.name }}</strong> (<code>{{ quickPwTarget.email }}</code>)
+        </p>
+        <form @submit.prevent="submitQuickPw">
+          <label class="erp-label">รหัสผ่านใหม่ (อย่างน้อย 6 ตัวอักษร)</label>
+          <input
+            v-model="quickPwValue"
+            type="password"
+            class="erp-input"
+            placeholder="พิมพ์รหัสผ่านใหม่..."
+            minlength="6"
+            required
+            autofocus
+          />
+          <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px">
+            <button type="button" class="erp-btn erp-btn--ghost" @click="quickPwOpen = false">ยกเลิก</button>
+            <button type="submit" class="erp-btn erp-btn--primary" :disabled="quickPwSaving">
+              {{ quickPwSaving ? 'กำลังบันทึก...' : 'บันทึกรหัสผ่านใหม่' }}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   </div>

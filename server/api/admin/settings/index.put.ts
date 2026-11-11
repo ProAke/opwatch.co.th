@@ -25,7 +25,8 @@ export default defineEventHandler(async (event) => {
     if (body?.site?.[key] !== undefined) site[key] = Number(body.site[key]) || 0
   }
   const boolKeys = [
-    'chatEnabled', 'giftWrapEnabled', 'giftCardEnabled', 'branchPickupEnabled', 'promoHomeEnabled', 'autoImageEnhance'
+    'chatEnabled', 'giftWrapEnabled', 'giftCardEnabled', 'branchPickupEnabled',
+    'promoHomeEnabled', 'autoImageEnhance', 'requireShopeeSyncPassword'
   ]
   for (const key of boolKeys) {
     if (body?.site?.[key] !== undefined) site[key] = Boolean(body.site[key])
@@ -33,7 +34,7 @@ export default defineEventHandler(async (event) => {
   if (![3, 4, 6].includes(Number(site.promoHomeColumns))) site.promoHomeColumns = 4
   if (site.defaultLocale !== 'en') site.defaultLocale = 'th'
 
-  const patch: any = { ...cfg, site }
+  const patch: any = { ...cfg, site, admin: { ...cfg.admin } }
 
   if (body?.ai && typeof body.ai === 'object') {
     const nextAi = { ...(cfg.ai || { provider: 'auto', model: '', apiKey: '', baseUrl: 'https://api.openai.com/v1', brandVoice: '' }) }
@@ -53,17 +54,45 @@ export default defineEventHandler(async (event) => {
     patch.ai = nextAi
   }
 
+  // Shopee Sync Password / Security Settings
+  if (body?.security && typeof body.security === 'object') {
+    if (body.security.requireShopeeSyncPassword !== undefined) {
+      site.requireShopeeSyncPassword = Boolean(body.security.requireShopeeSyncPassword)
+    }
+    if (body.security.resetSyncPassword) {
+      delete patch.admin.shopeeSyncPasswordHash
+    } else if (body.security.shopeeSyncPassword && String(body.security.shopeeSyncPassword).trim().length >= 4) {
+      patch.admin.shopeeSyncPasswordHash = await hashPassword(String(body.security.shopeeSyncPassword).trim())
+    }
+  }
+
+  // Master Admin Password Update -> syncs with `officers` table cleanly
   if (body?.admin?.password) {
-    const pw = String(body.admin.password)
+    const pw = String(body.admin.password).trim()
     if (pw.length >= 6) {
-      patch.admin = { email: cfg.admin.email, passwordHash: await hashPassword(pw) }
-      const adminRow = await store.findOne('customers', { where: { email: cfg.admin.email } })
-      if (adminRow) {
-        await store.update('customers', Number(adminRow.id), { passwordHash: patch.admin.passwordHash })
+      const nextHash = await hashPassword(pw)
+      patch.admin = { ...patch.admin, email: cfg.admin.email, passwordHash: nextHash }
+      const officers = await store.all('officers').catch(() => [])
+      const adminOfficer = officers.find(
+        (o: any) => String(o.email || '').toLowerCase() === String(cfg.admin.email || '').toLowerCase()
+      )
+      if (adminOfficer) {
+        await store.update('officers', Number(adminOfficer.id), {
+          passwordHash: nextHash,
+          updatedAt: new Date().toISOString()
+        })
       }
     }
   }
 
   saveConfig(patch)
-  return { ok: true, site, admin: { email: patch.admin.email } }
+  return {
+    ok: true,
+    site,
+    admin: { email: patch.admin.email },
+    security: {
+      requireShopeeSyncPassword: site.requireShopeeSyncPassword !== false,
+      hasCustomSyncPassword: Boolean(patch.admin.shopeeSyncPasswordHash)
+    }
+  }
 })

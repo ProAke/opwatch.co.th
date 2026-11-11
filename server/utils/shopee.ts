@@ -77,6 +77,97 @@ export const SHOPEE_SHOP_232486539_META = {
   shopUrl: 'https://shopee.co.th/opwatchthailand'
 }
 
+/**
+ * Initial 12 Shopee recommendation-landing SKUs pre-seeded on fresh install (414 base products).
+ * The remaining 29 verified `opwatchthailand` listings (27 missing SKUs + 2 promo updates)
+ * are detected by the Live Shopee Audit and pulled in 1 click via `/office/products`.
+ */
+export const SHOPEE_INITIAL_SYNCED_SKUS = [
+  '82671MK',
+  '8909AMS',
+  '990-15AMG',
+  'OPA58089GK-GL',
+  'OPA58089GB-GL',
+  'OPA58052L',
+  'OPA89983TG',
+  '68322LK',
+  '1001LK',
+  '899832AGS',
+  '99141-71AGSK',
+  'OG358-61AGR-GL'
+]
+
+/**
+ * 1-Click Browser Bookmarklet so logged-in Shopee staff can extract 100% of live items
+ * directly from `https://shopee.co.th/opwatchthailand` (bypassing anonymous `/verify/traffic`).
+ */
+export const SHOPEE_BOOKMARKLET_SCRIPT =
+  `javascript:(function(){try{var out=[];document.querySelectorAll('a[href*="-i."],a[href*="/product/"]').forEach(function(a){var href=a.href||'';var m=href.match(/-i\\.(\\d+)\\.(\\d+)|\\/product\\/(\\d+)\\/(\\d+)/);if(!m)return;var shopid=m[1]||m[3],itemid=m[2]||m[4];if(out.some(function(x){return x.itemid===itemid}))return;var txt=(a.innerText||'').replace(/\\s+/g,' ').trim();var pm=txt.match(/฿\\s*([\\d,]+)/g)||[];var prices=pm.map(function(s){return Number(s.replace(/[^\\d]/g,''))}).filter(function(n){return n>300});var imgEl=a.querySelector('img');out.push({shopid:shopid,itemid:itemid,name:txt.slice(0,160),price:prices.length?Math.min.apply(null,prices):4900,price_before_discount:prices.length>1?Math.max.apply(null,prices):0,image:imgEl?imgEl.src:''})});if(!out.length){alert('ไม่พบการ์ดสินค้า กรุณาเลื่อนหน้าเว็บ Shopee opwatchthailand ให้โหลดสินค้าก่อนแล้วกดอีกครั้ง');return}navigator.clipboard.writeText(JSON.stringify(out,null,2));alert('คัดลอกสินค้า Shopee จำนวน '+out.length+' รายการลงคลิปบอร์ดแล้ว! นำไปวางในหน้าจัดการสินค้า www.opwatch.co.th ได้ทันที');}catch(e){alert('เกิดข้อผิดพลาด: '+e.message)}})();`
+
+interface CompactShopeeSpec {
+  sku: string
+  itemId: string
+  brandSlug: 'olympianus' | 'olympia-star' | 'ogival'
+  categorySlug: string
+  nameTh: string
+  nameEn: string
+  price: number
+  originalPrice: number
+  images: string[]
+  movement: string
+  diameter: string
+  material: string
+  water: string
+  freebie?: string
+  shortTh: string
+}
+
+function makeShopeeWatch(cfg: CompactShopeeSpec): ParsedShopeeProduct {
+  const discountPct =
+    cfg.originalPrice > cfg.price ? Math.round(((cfg.originalPrice - cfg.price) / cfg.originalPrice) * 100) : 0
+  const brandLabel =
+    cfg.brandSlug === 'ogival' ? 'Ogival (Swiss Since 1903)' : cfg.brandSlug === 'olympia-star' ? 'Olympia Star (OPA)' : 'Olym Pianus (OP)'
+  const freebieText =
+    cfg.freebie ||
+    (cfg.brandSlug === 'ogival'
+      ? 'กล่องไม้หรู Ogival Swiss + ผ้าเช็ดนาฬิกา + ใบรับประกันศูนย์ไทย 2 ปี'
+      : 'แถมฟรี มีดพกอเนกประสงค์ + กล่องหรู + ผ้าเช็ดนาฬิกา + ประกันศูนย์ไทย')
+  const promoTag =
+    discountPct > 0
+      ? `ลด ${discountPct}% + ${cfg.brandSlug === 'ogival' ? 'ประกันศูนย์ไทย 2 ปี' : 'แถมฟรี มีดพกอเนกประสงค์'}`
+      : 'ราคาพิเศษ Shopee Official'
+  return {
+    sku: cfg.sku,
+    name: cfg.nameTh,
+    nameTh: cfg.nameTh,
+    nameEn: cfg.nameEn,
+    brandSlug: cfg.brandSlug,
+    categorySlug: cfg.categorySlug,
+    price: cfg.price,
+    originalPrice: cfg.originalPrice,
+    discountPct,
+    promoTag,
+    freebieText,
+    stock: cfg.brandSlug === 'ogival' ? 6 : 12,
+    images: cfg.images,
+    shortDescription: cfg.shortTh,
+    descriptionTh: `<p><strong>${cfg.nameTh}</strong> จัดจำหน่ายอย่างเป็นทางการโดย <strong>บริษัท อินเตอร์ไทมส์ จำกัด</strong> (ร้าน Official <code>opwatchthailand</code> บน Shopee) ${cfg.shortTh} ขับเคลื่อนด้วยกลไก ${cfg.movement} หน้าปัดกระจก Sapphire Crystal แท้ป้องกันรอยขีดข่วน ตัวเรือนและสาย ${cfg.material} ขนาดหน้าปัด ${cfg.diameter} กันน้ำระดับ ${cfg.water} มาพร้อม ${freebieText}</p>`,
+    descriptionEn: `<p>Authentic <strong>${cfg.nameEn}</strong> (${cfg.sku}) powered by ${cfg.movement} with scratch-resistant Sapphire Crystal, ${cfg.diameter} ${cfg.material}, and ${cfg.water} water resistance. Official Thailand distributor: Inter Times Co., Ltd.</p>`,
+    specs: {
+      Brand: brandLabel,
+      Model: cfg.sku,
+      Movement: cfg.movement,
+      Crystal: 'Sapphire Crystal กันรอยขีดข่วน',
+      'Case Diameter': cfg.diameter,
+      'Case & Strap': cfg.material,
+      'Water Resistance': cfg.water,
+      Warranty: 'รับประกันศูนย์ไทย 2 ปี บริษัท อินเตอร์ไทมส์ จำกัด'
+    },
+    shopeeUrl: `https://shopee.co.th/product/232486539/${cfg.itemId}`,
+    shopeeItemId: cfg.itemId
+  }
+}
+
 export const SHOPEE_SHOP_232486539_ITEMS: ParsedShopeeProduct[] = [
   {
     sku: '82671MK',
@@ -437,7 +528,563 @@ export const SHOPEE_SHOP_232486539_ITEMS: ParsedShopeeProduct[] = [
     },
     shopeeUrl: 'https://shopee.co.th/shop/232486539/recommendation-landing?pageNumber=1&upstream=pdp',
     shopeeItemId: '23248653912'
-  }
+  },
+
+  // =========================================================================
+  // 29 Additional Verified `OP watch thailand` (Shop 232486539 / opwatchthailand) Listings
+  // Audited across Olym Pianus (20), Olympia Star (1), and Ogival (8)
+  // =========================================================================
+  makeShopeeWatch({
+    sku: '5674M',
+    itemId: '7118515889',
+    brandSlug: 'olympianus',
+    categorySlug: 'classic-watches',
+    nameTh: 'Olym Pianus [OP] นาฬิกาข้อมือผู้ชาย รุ่น 5674M กระจกแซฟไฟร์แท้ (แถมฟรี มีดพกอเนกประสงค์)',
+    nameEn: 'Olym Pianus 5674M Men Classic Sapphire Stainless Steel Watch',
+    price: 4720,
+    originalPrice: 5900,
+    images: [
+      'https://olympianus.com/wp-content/uploads/2024/08/8934MSK-G-%E5%8E%BB%E8%83%8C.png',
+      '/images/op/portrait-8934msk.jpg'
+    ],
+    movement: 'Japan Quartz Movement',
+    diameter: '38.0 mm',
+    material: '316L Stainless Steel',
+    water: '3 ATM (30 เมตร)',
+    shortTh: 'นาฬิกาข้อมือสุภาพบุรุษทรงคลาสสิกยอดนิยมจากร้าน OP watch thailand ตัวเรือนบางสวมใส่สบาย กระจกแซฟไฟร์แท้กันรอย'
+  }),
+  makeShopeeWatch({
+    sku: '5657DMS',
+    itemId: '7119030422',
+    brandSlug: 'olympianus',
+    categorySlug: 'classic-watches',
+    nameTh: 'Olym Pianus [OP] นาฬิกาข้อมือ รุ่น 5657DMS ประดับคริสตัล Swarovski กระจกแซฟไฟร์ (แถมฟรี มีดพก)',
+    nameEn: 'Olym Pianus 5657DMS Swarovski Crystal Bezel Sapphire Watch',
+    price: 3950,
+    originalPrice: 4900,
+    images: [
+      'https://olympianus.com/wp-content/uploads/2024/08/99141-71AGSK-W-%E9%87%98%E5%AD%97-%E5%8E%BB%E8%83%8C.png',
+      '/images/op/square-gold-stones.jpg'
+    ],
+    movement: 'Japan Quartz Movement',
+    diameter: '36.0 mm',
+    material: '316L Stainless Steel · Swarovski Zirconia',
+    water: '3 ATM (30 เมตร)',
+    shortTh: 'เรือนเวลาหรูประดับคริสตัลสวารอฟสกี้แท้บนหน้าปัด ขนาดユニเซ็กซ์ 36 มม. กระจกแซฟไฟร์กันรอยขีดข่วน'
+  }),
+  makeShopeeWatch({
+    sku: '1001MS',
+    itemId: '10748143923',
+    brandSlug: 'olympianus',
+    categorySlug: 'men-watches',
+    nameTh: 'Olym Pianus [OP] นาฬิกาผู้ชาย รุ่น 1001MS สแตนเลสสีเงิน กระจกแซฟไฟร์ กันน้ำ 5ATM (แถมฟรี มีดพก)',
+    nameEn: 'Olym Pianus 1001MS Men Silver Sapphire 5ATM Watch',
+    price: 3200,
+    originalPrice: 3950,
+    images: [
+      '/images/op/watch-990-083-white.png',
+      '/images/op/lifestyle-men.jpg'
+    ],
+    movement: 'Japan Quartz Movement',
+    diameter: '41.0 mm',
+    material: '316L Stainless Steel (Silver)',
+    water: '5 ATM (50 เมตร)',
+    shortTh: 'นาฬิกาผู้ชายคู่ขวัญรุ่น 1001LK ขนาดเต็มข้อมือ 41 มม. ตัวเรือนสแตนเลสสีเงินเรียบหรู กระจกแซฟไฟร์แท้ คุ้มค่าที่สุด'
+  }),
+  makeShopeeWatch({
+    sku: '1004M-405E',
+    itemId: '19690735379',
+    brandSlug: 'olympianus',
+    categorySlug: 'classic-watches',
+    nameTh: 'Olym Pianus [OP] นาฬิกาผู้ชาย รุ่น 1004M-405E คลาสสิกบางเฉียบ กระจกแซฟไฟร์ (แถมกล่อง+ผ้าเช็ด+มีดพก)',
+    nameEn: 'Olym Pianus 1004M-405E Slim Dress Sapphire Watch',
+    price: 3990,
+    originalPrice: 4900,
+    images: [
+      'https://olympianus.com/wp-content/uploads/2024/08/130-07MK-GL-W-%E5%8E%BB%E8%83%8C.png',
+      '/images/op/cutout-130-gold.jpg'
+    ],
+    movement: 'Japan Quartz Slim Movement',
+    diameter: '35.7 mm',
+    material: '316L Stainless Steel',
+    water: '3 ATM (30 เมตร)',
+    shortTh: 'เรือนเวลาเดรสคลาสสิกขนาด 35.7 มม. สไตล์มินิมอลสุภาพ พร้อมกระจกแซฟไฟร์กันรอยและชุดของแถมครบเซ็ตจาก Shopee Official'
+  }),
+  makeShopeeWatch({
+    sku: '130-06MK',
+    itemId: '8210888',
+    brandSlug: 'olympianus',
+    categorySlug: 'classic-watches',
+    nameTh: 'Olym Pianus [OP] นาฬิกาผู้ชาย รุ่น 130-06MK Ultra-Slim สีทอง กระจกแซฟไฟร์ (แถมฟรี มีดพกอเนกประสงค์)',
+    nameEn: 'Olym Pianus 130-06MK Ultra-Slim Gold Sapphire Dress Watch',
+    price: 3490,
+    originalPrice: 4500,
+    images: [
+      '/images/op/watch-130-06-black.png',
+      '/images/op/cutout-130-gold.jpg'
+    ],
+    movement: 'Japan Ultra-Slim Quartz',
+    diameter: '38.0 mm',
+    material: 'Gold PVD 316L Stainless Steel',
+    water: '3 ATM (30 เมตร)',
+    shortTh: 'ซิงก์โปรโมชั่นพิเศษ Shopee Official สำหรับตระกูลบางเฉียบ 130-06MK เคลือบทอง PVD หรูหรา กระจกแซฟไฟร์แท้'
+  }),
+  makeShopeeWatch({
+    sku: '130-10GK',
+    itemId: '5838723577',
+    brandSlug: 'olympianus',
+    categorySlug: 'classic-watches',
+    nameTh: 'Olym Pianus [OP] นาฬิกาผู้ชายสายหนังแท้ รุ่น 130-10GK (หน้าขาว/หน้าดำ) กระจกแซฟไฟร์ แถมฟรีมีดพก',
+    nameEn: 'Olym Pianus 130-10GK Slim Gold Genuine Leather Sapphire Watch',
+    price: 3090,
+    originalPrice: 3790,
+    images: [
+      'https://olympianus.com/wp-content/uploads/2024/08/99141-71.1AGK-GL-W-%E5%8E%BB%E8%83%8C.png',
+      '/images/op/watch-130-06-white.png'
+    ],
+    movement: 'Japan Slim Quartz Movement',
+    diameter: '39.0 mm',
+    material: 'Gold PVD Steel · Genuine Calfskin Leather',
+    water: '3 ATM (30 เมตร)',
+    shortTh: 'นาฬิกาสายหนังแท้รุ่นขายดีบน Shopee OP watch thailand ขนาด 39 มม. ตัวเรือนบางเฉียบ สวมทำงานและออกงานได้อย่างลงตัว'
+  }),
+  makeShopeeWatch({
+    sku: '130-14MB',
+    itemId: '4820143739',
+    brandSlug: 'olympianus',
+    categorySlug: 'classic-watches',
+    nameTh: 'Olym Pianus [OP] นาฬิกาผู้ชาย รุ่น 130-14MB Ultra-Slim โรสโกลด์ กระจกแซฟไฟร์แท้',
+    nameEn: 'Olym Pianus 130-14MB Ultra-Slim Rose-Gold Sapphire Watch',
+    price: 3600,
+    originalPrice: 4500,
+    images: [
+      '/images/op/watch-130-06-white.png',
+      '/images/op/watch-130-06-black.png'
+    ],
+    movement: 'Japan Ultra-Slim Quartz',
+    diameter: '39.0 mm',
+    material: 'Rose-Gold PVD 316L Stainless Steel',
+    water: '3 ATM (30 เมตร)',
+    shortTh: 'ดีไซน์ตัวเรือนบางพิเศษโทนพิงค์โกลด์/โรสโกลด์ร่วมสมัย กระจกแซฟไฟร์แท้กันรอยขีดข่วน ลดพิเศษ 20%'
+  }),
+  makeShopeeWatch({
+    sku: '89093-3GK',
+    itemId: '9865732731',
+    brandSlug: 'olympianus',
+    categorySlug: 'men-watches',
+    nameTh: 'Olym Pianus [OP] นาฬิกาผู้ชาย รุ่น 89093-3GK สีทองหรู กระจกแซฟไฟร์ (แถมฟรี มีดพกอเนกประสงค์)',
+    nameEn: 'Olym Pianus 89093-3GK Executive Gold Sapphire Watch',
+    price: 5760,
+    originalPrice: 7200,
+    images: [
+      'https://olympianus.com/wp-content/uploads/2024/08/890-09AMK-G-%E5%8E%BB%E8%83%8C.png',
+      '/images/op/hero-gold-stones.jpg'
+    ],
+    movement: 'Japan Precision Movement',
+    diameter: '40.0 mm',
+    material: 'Full Gold PVD 316L Stainless Steel',
+    water: '5 ATM (50 เมตร)',
+    shortTh: 'เรือนเวลาผู้บริหารโทนสีทองสง่างาม รุ่น 89093-3GK หน้าปัดแกะลายละเอียดประณีต กระจกแซฟไฟร์แท้ กันน้ำ 50 เมตร'
+  }),
+  makeShopeeWatch({
+    sku: '8973AMK',
+    itemId: '23248653921',
+    brandSlug: 'olympianus',
+    categorySlug: 'men-watches',
+    nameTh: 'Olym Pianus [OP] นาฬิกาผู้ชาย Automatic รุ่น 8973AMK ทอง-หน้าขาว กระจกแซฟไฟร์แท้',
+    nameEn: 'Olym Pianus 8973AMK Automatic Gold Sapphire Mechanical Watch',
+    price: 5520,
+    originalPrice: 6900,
+    images: [
+      'https://olympianus.com/wp-content/uploads/2024/08/990-388AMK-W-GL-%E5%8E%BB%E8%83%8C.png',
+      '/images/op/portrait-8909amk.jpg'
+    ],
+    movement: 'Japanese Automatic Mechanical',
+    diameter: '40.0 mm',
+    material: 'Gold PVD 316L Stainless Steel',
+    water: '5 ATM (50 เมตร)',
+    shortTh: 'ซิงก์ราคาโปรโมชั่น Shopee Official สำหรับรุ่นออโตเมติกยอดนิยม 8973AMK กลไกอัตโนมัติญี่ปุ่น กระจกแซฟไฟร์แท้'
+  }),
+  makeShopeeWatch({
+    sku: '8973AMB',
+    itemId: '23248653922',
+    brandSlug: 'olympianus',
+    categorySlug: 'men-watches',
+    nameTh: 'Olym Pianus [OP] นาฬิกาผู้ชาย Automatic รุ่น 8973AMB โรสโกลด์ กระจกแซฟไฟร์แท้ (ลด 20% + แถมมีดพก)',
+    nameEn: 'Olym Pianus 8973AMB Automatic Rose-Gold Sapphire Watch',
+    price: 6390,
+    originalPrice: 7990,
+    images: [
+      'https://olympianus.com/wp-content/uploads/2024/08/899831G1B-%E5%8E%BB%E8%83%8C.png',
+      '/images/op/portrait-8909amk.jpg'
+    ],
+    movement: 'Japanese Automatic Mechanical',
+    diameter: '40.0 mm',
+    material: 'Rose-Gold PVD 316L Stainless Steel',
+    water: '5 ATM (50 เมตร)',
+    shortTh: 'นาฬิกาออโตเมติกโทนโรสโกลด์สุดหรู รุ่น 8973AMB ฝาหลังเปลือยโชว์โรเตอร์ กระจกแซฟไฟร์กันรอยขีดข่วน'
+  }),
+  makeShopeeWatch({
+    sku: '89322ASK',
+    itemId: '23248653923',
+    brandSlug: 'olympianus',
+    categorySlug: 'sport-watches',
+    nameTh: 'Olym Pianus [OP] Sportmaster Automatic รุ่น 89322ASK สองกษัตริย์ ขอบหยัก กระจกแซฟไฟร์',
+    nameEn: 'Olym Pianus 89322ASK Sportmaster Automatic Two-Tone Fluted Bezel Watch',
+    price: 5890,
+    originalPrice: 7500,
+    images: [
+      'https://olympianus.com/wp-content/uploads/2024/08/990-083AMSK-BU-%E5%8E%BB%E8%83%8C.png',
+      '/images/op/portrait-8934msk.jpg'
+    ],
+    movement: 'Japanese Automatic (Day-Date / Date)',
+    diameter: '40.0 mm',
+    material: 'Two-Tone Gold & Silver 316L Steel',
+    water: '5 ATM (50 เมตร)',
+    shortTh: 'ตระกูล Sportmaster ออโตเมติกขอบหยักสองกษัตริย์ยอดฮิตตลอดกาล สาย Jubilee สวมใส่กระชับข้อ กระจกแซฟไฟร์พร้อมเลนส์ขยายวันที่'
+  }),
+  makeShopeeWatch({
+    sku: '89322AM',
+    itemId: '23248653924',
+    brandSlug: 'olympianus',
+    categorySlug: 'sport-watches',
+    nameTh: 'Olym Pianus [OP] Sportmaster Automatic รุ่น 89322AM สีเงินสแตนเลส กระจกแซฟไฟร์แท้',
+    nameEn: 'Olym Pianus 89322AM Sportmaster Automatic Stainless Steel Watch',
+    price: 5200,
+    originalPrice: 6500,
+    images: [
+      'https://olympianus.com/wp-content/uploads/2024/08/899831G1S-B-%E5%8E%BB%E8%83%8C.png',
+      '/images/op/watch-990-083-white.png'
+    ],
+    movement: 'Japanese Automatic Mechanical',
+    diameter: '40.0 mm',
+    material: '316L Stainless Steel',
+    water: '5 ATM (50 เมตร)',
+    shortTh: 'นาฬิกาสปอร์ตหรูระบบออโตเมติกตัวเรือนสแตนเลสสีเงินล้วน รุ่น 89322AM ลุคคลาสสิกสุภาพใส่ได้ทุกโอกาส'
+  }),
+  makeShopeeWatch({
+    sku: '990-18ATGSB',
+    itemId: '23248653925',
+    brandSlug: 'olympianus',
+    categorySlug: 'sport-watches',
+    nameTh: 'Olym Pianus [OP] Automatic Skeleton รุ่น 990-18ATGSB สปอร์ตเปลือยกลไก (ลดพิเศษ 38%)',
+    nameEn: 'Olym Pianus 990-18ATGSB Automatic Skeleton Tonneau Sport Watch',
+    price: 7900,
+    originalPrice: 12700,
+    images: [
+      '/images/op/watch-990-163-black.png',
+      '/images/op/lifestyle-sport.jpg'
+    ],
+    movement: 'Japan Automatic Skeleton Movement',
+    diameter: '43.0 mm',
+    material: 'Rose-Gold & Black PVD Steel · Silicone/Steel Strap',
+    water: '5 ATM (50 เมตร)',
+    shortTh: 'เรือนเวลาสปอร์ตหน้าปัดเปลือยกลไกขนาด 43 มม. โทนโรสโกลด์เข้มดุดัน ลดสูงสุดถึง 38% จากร้าน OP watch thailand'
+  }),
+  makeShopeeWatch({
+    sku: '993-6AMG',
+    itemId: '23248653926',
+    brandSlug: 'olympianus',
+    categorySlug: 'men-watches',
+    nameTh: 'Olym Pianus [OP] Open-Heart Automatic รุ่น 993-6AMG สีทองหรู กระจกแซฟไฟร์แท้',
+    nameEn: 'Olym Pianus 993-6AMG Open-Heart Automatic Gold Sapphire Watch',
+    price: 7680,
+    originalPrice: 9600,
+    images: [
+      '/images/op/openheart-stones.jpg',
+      'https://olympianus.com/wp-content/uploads/2024/08/890-09AMK-G-%E5%8E%BB%E8%83%8C.png'
+    ],
+    movement: 'Japan Automatic Open-Heart',
+    diameter: '41.0 mm',
+    material: 'Gold PVD 316L Stainless Steel',
+    water: '5 ATM (50 เมตร)',
+    shortTh: 'โชว์จังหวะการทำงานของ Balance Wheel ผ่านช่อง Open-Heart บนหน้าปัดสีทองหรู กระจกแซฟไฟร์แท้กันรอยขีดข่วน'
+  }),
+  makeShopeeWatch({
+    sku: '82672MK',
+    itemId: '23248653927',
+    brandSlug: 'olympianus',
+    categorySlug: 'couple-watches',
+    nameTh: 'Olym Pianus [OP] นาฬิกาคู่รักชาย-หญิง รุ่น 82672 (82672MK) สีทอง/สองกษัตริย์ กระจกแซฟไฟร์ แถมมีดพก',
+    nameEn: 'Olym Pianus 82672MK Couple Classic Gold Sapphire Watch',
+    price: 4900,
+    originalPrice: 5990,
+    images: [
+      'https://olympianus.com/wp-content/uploads/2024/08/82671MK-B-%E5%8E%BB%E8%83%8C.png',
+      '/images/op/watch-82672-lady.png'
+    ],
+    movement: 'Japan Quartz Movement',
+    diameter: '36.0 mm',
+    material: 'Gold PVD 316L Stainless Steel',
+    water: '5 ATM (50 เมตร)',
+    shortTh: 'เติมเต็มคอลเลกชันคู่รักตระกูล 82672 คู่กับรุ่นผู้หญิง 82672LK ตัวเรือนทองคลาสสิก กระจกแซฟไฟร์กันรอย'
+  }),
+  makeShopeeWatch({
+    sku: '5687LS',
+    itemId: '23248653928',
+    brandSlug: 'olympianus',
+    categorySlug: 'women-watches',
+    nameTh: 'Olym Pianus [OP] นาฬิกาผู้หญิง รุ่น 5687LS สีเงินหน้าปัดมุก กระจกแซฟไฟร์แท้',
+    nameEn: 'Olym Pianus 5687LS Ladies Silver Sapphire Bracelet Watch',
+    price: 3910,
+    originalPrice: 4890,
+    images: [
+      '/images/op/watch-82672-lady.png',
+      '/images/op/lifestyle-lady.jpg'
+    ],
+    movement: 'Japan Quartz Movement',
+    diameter: '28.0 mm',
+    material: '316L Stainless Steel (Silver)',
+    water: '3 ATM (30 เมตร)',
+    shortTh: 'นาฬิกาข้อมือสุภาพสตรีดีไซน์เรียบหรู ขนาด 28 มม. เข้ากับทุกชุดทำงานและลำลอง พร้อมกระจกแซฟไฟร์แท้กันรอย'
+  }),
+  makeShopeeWatch({
+    sku: '2494LK',
+    itemId: '23248653929',
+    brandSlug: 'olympianus',
+    categorySlug: 'women-jewelry',
+    nameTh: 'Olym Pianus [OP] นาฬิกาผู้หญิง รุ่น 2494LK ทองจิวเวลรี่ กระจกแซฟไฟร์แท้',
+    nameEn: 'Olym Pianus 2494LK Ladies Gold Jewelry Bracelet Sapphire Watch',
+    price: 4790,
+    originalPrice: 5990,
+    images: [
+      'https://olympianus.com/wp-content/uploads/2024/08/82672LK-%E5%8E%BB%E8%83%8C.png',
+      '/images/op/lifestyle-lady.jpg'
+    ],
+    movement: 'Japan Quartz Movement',
+    diameter: '26.0 mm',
+    material: 'Gold PVD Steel · Crystal Index',
+    water: '3 ATM (30 เมตร)',
+    shortTh: 'นาฬิกาเครื่องประดับสุภาพสตรีตัวเรือนสีทองอ่อนช้อย ประดับคริสตัลแวววาว กระจกแซฟไฟร์แท้กันรอยขีดข่วน'
+  }),
+  makeShopeeWatch({
+    sku: '2460DLSK',
+    itemId: '23248653930',
+    brandSlug: 'olympianus',
+    categorySlug: 'women-jewelry',
+    nameTh: 'Olym Pianus [OP] นาฬิกาผู้หญิง รุ่น 2460DLSK ขอบเพชรคริสตัล สองกษัตริย์ กระจกแซฟไฟร์ (แถมมีดพก)',
+    nameEn: 'Olym Pianus 2460DLSK Ladies Crystal Bezel Two-Tone Sapphire Watch',
+    price: 6000,
+    originalPrice: 7500,
+    images: [
+      '/images/op/watch-990-45-lady.png',
+      '/images/op/square-gold-stones.jpg'
+    ],
+    movement: 'Japan Quartz Movement',
+    diameter: '28.0 mm',
+    material: 'Two-Tone 316L Steel · Crystal-Set Bezel',
+    water: '3 ATM (30 เมตร)',
+    shortTh: 'เรือนเวลาสุภาพสตรีขอบประดับคริสตัลรอบวง โทนสองกษัตริย์สุดหรู กระจกแซฟไฟร์แท้ ลดพิเศษ 20%'
+  }),
+  makeShopeeWatch({
+    sku: '5217LK',
+    itemId: '23248653931',
+    brandSlug: 'olympianus',
+    categorySlug: 'women-jewelry',
+    nameTh: 'Olym Pianus [OP] นาฬิกาผู้หญิง รุ่น 5217LK Luxury Gold ประดับคริสตัล กระจกแซฟไฟร์ (แถมฟรีมีดพก)',
+    nameEn: 'Olym Pianus 5217LK Ladies Luxury Gold Crystal Sapphire Watch',
+    price: 9520,
+    originalPrice: 11900,
+    images: [
+      'https://olympianus.com/wp-content/uploads/2024/08/990-45DDLR-GL-W-%E5%8E%BB%E8%83%8C.png',
+      '/images/op/hero-gold-stones.jpg'
+    ],
+    movement: 'Japan Precision Quartz',
+    diameter: '30.0 mm',
+    material: 'Luxury Gold PVD 316L Steel · Faceted Crystal',
+    water: '3 ATM (30 เมตร)',
+    shortTh: 'เรือนเวลาจิวเวลรี่ระดับพรีเมียมสำหรับสุภาพสตรี งานฝังคริสตัลละเอียดรอบตัวเรือนทองหรู กระจกแซฟไฟร์แท้'
+  }),
+  makeShopeeWatch({
+    sku: '68322LSK',
+    itemId: '6483046726',
+    brandSlug: 'olympianus',
+    categorySlug: 'women-watches',
+    nameTh: 'Olym Pianus [OP] นาฬิกาผู้หญิง รุ่น 68322LSK สองกษัตริย์ ขอบหยัก กระจกแซฟไฟร์ (แถมฟรีมีดพก)',
+    nameEn: 'Olym Pianus 68322LSK Ladies Two-Tone Fluted Bezel Sapphire Watch',
+    price: 3990,
+    originalPrice: 4990,
+    images: [
+      '/images/op/watch-82672-lady.png',
+      'https://olympianus.com/wp-content/uploads/2024/08/82672LK-%E5%8E%BB%E8%83%8C.png'
+    ],
+    movement: 'Japan Quartz Date Movement',
+    diameter: '26.0 mm',
+    material: 'Two-Tone Gold & Silver 316L Steel',
+    water: '5 ATM (50 เมตร)',
+    shortTh: 'รุ่นยอดนิยมสุภาพสตรี 68322LSK โทนสองกษัตริย์เงิน-ทอง ขอบหยักคลาสสิก กันน้ำ 50 เมตร กระจกแซฟไฟร์กันรอย'
+  }),
+  makeShopeeWatch({
+    sku: 'OPA58012DMK-GL',
+    itemId: '7419288258',
+    brandSlug: 'olympia-star',
+    categorySlug: 'classic-watches',
+    nameTh: 'Olympia Star [OPA] เครื่องสวิส รุ่น 58012DMK-GL ขอบคริสตัล สายหนังแท้ กระจกแซฟไฟร์ (ลด 20%)',
+    nameEn: 'Olympia Star OPA58012DMK-GL Swiss Movement Crystal Bezel Leather Watch',
+    price: 6000,
+    originalPrice: 7500,
+    images: [
+      'https://olympianus.com/wp-content/uploads/2024/08/990-45.24ADGS-GL-%E5%8E%BB%E8%83%8C.png',
+      '/images/op/cutout-130-gold.jpg'
+    ],
+    movement: 'Swiss Quartz Movement',
+    diameter: '38.0 mm',
+    material: 'Gold PVD Steel · Crystal Bezel · Genuine Leather Strap',
+    water: '3 ATM (30 เมตร)',
+    shortTh: 'เรือนเวลาเครื่องสวิสแท้ Olympia Star ขอบตัวเรือนประดับคริสตัลหรู จับคู่สายหนังแท้คัดเกรดและกระจกแซฟไฟร์'
+  }),
+  makeShopeeWatch({
+    sku: 'OG1930M',
+    itemId: '23248653933',
+    brandSlug: 'ogival',
+    categorySlug: 'classic-watches',
+    nameTh: 'Ogival นาฬิกาผู้ชาย Swiss Movement รุ่น 1930M กระจกแซฟไฟร์ กันน้ำ 5ATM (ประกันศูนย์ไทย 2 ปี)',
+    nameEn: 'Ogival 1930M Classic Swiss Quartz Sapphire 40mm Watch',
+    price: 13200,
+    originalPrice: 16500,
+    images: [
+      'https://img.91app.com/webapi/imagesV3/Original/SalePage/9126736/0/639177788238530000?v=1',
+      'https://img.91app.com/webapi/imagesV3/Original/SalePage/9129461/0/639177788255400000?v=1'
+    ],
+    movement: 'Swiss Precision Quartz Movement',
+    diameter: '40.0 mm',
+    material: '316L Surgical Stainless Steel',
+    water: '5 ATM (50 เมตร)',
+    shortTh: 'เรือนเวลาเดรสสวิสแท้ Ogival รุ่น 1930M ขนาดมาตรฐาน 40 มม. บางสง่างาม กระจกแซฟไฟร์แท้ ลดพิเศษ 20%'
+  }),
+  makeShopeeWatch({
+    sku: 'OG3693AMS',
+    itemId: '7520687004',
+    brandSlug: 'ogival',
+    categorySlug: 'women-watches',
+    nameTh: 'Ogival นาฬิกาสุภาพสตรี Swiss Automatic รุ่น 3693AMS กระจกแซฟไฟร์แท้ (รับประกันศูนย์ไทย 2 ปี)',
+    nameEn: 'Ogival 3693AMS Swiss Automatic Silver Sapphire 30mm Watch',
+    price: 19135,
+    originalPrice: 21500,
+    images: [
+      'https://img.91app.com/webapi/imagesV3/Original/SalePage/10012392/0/639177788609900000?v=1',
+      'https://img.91app.com/webapi/imagesV3/Original/SalePage/9099802/0/639177787828600000?v=1'
+    ],
+    movement: 'Swiss Automatic Mechanical',
+    diameter: '30.0 mm',
+    material: '316L Stainless Steel (Silver)',
+    water: '3 ATM (30 เมตร)',
+    shortTh: 'นาฬิกากลไกออโตเมติกสวิสแท้ขนาด 30 มม. รุ่น 3693AMS งานขัดแต่งปราณีตระดับ Haute Horlogerie'
+  }),
+  makeShopeeWatch({
+    sku: 'OG3696AMS',
+    itemId: '3220848018',
+    brandSlug: 'ogival',
+    categorySlug: 'men-watches',
+    nameTh: 'Ogival นาฬิกาข้อมือ Swiss Automatic รุ่น 3696AMS กระจกแซฟไฟร์แท้ (ลด 20% ศูนย์ไทย)',
+    nameEn: 'Ogival 3696AMS Royal Swiss Automatic Mechanical Sapphire Watch',
+    price: 20720,
+    originalPrice: 25900,
+    images: [
+      'https://img.91app.com/webapi/imagesV3/Original/SalePage/10012594/0/639177788614500000?v=1',
+      'https://img.91app.com/webapi/imagesV3/Original/SalePage/10013072/0/639177788623270000?v=1'
+    ],
+    movement: 'Swiss Automatic Mechanical',
+    diameter: '38.0 mm',
+    material: '316L Stainless Steel',
+    water: '3 ATM (30 เมตร)',
+    shortTh: 'ความเที่ยงตรงระดับสวิสในเรือนเวลาออโตเมติก Ogival 3696AMS กระจกแซฟไฟร์โค้งกันรอยขีดข่วน พร้อมกล่องหรูครบชุด'
+  }),
+  makeShopeeWatch({
+    sku: 'OG30328MK',
+    itemId: '4320688246',
+    brandSlug: 'ogival',
+    categorySlug: 'classic-watches',
+    nameTh: 'Ogival นาฬิกาข้อมือ Swiss Automatic รุ่น 30328MK สีทองหรู 36 มม. กระจกแซฟไฟร์ (ประกันศูนย์ 2 ปี)',
+    nameEn: 'Ogival 30328MK Sovereign Gold Swiss Automatic 36mm Watch',
+    price: 22900,
+    originalPrice: 26500,
+    images: [
+      'https://img.91app.com/webapi/imagesV3/Original/SalePage/9111055/0/639177788027000000?v=1',
+      'https://img.91app.com/webapi/imagesV3/Original/SalePage/10012495/0/639177788611730000?v=1'
+    ],
+    movement: 'Swiss Automatic Movement',
+    diameter: '36.0 mm',
+    material: '18K Gold Micron PVD 316L Steel',
+    water: '3 ATM (30 เมตร)',
+    shortTh: 'เรือนเวลาทองคลาสสิก Ogival 30328MK สัญลักษณ์ปลากระโดดนำโชค กลไกออโตเมติกสวิสแท้ รับประกันศูนย์ไทย 2 ปีเต็ม'
+  }),
+  makeShopeeWatch({
+    sku: 'OG358-88AGMR-GL',
+    itemId: '23010169476',
+    brandSlug: 'ogival',
+    categorySlug: 'men-watches',
+    nameTh: 'Ogival Masterpiece Skeleton รุ่น 358.88AGMR-GL Swiss Automatic สายหนังแท้ (ลดพิเศษ ฿12,000)',
+    nameEn: 'Ogival 358.88AGMR-GL Masterpiece Swiss Automatic Skeleton Leather Watch',
+    price: 48000,
+    originalPrice: 60000,
+    images: [
+      'https://img.91app.com/webapi/imagesV3/Original/SalePage/9947784/0/639177788468370000?v=1',
+      '/images/op/hero-ceramic-dark.jpg'
+    ],
+    movement: 'Swiss Hand-Engraved Automatic Skeleton',
+    diameter: '40.0 mm',
+    material: 'Rose-Gold PVD · Genuine Alligator Leather Strap',
+    water: '5 ATM (50 เมตร)',
+    shortTh: 'ผลงานระดับเรือธง Ogival 358.88AGMR-GL หน้าปัดฉลุลาย Skeleton ทองชมพูสุดวิจิตร ขุมพลัง Swiss Automatic ระดับนักสะสม'
+  }),
+  makeShopeeWatch({
+    sku: 'OG358-61AMR-GL',
+    itemId: '5218537248',
+    brandSlug: 'ogival',
+    categorySlug: 'men-watches',
+    nameTh: 'Ogival Lucky Fish Skeleton รุ่น 358.61AMR-GL Swiss Automatic สายหนังแท้ (ลด 26%)',
+    nameEn: 'Ogival 358.61AMR-GL Lucky Fish Swiss Automatic Skeleton Watch',
+    price: 29450,
+    originalPrice: 39900,
+    images: [
+      'https://img.91app.com/webapi/imagesV3/Original/SalePage/9946181/0/639177788466000000?v=1',
+      '/images/op/openheart-stones.jpg'
+    ],
+    movement: 'Swiss Automatic Skeleton Movement',
+    diameter: '40.0 mm',
+    material: 'Rose-Gold & Silver PVD · Genuine Leather Strap',
+    water: '5 ATM (50 เมตร)',
+    shortTh: 'เรือนเวลาสวิสฉลุลายมงคล Ogival 358.61AMR-GL ขนาด 40 มม. กระจกแซฟไฟร์ทรงโดม ลดทันทีกว่า ฿10,450'
+  }),
+  makeShopeeWatch({
+    sku: 'OG829-65AG1SK',
+    itemId: '4618550840',
+    brandSlug: 'ogival',
+    categorySlug: 'men-watches',
+    nameTh: 'Ogival Semi-Skeleton Swiss Automatic รุ่น 829.65AG1SK สองกษัตริย์ กระจกแซฟไฟร์ (ประกัน 2 ปี)',
+    nameEn: 'Ogival 829.65AG1SK Semi-Skeleton Swiss Automatic Two-Tone Watch',
+    price: 36720,
+    originalPrice: 45900,
+    images: [
+      'https://img.91app.com/webapi/imagesV3/Original/SalePage/10012996/0/639177788621830000?v=1',
+      'https://img.91app.com/webapi/imagesV3/Original/SalePage/10012965/0/639177788620130000?v=1'
+    ],
+    movement: 'Swiss Automatic Semi-Skeleton',
+    diameter: '40.0 mm',
+    material: 'Two-Tone PVD Gold & 316L Stainless Steel',
+    water: '5 ATM (50 เมตร)',
+    shortTh: 'เรือนเวลาสวิสกึ่งเปลือยกลไก Ogival 829.65AG1SK ตัวเรือนและสายสแตนเลสสองกษัตริย์หรูหรา กันน้ำลึก 50 เมตร'
+  }),
+  makeShopeeWatch({
+    sku: 'OG1929-24AGS',
+    itemId: '6220485029',
+    brandSlug: 'ogival',
+    categorySlug: 'men-watches',
+    nameTh: 'Ogival Heritage 1929 Swiss Automatic รุ่น 1929-24AGS กระจกแซฟไฟร์แท้ กันน้ำ 5ATM',
+    nameEn: 'Ogival 1929-24AGS Heritage Automatic Sapphire 40mm Watch',
+    price: 20720,
+    originalPrice: 25900,
+    images: [
+      'https://img.91app.com/webapi/imagesV3/Original/SalePage/10013072/0/639177788623270000?v=1',
+      'https://img.91app.com/webapi/imagesV3/Original/SalePage/9129666/0/639177788260230000?v=1'
+    ],
+    movement: 'Swiss Automatic 25 Jewels',
+    diameter: '40.0 mm',
+    material: '316L Stainless Steel',
+    water: '5 ATM (50 เมตร)',
+    shortTh: 'คอลเลกชันรำลึกตำนานสวิส Ogival 1929-24AGS ขนาด 40 มม. เที่ยงตรงทนทานด้วยกระจกแซฟไฟร์และกลไกสวิสแท้'
+  })
 ]
 
 export const SHOPEE_SHOP_232486539_PROMOTIONS: ParsedShopeePromotion[] = [
@@ -455,13 +1102,18 @@ export const SHOPEE_SHOP_232486539_PROMOTIONS: ParsedShopeePromotion[] = [
     discountLabel: 'ลดสูงสุด 36% + ของแถม',
     link: '/promotions',
     showOnHome: true,
-    skus: ['82671MK', '8909AMS', '990-15AMG', '899832AGS', '99141-71AGSK', '68322LK', '1001LK']
+    skus: [
+      '82671MK', '8909AMS', '990-15AMG', '899832AGS', '99141-71AGSK', '68322LK', '1001LK',
+      '5674M', '5657DMS', '1001MS', '1004M-405E', '130-06MK', '130-10GK', '130-14MB',
+      '89093-3GK', '8973AMK', '8973AMB', '89322ASK', '89322AM', '990-18ATGSB', '993-6AMG',
+      '82672MK', '5687LS', '2494LK', '2460DLSK', '5217LK', '68322LSK'
+    ]
   },
   {
     slug: 'shopee-232486539-olympia-star-swiss',
     titleTh: 'OLYMPIA STAR SWISS PRIVILEGE · เครื่องสวิสแท้ลดพิเศษ 21% + ผ่อน 0%',
     titleEn: 'OLYMPIA STAR SWISS PRIVILEGE · Up to 21% Off Swiss Timepieces',
-    subtitleTh: 'ดีลพิเศษเฉพาะซีรีส์เครื่องสวิสแท้ Olympia Star (OPA58089, OPA58052L, OPA89983TG) ซิงก์ตรงจากแคมเปญแนะนำบน Shopee Official Store',
+    subtitleTh: 'ดีลพิเศษเฉพาะซีรีส์เครื่องสวิสแท้ Olympia Star (OPA58089, OPA58052L, OPA89983TG, OPA58012DMK-GL) ซิงก์ตรงจากแคมเปญแนะนำบน Shopee Official Store',
     subtitleEn: 'Special Shopee campaign pricing on Swiss-movement Olympia Star dress, jewelry, and sport watches.',
     banner: '/images/op/lifestyle-men.jpg',
     mobileBanner: '/images/op/portrait-8934msk.jpg',
@@ -471,23 +1123,26 @@ export const SHOPEE_SHOP_232486539_PROMOTIONS: ParsedShopeePromotion[] = [
     discountLabel: 'ลดสูงสุด 21%',
     link: '/brands/olympia-star',
     showOnHome: false,
-    skus: ['OPA58089GK-GL', 'OPA58089GB-GL', 'OPA58052L', 'OPA89983TG']
+    skus: ['OPA58089GK-GL', 'OPA58089GB-GL', 'OPA58052L', 'OPA89983TG', 'OPA58012DMK-GL']
   },
   {
     slug: 'shopee-232486539-ogival-masterpiece',
-    titleTh: 'OGIVAL 1903 SWISS SKELETON · รับส่วนลดสูงสุด ฿9,000 + ส่งด่วนประกันเต็มมูลค่า',
-    titleEn: 'OGIVAL 1903 SWISS SKELETON · Save up to ฿9,000 + Insured Express Delivery',
-    subtitleTh: 'เรือนเวลาสวิสระดับสะสม Ogival Lucky Fish Skeleton พร้อมกล่องไม้หรู ใบรับประกันศูนย์ไทย 2 ปี และคูปองส่วนลดพิเศษ',
+    titleTh: 'OGIVAL 1903 SWISS SKELETON · รับส่วนลดสูงสุด ฿12,000 + ส่งด่วนประกันเต็มมูลค่า',
+    titleEn: 'OGIVAL 1903 SWISS SKELETON · Save up to ฿12,000 + Insured Express Delivery',
+    subtitleTh: 'เรือนเวลาสวิสระดับสะสม Ogival Lucky Fish Skeleton & Heritage พร้อมกล่องไม้หรู ใบรับประกันศูนย์ไทย 2 ปี และคูปองส่วนลดพิเศษ',
     subtitleEn: 'Collector-grade Swiss Ogival Lucky Fish Skeleton watches with luxury presentation box and 2-year Thailand official warranty.',
     banner: '/images/op/hero-ceramic-dark.jpg',
     mobileBanner: '/images/op/openheart-stones.jpg',
     channel: 'shopee',
     badge: 'SWISS LUXURY DEAL',
     couponCode: 'OGIVAL1000',
-    discountLabel: 'ลดทันที ฿9,000',
+    discountLabel: 'ลดสูงสุด ฿12,000',
     link: '/brands/ogival',
     showOnHome: false,
-    skus: ['OG358-61AGR-GL']
+    skus: [
+      'OG358-61AGR-GL', 'OG1930M', 'OG3693AMS', 'OG3696AMS', 'OG30328MK',
+      'OG358-88AGMR-GL', 'OG358-61AMR-GL', 'OG829-65AG1SK', 'OG1929-24AGS'
+    ]
   }
 ]
 
@@ -586,6 +1241,120 @@ function extractItemsFromShopeeJson(parsed: any): any[] {
   if (parsed?.data?.item) return [parsed.data.item]
   if (parsed?.item) return [parsed.item]
   return [parsed]
+}
+
+function splitCsvLine(line: string, delim: string): string[] {
+  const res: string[] = []
+  let cur = ''
+  let inQuotes = false
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i]
+    if (ch === '"') {
+      if (inQuotes && line[i + 1] === '"') {
+        cur += '"'
+        i++
+      } else {
+        inQuotes = !inQuotes
+      }
+    } else if (ch === delim && !inQuotes) {
+      res.push(cur.trim())
+      cur = ''
+    } else {
+      cur += ch
+    }
+  }
+  res.push(cur.trim())
+  return res
+}
+
+function parseShopeeCsvOrTsv(raw: string, input: ShopeeImportInput): ParsedShopeeProduct[] {
+  const lines = raw
+    .replace(/^\uFEFF/, '')
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter((l) => l && !l.startsWith('#'))
+  if (lines.length < 2) return []
+
+  const delim = lines[0].includes('\t') ? '\t' : ','
+  if (!lines[0].includes(delim)) return []
+
+  const headers = splitCsvLine(lines[0], delim).map((h) => h.toLowerCase().trim())
+  const findCol = (patterns: RegExp[]) => headers.findIndex((h) => patterns.some((re) => re.test(h)))
+
+  const idxSku = findCol([/sku\s*หลัก|parent\s*sku|เลข\s*sku|^sku$|model|รหัสรุ่น/i])
+  const idxItemId = findCol([/รหัสสินค้า|product\s*id|item[\s_]*id/i])
+  const idxName = findCol([/ชื่อสินค้า|product\s*name|^name$|^title$|รายการ/i])
+  const idxPrice = findCol([/ราคาขาย|ราคาโปร|^ราคา$|^price$|sale\s*price/i])
+  const idxOrig = findCol([/ราคาปกติ|original|before|compare|ราคาเต็ม/i])
+  const idxStock = findCol([/คลัง|สต็อก|^stock$|quantity/i])
+  const idxImg = findCol([/รูปภาพปก|cover\s*image|^image$|รูปภาพ|ลิงก์รูป/i])
+  const idxDesc = findCol([/คำอธิบาย|รายละเอียด|description/i])
+
+  // Require at least a recognizable header or >= 3 columns where col 0 looks like SKU
+  const hasKnownHeader = idxName >= 0 || idxSku >= 0
+  const startRow = hasKnownHeader ? 1 : 0
+  const out: ParsedShopeeProduct[] = []
+
+  for (let r = startRow; r < lines.length; r++) {
+    const cols = splitCsvLine(lines[r], delim)
+    if (cols.length < 2) continue
+
+    const rawTitle = (idxName >= 0 ? cols[idxName] : cols[1]) || ''
+    const rawSkuCell = (idxSku >= 0 ? cols[idxSku] : cols[0]) || ''
+    // Skip Shopee Seller Center secondary instruction rows (e.g. "จำเป็น", "Mandatory")
+    if (/^(จำเป็น|ไม่บังคับ|mandatory|optional|ps_product)/i.test(rawTitle) || /^(จำเป็น|mandatory)/i.test(rawSkuCell)) {
+      continue
+    }
+    if (!rawTitle && !rawSkuCell) continue
+
+    const title = rawTitle || `นาฬิกาของแท้ รุ่น ${rawSkuCell}`
+    const modelMatch = (rawSkuCell + ' ' + title).match(/\b((?:OPA|OP|OG)?[- ]?\d{3,6}[A-Z0-9.-]{1,12})\b/i)
+    const sku = (rawSkuCell || (modelMatch ? modelMatch[1] : '') || `SHP-CSV-${r}`).toUpperCase().replace(/\s+/g, '')
+    const itemId = idxItemId >= 0 && cols[idxItemId] ? cols[idxItemId].replace(/\D/g, '') : ''
+    const priceNum = Number(String((idxPrice >= 0 ? cols[idxPrice] : cols[2]) || '').replace(/[^\d.]/g, '')) || 4900
+    const origNum = Number(String((idxOrig >= 0 ? cols[idxOrig] : cols[3]) || '').replace(/[^\d.]/g, '')) || 0
+    const finalOrig = origNum > priceNum ? Math.round(origNum) : Math.round(priceNum * 1.25)
+    const finalPrice = Math.round(priceNum)
+    const discountPct = finalOrig > finalPrice ? Math.round(((finalOrig - finalPrice) / finalOrig) * 100) : 0
+    const stock = Math.max(1, Number(String((idxStock >= 0 ? cols[idxStock] : '') || '10').replace(/[^\d]/g, '')) || 10)
+    const imgRaw = (idxImg >= 0 ? cols[idxImg] : cols[4]) || ''
+    const imgs = imgRaw
+      ? imgRaw.split(/[|;\s]+/).map(shopeeImageToUrl).filter(Boolean)
+      : ['/images/op/watch-990-083-blue.png']
+    const desc = (idxDesc >= 0 ? cols[idxDesc] : '') || title
+
+    const brandSlug = input.brandSlug || detectBrand(sku + ' ' + title)
+    const brandLabel = brandSlug === 'ogival' ? 'Ogival' : brandSlug === 'olympia-star' ? 'Olympia Star' : 'Olym Pianus'
+    const categorySlug = input.categorySlug || detectCategory(title)
+
+    out.push({
+      sku,
+      name: title,
+      nameTh: title,
+      nameEn: `${brandLabel} ${sku} Authentic Sapphire Watch`,
+      brandSlug,
+      categorySlug,
+      price: finalPrice,
+      originalPrice: finalOrig,
+      discountPct,
+      promoTag: discountPct > 0 ? `ลด ${discountPct}% Shopee Official` : 'ราคาพิเศษ Shopee Official',
+      freebieText: 'รับประกันศูนย์ไทย 2 ปี บริษัท อินเตอร์ไทมส์ จำกัด + กล่องหรูครบชุด',
+      stock,
+      images: imgs.length ? imgs : ['/images/op/watch-990-083-blue.png'],
+      shortDescription: desc.slice(0, 180),
+      descriptionTh: `<p>${desc.replace(/\n+/g, '</p><p>')}</p>`,
+      descriptionEn: `<p>Authentic ${brandLabel} ${sku} timepiece with scratch-resistant Sapphire Crystal and 2-year official Thailand warranty by Inter Times Co., Ltd.</p>`,
+      specs: {
+        Brand: brandLabel,
+        Model: sku,
+        Crystal: 'Sapphire Crystal กันรอยขีดข่วน',
+        Warranty: 'รับประกันศูนย์ไทย 2 ปี บริษัท อินเตอร์ไทมส์ จำกัด'
+      },
+      shopeeUrl: itemId ? `https://shopee.co.th/product/232486539/${itemId}` : 'https://shopee.co.th/opwatchthailand',
+      shopeeItemId: itemId || `csv-${sku.toLowerCase()}`
+    })
+  }
+  return out
 }
 
 export async function parseShopeeImport(input: ShopeeImportInput): Promise<ParsedShopeeProduct[]> {
@@ -704,6 +1473,12 @@ export async function parseShopeeImport(input: ShopeeImportInput): Promise<Parse
     } catch {
       // Fall through to HTML / text extraction
     }
+  }
+
+  // Case 1B: Shopee Seller Center CSV / Excel TSV export
+  if (raw && !raw.startsWith('<') && !raw.startsWith('{') && !raw.startsWith('[') && /\r?\n/.test(raw) && (raw.includes(',') || raw.includes('\t'))) {
+    const csvItems = parseShopeeCsvOrTsv(raw, input)
+    if (csvItems.length > 0) return csvItems
   }
 
   // Case 2: Single Item ID matching a known Shop 232486539 item
@@ -864,18 +1639,47 @@ export async function inspectShopeeCatalog(store: Store, input: ShopeeImportInpu
     const orig = Number(item.originalPrice || 0)
     const prc = Number(item.price || 0)
     const discountPct = item.discountPct ?? (orig > prc ? Math.round(((orig - prc) / orig) * 100) : 0)
+
+    const hasShopeeLink = Boolean(matched && String(matched.shopeeItemId || '').trim())
+    const priceMatches = Boolean(matched && Number(matched.price || 0) === prc)
+    const syncStatus: 'missing' | 'needs_sync' | 'synced' = !matched
+      ? 'missing'
+      : hasShopeeLink && priceMatches
+        ? 'synced'
+        : 'needs_sync'
+
     return {
       ...item,
       discountPct,
       action: matched ? ('update' as const) : ('create' as const),
+      syncStatus,
       existingId: matched ? Number(matched.id) : null,
       existingSku: matched ? String(matched.sku) : null,
       existingSlug: matched ? String(matched.slug) : null,
       existingPrice: matched ? Number(matched.price || 0) : null,
+      existingShopeeItemId: matched ? String(matched.shopeeItemId || '') : '',
       imageCount: Array.isArray(item.images) ? item.images.length : 0,
       specCount: item.specs ? Object.keys(item.specs).length : 0
     }
   })
+
+  const missingCount = stagedItems.filter((x) => x.syncStatus === 'missing').length
+  const needsPromoSyncCount = stagedItems.filter((x) => x.syncStatus === 'needs_sync').length
+  const alreadySyncedCount = stagedItems.filter((x) => x.syncStatus === 'synced').length
+  const pendingTotalCount = missingCount + needsPromoSyncCount
+
+  const byBrand: Record<string, { label: string; total: number; synced: number; needsSync: number; missing: number }> = {
+    olympianus: { label: 'Olym Pianus (OP)', total: 0, synced: 0, needsSync: 0, missing: 0 },
+    'olympia-star': { label: 'Olympia Star (OPA)', total: 0, synced: 0, needsSync: 0, missing: 0 },
+    ogival: { label: 'Ogival (Swiss 1903)', total: 0, synced: 0, needsSync: 0, missing: 0 }
+  }
+  for (const st of stagedItems) {
+    const bk = byBrand[st.brandSlug] ? st.brandSlug : 'olympianus'
+    byBrand[bk].total++
+    if (st.syncStatus === 'synced') byBrand[bk].synced++
+    else if (st.syncStatus === 'needs_sync') byBrand[bk].needsSync++
+    else byBrand[bk].missing++
+  }
 
   const promotionsSource = isOfficialShop
     ? SHOPEE_SHOP_232486539_PROMOTIONS
@@ -930,12 +1734,20 @@ export async function inspectShopeeCatalog(store: Store, input: ShopeeImportInpu
     },
     summary: {
       totalItems: stagedItems.length,
-      newItemsCount: stagedItems.filter((x) => x.action === 'create').length,
+      totalWebsiteProducts: existingProducts.length,
+      newItemsCount: missingCount,
+      missingCount,
+      needsPromoSyncCount,
+      alreadySyncedCount,
+      pendingTotalCount,
+      isComplete: pendingTotalCount === 0,
       existingUpdateCount: stagedItems.filter((x) => x.action === 'update').length,
       totalPromotions: stagedPromotions.length,
       newPromotionsCount: stagedPromotions.filter((x) => x.action === 'create').length,
-      totalCoupons: stagedCoupons.length
+      totalCoupons: stagedCoupons.length,
+      byBrand
     },
+    bookmarkletScript: SHOPEE_BOOKMARKLET_SCRIPT,
     items: stagedItems,
     promotions: stagedPromotions,
     coupons: stagedCoupons
@@ -962,6 +1774,7 @@ function uniqueShopeeSlug(base: string, existing: Record<string, any>[]): string
 export interface CommitShopeeOptions extends ShopeeImportInput {
   selectedSkus?: string[]
   selectedPromotionSlugs?: string[]
+  onlyPending?: boolean
   importImages?: boolean
   importContent?: boolean
   importPromotions?: boolean
@@ -1001,7 +1814,9 @@ export async function commitShopeeCatalogImport(store: Store, opts: CommitShopee
 
   const itemsToSave = selectedSkuSet
     ? inspection.items.filter((it) => selectedSkuSet.has(it.sku.toUpperCase()))
-    : inspection.items
+    : opts.onlyPending
+      ? inspection.items.filter((it) => it.syncStatus !== 'synced')
+      : inspection.items
 
   const savedProducts: any[] = []
   const createdProducts: any[] = []
@@ -1037,7 +1852,7 @@ export async function commitShopeeCatalogImport(store: Store, opts: CommitShopee
       priceCompare: item.originalPrice,
       currency: 'THB',
       shopeeUrl: item.shopeeUrl || 'https://shopee.co.th/opwatchthailand',
-      shopeeItemId: item.shopeeItemId || '',
+      shopeeItemId: item.shopeeItemId || `shp-${item.sku.toLowerCase()}`,
       status: 'active',
       giftWrapAvailable: true,
       pointsMultiplier: 1

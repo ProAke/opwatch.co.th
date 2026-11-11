@@ -1,16 +1,24 @@
 import { resolveAiProvider } from '../../../utils/ai'
+import { DEFAULT_SHOPEE_SYNC_PASSWORD } from '../../../utils/auth'
 
 export default defineEventHandler(async (event) => {
   const officer = await requireAdmin(event)
   const cfg = getConfig()
   const isFullAdmin = officer.role === 'ceo' || officer.role === 'it_admin'
 
+  const securityPublic = {
+    requireShopeeSyncPassword: cfg.site.requireShopeeSyncPassword !== false,
+    hasCustomSyncPassword: Boolean(cfg.admin?.shopeeSyncPasswordHash)
+  }
+
   if (!isFullAdmin) {
     return {
       site: {
         name: cfg.site.name,
-        erpThemeColor: cfg.site.erpThemeColor || '#6C5CE7'
-      }
+        erpThemeColor: cfg.site.erpThemeColor || '#6C5CE7',
+        requireShopeeSyncPassword: cfg.site.requireShopeeSyncPassword !== false
+      },
+      security: securityPublic
     }
   }
 
@@ -19,6 +27,10 @@ export default defineEventHandler(async (event) => {
   return {
     site: cfg.site,
     admin: { email: cfg.admin.email },
+    security: {
+      ...securityPublic,
+      defaultSyncPasswordHint: DEFAULT_SHOPEE_SYNC_PASSWORD
+    },
     db: { driver: cfg.db.driver, host: cfg.db.host, port: cfg.db.port, database: cfg.db.database },
     ai: {
       provider: cfg.ai?.provider || 'auto',

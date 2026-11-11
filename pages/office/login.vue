@@ -107,6 +107,10 @@ useHead({ title: 'เข้าสู่ระบบเจ้าหน้าท�
         </button>
       </form>
 
+      <div style="margin-top:12px;padding:9px 12px;border-radius:10px;background:#f8f7ff;border:1px solid #e9ebf6;font-size:11.5px;color:#64748b;text-align:center">
+        📘 หลังเข้าสู่ระบบ สามารถเปิด <strong>คู่มือระบบจัดการเว็บไซต์</strong>, ปุ่มดึงข้อมูล Shopee และเปลี่ยนรหัสผ่านได้ที่เมนูด้านซ้าย
+      </div>
+
       <div class="mng-login__foot">
         <NuxtLink to="/">← กลับสู่หน้าร้าน opwatch.co.th</NuxtLink>
         <span>Olym Pianus · Olympia Star · Ogival</span>

@@ -25,6 +25,49 @@ const quickAiPrompt = ref('')
 const quickAiLoading = ref(false)
 const quickAiOutput = ref('')
 
+// Self-Service Password Change Modal (accessible for all 5 back-office roles)
+const pwModalOpen = ref(false)
+const pwSaving = ref(false)
+const pwForm = reactive({
+  currentPassword: '',
+  newPassword: '',
+  confirmPassword: ''
+})
+
+async function submitMyPassword() {
+  if (!pwForm.currentPassword.trim()) {
+    toast.error('กรุณากรอกรหัสผ่านปัจจุบัน')
+    return
+  }
+  if (pwForm.newPassword.trim().length < 6) {
+    toast.error('รหัสผ่านใหม่ต้องมีอย่างน้อย 6 ตัวอักษร')
+    return
+  }
+  if (pwForm.newPassword.trim() !== pwForm.confirmPassword.trim()) {
+    toast.error('รหัสผ่านใหม่และยืนยันรหัสผ่านไม่ตรงกัน')
+    return
+  }
+  pwSaving.value = true
+  try {
+    await $fetch('/api/office/auth/password', {
+      method: 'POST',
+      body: {
+        currentPassword: pwForm.currentPassword.trim(),
+        newPassword: pwForm.newPassword.trim()
+      }
+    })
+    pwModalOpen.value = false
+    pwForm.currentPassword = ''
+    pwForm.newPassword = ''
+    pwForm.confirmPassword = ''
+    toast.success('เปลี่ยนรหัสผ่านของคุณเรียบร้อยแล้ว!')
+  } catch (e: any) {
+    toast.error(e?.data?.statusMessage || 'เปลี่ยนรหัสผ่านไม่สำเร็จ')
+  } finally {
+    pwSaving.value = false
+  }
+}
+
 // Notifications Popover
 const notifOpen = ref(false)
 
@@ -150,10 +193,19 @@ const navSections = computed(() => {
         },
         can('settings_manage') && {
           to: '/office/settings',
-          label: 'ตั้งค่าระบบ & ธีมสี',
-          sub: 'องค์กร · AI Key · ฐานข้อมูล',
+          label: 'ตั้งค่าระบบ & รหัสผ่าน',
+          sub: 'องค์กร · รหัสซิงก์ · AI · DB',
           icon: 'gear',
           tone: 'amber'
+        },
+        {
+          to: '/office/manual',
+          label: 'คู่มือระบบจัดการเว็บไซต์',
+          sub: 'ขั้นตอนดึง Shopee · รหัสผ่าน · ERP',
+          icon: 'doc',
+          tone: 'violet',
+          badge: 'GUIDE',
+          badgeTone: 'mint'
         }
       ].filter(Boolean) as any[]
     }
@@ -443,6 +495,10 @@ onMounted(() => {
         </div>
 
         <div class="mng-tb-right">
+          <NuxtLink to="/office/manual" class="erp-btn erp-btn--ghost erp-btn--sm" title="เปิดคู่มือระบบจัดการเว็บไซต์">
+            <span>📘 คู่มือระบบ</span>
+          </NuxtLink>
+
           <button type="button" class="erp-btn erp-btn--ghost erp-btn--sm" @click="quickAiOpen = true">
             <OfficeMngIcon name="sparkles" :size="15" />
             <span>ช่วยเขียน AI</span>
@@ -484,15 +540,21 @@ onMounted(() => {
             </div>
           </div>
 
-          <NuxtLink to="/office/settings" class="mng-user-chip">
-            <span class="mng-av mng-av--sm">
-              {{ (auth.customer.value?.name || 'AD').slice(0, 2).toUpperCase() }}
+          <button
+            type="button"
+            class="mng-user-chip"
+            style="border:none;cursor:pointer;text-align:left"
+            title="คลิกเพื่อเปลี่ยนรหัสผ่านบัญชีของคุณ"
+            @click="pwModalOpen = true"
+          >
+            <span class="mng-av mng-av--sm" :style="{ background: officeAuth.officer.value?.roleBadgeColor || '#6c5ce7' }">
+              {{ (officeAuth.officer.value?.name || officeAuth.officer.value?.email || 'OP').slice(0, 2).toUpperCase() }}
             </span>
             <span class="mng-user-chip__txt">
-              <b>{{ auth.customer.value?.name || 'Admin' }}</b>
-              <small>อินเตอร์ไทมส์</small>
+              <b>{{ officeAuth.officer.value?.name || 'เจ้าหน้าที่' }}</b>
+              <small>🔑 เปลี่ยนรหัสผ่าน</small>
             </span>
-          </NuxtLink>
+          </button>
         </div>
       </header>
 
@@ -583,6 +645,54 @@ onMounted(() => {
           </div>
           <pre>{{ quickAiOutput }}</pre>
         </div>
+      </div>
+    </div>
+
+    <!-- Global Self-Service Change Password Modal -->
+    <div v-if="pwModalOpen" class="erp-modal-backdrop" @click.self="pwModalOpen = false">
+      <div class="erp-modal" style="max-width: 460px">
+        <div class="erp-card__head" style="margin-bottom: 12px">
+          <div>
+            <div class="erp-card__title">🔑 เปลี่ยนรหัสผ่านบัญชีของฉัน</div>
+            <div class="erp-card__sub">
+              บัญชี: {{ officeAuth.officer.value?.email }} ({{ officeAuth.officer.value?.roleLabelTh }})
+            </div>
+          </div>
+          <button type="button" class="erp-btn erp-btn--ghost erp-btn--sm" @click="pwModalOpen = false">✕</button>
+        </div>
+
+        <form @submit.prevent="submitMyPassword">
+          <div class="erp-field" style="margin-bottom: 10px">
+            <label class="erp-label">รหัสผ่านปัจจุบัน</label>
+            <input v-model="pwForm.currentPassword" type="password" class="erp-input" required autocomplete="current-password" />
+          </div>
+          <div class="erp-field" style="margin-bottom: 10px">
+            <label class="erp-label">รหัสผ่านใหม่ (อย่างน้อย 6 ตัวอักษร)</label>
+            <input v-model="pwForm.newPassword" type="password" class="erp-input" required minlength="6" autocomplete="new-password" />
+          </div>
+          <div class="erp-field" style="margin-bottom: 14px">
+            <label class="erp-label">ยืนยันรหัสผ่านใหม่อีกครั้ง</label>
+            <input v-model="pwForm.confirmPassword" type="password" class="erp-input" required minlength="6" autocomplete="new-password" />
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap">
+            <NuxtLink
+              v-if="officeAuth.hasPermission('settings_manage')"
+              to="/office/settings?tab=security"
+              class="erp-btn erp-btn--ghost erp-btn--sm"
+              @click="pwModalOpen = false"
+            >
+              🔐 จัดการรหัสผ่านทั้งระบบ →
+            </NuxtLink>
+            <span v-else />
+            <div style="display: flex; gap: 8px">
+              <button type="button" class="erp-btn erp-btn--ghost" @click="pwModalOpen = false">ยกเลิก</button>
+              <button type="submit" class="erp-btn erp-btn--primary" :disabled="pwSaving">
+                {{ pwSaving ? 'กำลังบันทึก...' : 'บันทึกรหัสผ่านใหม่' }}
+              </button>
+            </div>
+          </div>
+        </form>
       </div>
     </div>
   </div>

@@ -387,3 +387,37 @@ export async function requireOfficer(
   if (!permission) return requireAdmin(event)
   return requirePermission(event, permission)
 }
+
+export const DEFAULT_SHOPEE_SYNC_PASSWORD = 'Shopee@2324'
+
+export async function verifyShopeeSyncPassword(
+  password: string | undefined | null,
+  officerId?: number
+): Promise<boolean> {
+  const cfg = getConfig()
+  if (cfg.site?.requireShopeeSyncPassword === false) return true
+
+  const pw = String(password || '').trim()
+  if (!pw) return false
+
+  // 1. Check dedicated Shopee Sync Password (custom hash if configured, else default `Shopee@2324`)
+  if (cfg.admin?.shopeeSyncPasswordHash) {
+    if (await verifyPassword(pw, cfg.admin.shopeeSyncPasswordHash)) return true
+  } else if (pw === DEFAULT_SHOPEE_SYNC_PASSWORD) {
+    return true
+  }
+
+  // 2. Also accept the logged-in officer's own back-office password or master admin password
+  if (officerId && officerId > 0) {
+    const officerRow = await useStore().findById('officers', officerId).catch(() => null)
+    if (officerRow?.passwordHash && (await verifyPassword(pw, String(officerRow.passwordHash)))) {
+      return true
+    }
+  }
+  if (cfg.admin?.passwordHash && (await verifyPassword(pw, cfg.admin.passwordHash))) {
+    return true
+  }
+
+  return false
+}
+
