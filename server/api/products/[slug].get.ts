@@ -26,6 +26,56 @@ const LEGACY_SLUG_MAP: Record<string, string> = {
   'og-k9001': 'ogival-385-022lw-9111055'
 }
 
+function extractModelInfo(p: Record<string, any>) {
+  const specs = p?.specs && typeof p.specs === 'object' ? p.specs : {}
+  const rawModel = String(specs.Model || specs.Reference || p.sku || '')
+    .replace(/^(OP-|OS-|OG-|OPA)/i, '')
+    .trim()
+  const exactModel = rawModel.split(/[-\s]/)[0]?.toUpperCase() || ''
+  const stemMatch = rawModel.match(/^([A-Z]*\d{3,6})/i)
+  const stem = stemMatch ? stemMatch[1].toUpperCase() : exactModel.slice(0, 5)
+  return { exactModel, stem }
+}
+
+function buildVariantLabel(p: Record<string, any>) {
+  const specs = p?.specs && typeof p.specs === 'object' ? p.specs : {}
+  const nameEn = String(p.nameEn || p.name || '')
+  const nameTh = String(p.nameTh || p.name || '')
+
+  const enDashPart = nameEn.includes('—') ? nameEn.split('—').pop()?.trim() : ''
+  const thParenMatch = nameTh.match(/\(([^()]*หน้าปัด[^()]*|[^()]*สาย[^()]*|[^()]*สี[^()]*)\)/)
+  const dialEn = String(specs['Dial Color'] || '').trim()
+  const strapRaw = String(specs['Strap Material'] || '').toLowerCase()
+  const frameRaw = String(specs['Frame Color'] || '').toLowerCase()
+
+  const strapEn = strapRaw.includes('leather')
+    ? 'Leather strap'
+    : strapRaw.includes('rubber') || strapRaw.includes('silicone')
+      ? 'Rubber strap'
+      : 'Steel bracelet'
+  const strapTh = strapRaw.includes('leather') || nameTh.includes('สายหนัง')
+    ? 'สายหนังแท้'
+    : strapRaw.includes('rubber') || strapRaw.includes('silicone') || nameTh.includes('สายยาง')
+      ? 'สายยางซิลิโคน'
+      : 'สายสแตนเลสสตีล'
+
+  const toneEn = frameRaw.includes('rose') || nameEn.toLowerCase().includes('rose gold')
+    ? 'Rose Gold'
+    : frameRaw.includes('gold') || nameEn.toLowerCase().includes('gold') || /mk|agk|gk|lk/i.test(String(p.sku || ''))
+      ? 'Gold Tone'
+      : 'Steel'
+  const toneTh = toneEn === 'Rose Gold'
+    ? 'ตัวเรือนพิงก์โกลด์'
+    : toneEn === 'Gold Tone'
+      ? 'ตัวเรือนสีทอง / ทูโทน'
+      : 'ตัวเรือนสตีล'
+
+  const labelEn = enDashPart || (dialEn ? `${toneEn} · ${dialEn.charAt(0).toUpperCase() + dialEn.slice(1)} Dial` : `${toneEn} on ${strapEn}`)
+  const labelTh = thParenMatch?.[1] || `${toneTh} · ${strapTh}`
+
+  return { variantLabelTh: labelTh, variantLabelEn: labelEn }
+}
+
 export default defineEventHandler(async (event) => {
   const rawSlug = String(getRouterParam(event, 'slug') || '').trim().toLowerCase()
   const mappedSlug = LEGACY_SLUG_MAP[rawSlug] || rawSlug
@@ -40,7 +90,7 @@ export default defineEventHandler(async (event) => {
 
   const related = await store.find(
     'products',
-    { where: { categoryId: product.categoryId, status: 'active' }, orderBy: 'sortOrder', orderDir: 'asc', limit: 5 }
+    { where: { categoryId: product.categoryId, status: 'active' }, orderBy: 'sortOrder', orderDir: 'asc', limit: 9 }
   )
   const reviews = await store.find(
     'reviews',
@@ -53,25 +103,58 @@ export default defineEventHandler(async (event) => {
 
   const enrich = (p: Record<string, any>) => {
     const b = p.brandId ? brandById.get(Number(p.brandId)) || null : null
+    const { variantLabelTh, variantLabelEn } = buildVariantLabel(p)
     return {
       ...p,
       badges: Array.isArray(p.badges) ? p.badges : [],
       brand: b,
       brandName: b?.name || (typeof p.brand === 'string' ? p.brand : 'Opwatch'),
       brandSlug: b?.slug || null,
-      discountPercent: discountPercent(p)
+      discountPercent: discountPercent(p),
+      variantLabelTh,
+      variantLabelEn
     }
   }
 
-  const brandProducts = brand
-    ? (await store.find('products', { where: { brandId: Number(brand.id), status: 'active' }, orderBy: 'sortOrder', orderDir: 'asc', limit: 9 }))
-        .filter((r) => Number(r.id) !== Number(product!.id))
-        .slice(0, 8)
-        .map(enrich)
-    : []
+  // Build OMEGA-style sibling variations (current watch + exact model family + collection siblings)
+  const allBrandItems = brand
+    ? await store.find('products', { where: { brandId: Number(brand.id), status: 'active' }, orderBy: 'sortOrder', orderDir: 'asc', limit: 250 })
+    : await store.find('products', { where: { status: 'active' }, orderBy: 'sortOrder', orderDir: 'asc', limit: 120 })
+
+  const targetModel = extractModelInfo(product)
+  const scoredSiblings = allBrandItems
+    .filter((item) => Number(item.id) !== Number(product!.id))
+    .map((item) => {
+      const info = extractModelInfo(item)
+      let score = 10
+      if (targetModel.exactModel && info.exactModel && info.exactModel === targetModel.exactModel) {
+        score = 100
+      } else if (targetModel.stem && targetModel.stem.length >= 4 && info.stem === targetModel.stem) {
+        score = 85
+      } else if (Number(item.categoryId) === Number(product!.categoryId)) {
+        score = 50
+      }
+      return { item, score }
+    })
+    .sort((a, b) => b.score - a.score || (Number(a.item.sortOrder || 0) - Number(b.item.sortOrder || 0)))
+
+  const enrichedProduct = enrich(product)
+  const variations = [
+    { ...enrichedProduct, isCurrentVariation: true, variationMatchScore: 110 },
+    ...scoredSiblings.slice(0, 17).map(({ item, score }) => ({
+      ...enrich(item),
+      isCurrentVariation: false,
+      variationMatchScore: score
+    }))
+  ]
+
+  const brandProducts = scoredSiblings
+    .slice(0, 8)
+    .map(({ item }) => enrich(item))
 
   return {
-    product: enrich(product),
+    product: enrichedProduct,
+    variations,
     related: related.filter((r) => Number(r.id) !== Number(product!.id)).slice(0, 4).map(enrich),
     brandProducts,
     reviews,
