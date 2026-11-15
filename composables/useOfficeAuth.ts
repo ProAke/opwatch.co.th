@@ -85,6 +85,7 @@ export const useOfficeAuth = () => {
   return {
     officer: computed(() => officer.value),
     role: computed(() => officer.value?.role || null),
+    isDealer: computed(() => officer.value?.role === 'dealer'),
     rolesMeta: computed(() => rolesMeta.value),
     customerBlockedFromOffice: computed(() => customerBlocked.value),
     ready: computed(() => ready.value),

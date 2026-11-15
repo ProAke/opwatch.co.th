@@ -168,6 +168,10 @@ const props = withDefaults(
       <rect x="14" y="17" width="7" height="5" rx="1.2" />
       <path d="M6 8v11.5h8M6 11.5h8" />
     </template>
+    <template v-else-if="name === 'pin'">
+      <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z" />
+      <circle cx="12" cy="10" r="3" />
+    </template>
     <template v-else>
       <circle cx="12" cy="12" r="9" />
     </template>

@@ -4,7 +4,7 @@ import { autoEnhanceFile, autoEnhanceExistingUrl } from '~/utils/autoImageEnhanc
 definePageMeta({ layout: 'office', middleware: ['office'] })
 
 const toast = useToast()
-const { hasPerm, isDealer } = useOfficeAuth()
+const { hasPermission: hasPerm, isDealer } = useOfficeAuth()
 const canEditPromos = computed(() => hasPerm('promotions'))
 const canEditBranches = computed(() => hasPerm('branches'))
 const tab = ref<'banners' | 'coupons' | 'branches'>('banners')
