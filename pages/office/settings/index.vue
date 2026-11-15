@@ -4,7 +4,7 @@ definePageMeta({ layout: 'office', middleware: ['office'] })
 const route = useRoute()
 const officeAuth = useOfficeAuth()
 const toast = useToast()
-const { refresh: refreshPublicSite } = useSite()
+const { load: refreshPublicSite } = useSite()
 const tab = ref<'company' | 'social' | 'promo' | 'ai' | 'workspace' | 'security'>(
   route.query.tab === 'security' ? 'security' : 'company'
 )

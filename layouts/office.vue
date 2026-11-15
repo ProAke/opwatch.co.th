@@ -161,6 +161,13 @@ const navSections = computed(() => {
           sub: 'Olym Pianus · Ogival · ซีรีส์',
           icon: 'proj',
           tone: 'blue'
+        },
+        can('branches') && {
+          to: '/office/branches',
+          label: 'สาขา & จุดรับสินค้า',
+          sub: 'Click & Collect · ศูนย์บริการทั่วไทย',
+          icon: 'pin',
+          tone: 'amber'
         }
       ].filter(Boolean) as any[]
     },

@@ -10,6 +10,21 @@ const email = ref('')
 const password = ref('')
 const loading = ref(false)
 const errMsg = ref('')
+const showPassword = ref(false)
+const showDefaultAccounts = ref(false)
+
+const defaultAccounts = [
+  { role: 'CEO (ผู้บริหารสูงสุด)', email: 'ceo@opwatch.co.th' },
+  { role: 'IT. Admin (ผู้ดูแลระบบ)', email: 'it@opwatch.co.th' },
+  { role: 'Marketing / Sales', email: 'marketing@opwatch.co.th' },
+  { role: 'คลังสินค้า 5 ช่องทาง', email: 'warehouse@opwatch.co.th' },
+  { role: 'ตัวแทนจำหน่าย (Dealer)', email: 'dealer@opwatch.co.th' }
+]
+
+function fillAccount(accountEmail: string) {
+  email.value = accountEmail
+  errMsg.value = ''
+}
 
 if (!officeAuth.ready.value) {
   await officeAuth.refresh()
@@ -89,23 +104,56 @@ useHead({ title: 'เข้าสู่ระบบเจ้าหน้าท�
             type="email"
             required
             autocomplete="username"
-            placeholder="admin@opwatch.co.th หรือ dealer@opwatch.co.th"
+            placeholder="ceo@opwatch.co.th หรือ dealer@opwatch.co.th"
           />
         </div>
         <div class="mng-login__field">
           <label>รหัสผ่าน</label>
-          <input
-            v-model="password"
-            type="password"
-            required
-            autocomplete="current-password"
-            placeholder="••••••••"
-          />
+          <div class="mng-login__pw-wrap">
+            <input
+              v-model="password"
+              :type="showPassword ? 'text' : 'password'"
+              required
+              autocomplete="current-password"
+              placeholder="••••••••"
+            />
+            <button
+              type="button"
+              class="mng-login__pw-toggle"
+              :aria-label="showPassword ? 'ซ่อนรหัสผ่าน' : 'แสดงรหัสผ่าน'"
+              @click="showPassword = !showPassword"
+            >
+              {{ showPassword ? '🙈 ซ่อน' : '👁 แสดง' }}
+            </button>
+          </div>
         </div>
         <button type="submit" class="mng-login__btn" :disabled="loading">
           {{ loading ? 'กำลังตรวจสอบสิทธิ์...' : 'เข้าสู่ระบบเจ้าหน้าที่ / ตัวแทนจำหน่าย →' }}
         </button>
       </form>
+
+      <div class="mng-login__defaults">
+        <button
+          type="button"
+          class="mng-login__defaults-toggle"
+          :aria-expanded="showDefaultAccounts"
+          @click="showDefaultAccounts = !showDefaultAccounts"
+        >
+          {{ showDefaultAccounts ? '▾' : '▸' }} บัญชีเริ่มต้นสำหรับเจ้าหน้าที่ (คลิกเพื่อดูอีเมล + รหัสผ่านเริ่มต้น)
+        </button>
+        <div v-if="showDefaultAccounts" class="mng-login__defaults-body">
+          <p>รหัสผ่านเริ่มต้นทุกบัญชี: <strong>Opwatch@2026</strong> — กรุณาเปลี่ยนรหัสผ่านทันทีหลังเข้าสู่ระบบครั้งแรก (เมนูโปรไฟล์มุมขวาบน หรือ <NuxtLink to="/office/settings?tab=security">ตั้งค่าระบบ → รหัสผ่าน</NuxtLink>)</p>
+          <ul>
+            <li v-for="acc in defaultAccounts" :key="acc.email">
+              <span>{{ acc.role }}</span>
+              <button type="button" class="mng-login__fill" @click="fillAccount(acc.email)" :title="`กรอกอีเมล ${acc.email} อัตโนมัติ`">
+                {{ acc.email }}
+              </button>
+            </li>
+          </ul>
+          <p class="mng-login__defaults-note">คลิกที่อีเมลเพื่อกรอกอัตโนมัติ แล้วกรอกรหัสผ่าน <strong>Opwatch@2026</strong> · รหัสซิงก์ Shopee: <strong>Shopee@2324</strong></p>
+        </div>
+      </div>
 
       <div style="margin-top:12px;padding:9px 12px;border-radius:10px;background:#f8f7ff;border:1px solid #e9ebf6;font-size:11.5px;color:#64748b;text-align:center">
         📘 หลังเข้าสู่ระบบ สามารถเปิด <strong>คู่มือระบบจัดการเว็บไซต์</strong>, ปุ่มดึงข้อมูล Shopee และเปลี่ยนรหัสผ่านได้ที่เมนูด้านซ้าย
@@ -275,6 +323,89 @@ useHead({ title: 'เข้าสู่ระบบเจ้าหน้าท�
 .mng-login__btn:disabled {
   opacity: 0.65;
   cursor: not-allowed;
+}
+.mng-login__pw-wrap {
+  position: relative;
+}
+.mng-login__pw-wrap input {
+  width: 100%;
+  padding-right: 86px !important;
+}
+.mng-login__pw-toggle {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 0;
+  background: #eef0fa;
+  color: #454a75;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.mng-login__defaults {
+  margin-top: 14px;
+  border: 1px dashed #cfd5f6;
+  border-radius: 12px;
+  background: #f8f7ff;
+  overflow: hidden;
+}
+.mng-login__defaults-toggle {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  padding: 10px 14px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #4a3fd1;
+  text-align: left;
+  cursor: pointer;
+  font-family: inherit;
+}
+.mng-login__defaults-body {
+  padding: 0 14px 12px;
+  font-size: 12.5px;
+  color: #454a75;
+  line-height: 1.6;
+}
+.mng-login__defaults-body ul {
+  list-style: none;
+  margin: 8px 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.mng-login__defaults-body li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.mng-login__fill {
+  border: 1px solid #dfe2f2;
+  background: #ffffff;
+  color: #4a3fd1;
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'JetBrains Mono', monospace;
+}
+.mng-login__fill:hover {
+  border-color: #6c5ce7;
+}
+.mng-login__defaults-note {
+  color: #8a8fb1;
+  font-size: 11.5px;
+}
+.mng-login__defaults-body a {
+  color: #4a3fd1;
+  font-weight: 600;
 }
 .mng-login__foot {
   margin-top: 22px;
