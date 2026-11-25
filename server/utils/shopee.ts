@@ -65,9 +65,9 @@ export interface ParsedShopeeCoupon {
 }
 
 /**
- * Verified catalog & recommendation-landing manifest for Official Shopee Store:
+ * Store identity and recommendation-landing URL used by the seed/import workflow:
  * Shop ID: 232486539 (https://shopee.co.th/opwatchthailand — บริษัท อินเตอร์ไทมส์ จำกัด)
- * Source URL: https://shopee.co.th/shop/232486539/recommendation-landing?pageNumber=1&upstream=pdp
+ * The saved manifest is not a live inventory check; confirm item availability, prices, and specs against current Shopee data before import.
  */
 export const SHOPEE_SHOP_232486539_META = {
   shopId: '232486539',
@@ -77,10 +77,29 @@ export const SHOPEE_SHOP_232486539_META = {
   shopUrl: 'https://shopee.co.th/opwatchthailand'
 }
 
+/** True only when the item ID and URL point to the same product in OPWatch's official shop. */
+export function hasShopeeOfficialProductLink(product: { shopeeItemId?: unknown; shopeeUrl?: unknown }): boolean {
+  const itemId = String(product.shopeeItemId || '').trim()
+  const rawUrl = String(product.shopeeUrl || '').trim()
+  if (!/^\d{8,15}$/.test(itemId) || !rawUrl) return false
+
+  try {
+    const url = new URL(rawUrl)
+    if (url.protocol !== 'https:' || !['shopee.co.th', 'www.shopee.co.th'].includes(url.hostname.toLowerCase())) return false
+
+    const path = decodeURIComponent(url.pathname).replace(/\/+$/, '')
+    const shopId = SHOPEE_SHOP_232486539_META.shopId
+    if (path === `/product/${shopId}/${itemId}`) return true
+    return new RegExp(`-i\\.${shopId}\\.${itemId}$`, 'i').test(path)
+  } catch {
+    return false
+  }
+}
+
 /**
- * Initial 12 Shopee recommendation-landing SKUs pre-seeded on fresh install (414 base products).
- * The remaining 29 verified `opwatchthailand` listings (27 missing SKUs + 2 promo updates)
- * are detected by the Live Shopee Audit and pulled in 1 click via `/office/products`.
+ * Initial 12 SKUs selected for the starter sync from the OPWatch Shopee recommendation landing.
+ * Item-level IDs, prices, stock, and specs still need confirmation against current shop data;
+ * the remaining manifest entries should be reviewed in `/office/products` before import.
  */
 export const SHOPEE_INITIAL_SYNCED_SKUS = [
   '82671MK',
@@ -98,8 +117,8 @@ export const SHOPEE_INITIAL_SYNCED_SKUS = [
 ]
 
 /**
- * 1-Click Browser Bookmarklet so logged-in Shopee staff can extract 100% of live items
- * directly from `https://shopee.co.th/opwatchthailand` (bypassing anonymous `/verify/traffic`).
+ * Browser Bookmarklet to collect item cards currently loaded in a logged-in Shopee session.
+ * It does not guarantee full-store coverage; the user must load and review all relevant pages.
  */
 export const SHOPEE_BOOKMARKLET_SCRIPT =
   `javascript:(function(){try{var out=[];document.querySelectorAll('a[href*="-i."],a[href*="/product/"]').forEach(function(a){var href=a.href||'';var m=href.match(/-i\\.(\\d+)\\.(\\d+)|\\/product\\/(\\d+)\\/(\\d+)/);if(!m)return;var shopid=m[1]||m[3],itemid=m[2]||m[4];if(out.some(function(x){return x.itemid===itemid}))return;var txt=(a.innerText||'').replace(/\\s+/g,' ').trim();var pm=txt.match(/฿\\s*([\\d,]+)/g)||[];var prices=pm.map(function(s){return Number(s.replace(/[^\\d]/g,''))}).filter(function(n){return n>300});var imgEl=a.querySelector('img');out.push({shopid:shopid,itemid:itemid,name:txt.slice(0,160),price:prices.length?Math.min.apply(null,prices):4900,price_before_discount:prices.length>1?Math.max.apply(null,prices):0,image:imgEl?imgEl.src:''})});if(!out.length){alert('ไม่พบการ์ดสินค้า กรุณาเลื่อนหน้าเว็บ Shopee opwatchthailand ให้โหลดสินค้าก่อนแล้วกดอีกครั้ง');return}navigator.clipboard.writeText(JSON.stringify(out,null,2));alert('คัดลอกสินค้า Shopee จำนวน '+out.length+' รายการลงคลิปบอร์ดแล้ว! นำไปวางในหน้าจัดการสินค้า www.opwatch.co.th ได้ทันที');}catch(e){alert('เกิดข้อผิดพลาด: '+e.message)}})();`
@@ -531,8 +550,8 @@ export const SHOPEE_SHOP_232486539_ITEMS: ParsedShopeeProduct[] = [
   },
 
   // =========================================================================
-  // 29 Additional Verified `OP watch thailand` (Shop 232486539 / opwatchthailand) Listings
-  // Audited across Olym Pianus (20), Olympia Star (1), and Ogival (8)
+  // 29 additional saved manifest entries for Shop 232486539 / opwatchthailand.
+  // Current availability and attributes require confirmation against live shop data.
   // =========================================================================
   makeShopeeWatch({
     sku: '5674M',
@@ -1361,8 +1380,8 @@ export async function parseShopeeImport(input: ShopeeImportInput): Promise<Parse
   const url = String(input.url || '').trim()
   let raw = String(input.rawPayload || '').trim()
 
-  // If URL is the Shop 232486539 recommendation-landing or shop root and no custom payload was pasted,
-  // check live endpoint first and gracefully fall back to the verified Shop 232486539 manifest.
+  // When the Shop 232486539 root/recommendation URL is supplied without a pasted payload,
+  // use the saved manifest; this is not a live Shopee inventory or price check.
   if (!raw && isShop232486539Url(url) && !/-i\.\d+\.\d+|\/product\/\d+\/\d+/i.test(url)) {
     return SHOPEE_SHOP_232486539_ITEMS.map((item) => ({ ...item, images: [...item.images], specs: { ...item.specs } }))
   }
@@ -1640,7 +1659,7 @@ export async function inspectShopeeCatalog(store: Store, input: ShopeeImportInpu
     const prc = Number(item.price || 0)
     const discountPct = item.discountPct ?? (orig > prc ? Math.round(((orig - prc) / orig) * 100) : 0)
 
-    const hasShopeeLink = Boolean(matched && String(matched.shopeeItemId || '').trim())
+    const hasShopeeLink = Boolean(matched && hasShopeeOfficialProductLink(matched))
     const priceMatches = Boolean(matched && Number(matched.price || 0) === prc)
     const syncStatus: 'missing' | 'needs_sync' | 'synced' = !matched
       ? 'missing'
@@ -1727,10 +1746,10 @@ export async function inspectShopeeCatalog(store: Store, input: ShopeeImportInpu
       ...SHOPEE_SHOP_232486539_META,
       sourceUrl: url,
       pageNumber: pageMatch ? Number(pageMatch[1]) : 1,
-      inspectionMode: hasRaw ? 'pasted_payload' : 'verified_shop_manifest',
+      inspectionMode: hasRaw ? 'pasted_payload' : 'shop_manifest',
       noteTh: hasRaw
-        ? 'วิเคราะห์จากข้อมูล JSON/HTML ที่วางเข้ามาเรียบร้อยแล้ว กรุณาตรวจสอบรายการด้านล่างก่อนกดยืนยันดึงข้อมูล'
-        : 'ตรวจสอบร้าน Shopee Official (Shop ID: 232486539 / opwatchthailand) และเทียบกับฐานข้อมูลเว็บปัจจุบันเรียบร้อยแล้ว (หมายเหตุ: หน้าเว็บ Shopee บล็อกการดึงตรงแบบไม่ล็อกอินด้วยหน้า verify/traffic ระบบจึงเตรียมรายการสินค้าและโปรโมชั่นของร้าน 232486539 ให้ตรวจสอบก่อนดึง หรือสามารถวาง JSON จากหน้าเว็บ Shopee เพิ่มเติมได้)'
+        ? 'วิเคราะห์จากข้อมูลที่วางเข้ามาแล้ว กรุณาตรวจสอบรายการ ราคา สต็อก และรายละเอียดกับหน้า Shopee ก่อนยืนยันดึงข้อมูล'
+        : 'รายการด้านล่างมาจาก Manifest ที่บันทึกไว้สำหรับร้าน Shopee Official (Shop ID: 232486539 / opwatchthailand) และเทียบกับฐานข้อมูลเว็บแล้ว ไม่ใช่ข้อมูลสดจาก Shopee — โปรดยืนยันสถานะขาย ราคา สต็อก และสเปกกับหน้าร้านหรือไฟล์ Seller Center ก่อนนำเข้า'
     },
     summary: {
       totalItems: stagedItems.length,

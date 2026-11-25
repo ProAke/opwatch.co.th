@@ -8,8 +8,10 @@ const route = useRoute()
 
 const mobileOpen = ref(false)
 const mobileServicesOpen = ref(true)
+const mobilePressOpen = ref(false)
 const collectionsOpen = ref(false)
 const servicesOpen = ref(false)
+const pressOpen = ref(false)
 const searchOpen = ref(false)
 const searchQuery = ref('')
 const scrolled = ref(false)
@@ -25,7 +27,7 @@ if (import.meta.client) {
 
 const isHeroPage = computed(() => {
   const p = route.path.replace(/^\/en(\/|$)/, '/').replace(/\/+$/, '') || '/'
-  return p === '/' || p === '/about' || p === '/news' || p === '/contact' || p === '/products' || p.startsWith('/brands/')
+  return p === '/' || p === '/about' || p === '/news' || p === '/press' || p === '/contact' || p === '/products' || p.startsWith('/brands/')
 })
 
 const isServicesRoute = computed(() => {
@@ -33,8 +35,13 @@ const isServicesRoute = computed(() => {
   return p === '/services' || p === '/branches' || p === '/warranty' || p === '/track'
 })
 
+const isPressRoute = computed(() => {
+  const p = route.path.replace(/^\/en(\/|$)/, '/').replace(/\/+$/, '') || '/'
+  return p === '/press' || p === '/news' || p === '/reviews' || p === '/articles'
+})
+
 /* When scrolled or on inner white pages, header uses olympianus.com #ffffff header_color */
-const isLightBar = computed(() => scrolled.value || !isHeroPage.value || collectionsOpen.value || servicesOpen.value || searchOpen.value)
+const isLightBar = computed(() => scrolled.value || !isHeroPage.value || collectionsOpen.value || servicesOpen.value || pressOpen.value || searchOpen.value)
 
 function submitSearch() {
   const q = searchQuery.value.trim()
@@ -42,6 +49,7 @@ function submitSearch() {
   mobileOpen.value = false
   collectionsOpen.value = false
   servicesOpen.value = false
+  pressOpen.value = false
   router.push({ path: localePath('/products'), query: q ? { q } : {} })
 }
 
@@ -66,25 +74,71 @@ const serviceSubItems = computed(() => [
   }
 ])
 
-const opCollections = computed(() => [
-  { label: locale.value === 'th' ? 'Men Watch · นาฬิกาผู้ชาย' : 'Men Watch', query: { category: 'men-watches' } },
-  { label: locale.value === 'th' ? 'Ladies Watch · นาฬิกาผู้หญิง' : 'Ladies Watch', query: { category: 'women-watches' } },
-  { label: locale.value === 'th' ? 'Sport Watch · สปอร์ต & ไดเวอร์' : 'Sport Watch', query: { category: 'sport-watches' } },
-  { label: locale.value === 'th' ? 'Classic Watch · คลาสสิกเดรส' : 'Classic Watch', query: { category: 'classic-watches' } },
-  { label: locale.value === 'th' ? 'Couple Watch · นาฬิกาคู่รัก' : 'Couple Watch', query: { category: 'couple-watches' } },
-  { label: locale.value === 'th' ? 'Jewelry Watch · นาฬิกาจิวเวลรี่เพชร' : 'Jewelry Watch', query: { category: 'women-jewelry' } }
-])
-
 const brandHouses = computed(() => [
   { slug: 'olympianus', name: 'Olym Pianus', logo: '/images/logos/olym-pianus.jpg', tag: locale.value === 'th' ? 'เครื่องญี่ปุ่น · กระจกแซฟไฟร์' : 'Japanese Movement · Sapphire' },
   { slug: 'olympia-star', name: 'Olympia Star', logo: '/images/logos/olympia-star.jpg', tag: locale.value === 'th' ? 'เครื่องสวิส · กระจกแซฟไฟร์' : 'Swiss Movement · Sapphire' },
   { slug: 'ogival', name: 'Ogival', logo: '/images/logos/ogival.jpg', tag: locale.value === 'th' ? 'สวิสลักชัวรีตั้งแต่ปี 1903' : 'Swiss Luxury Since 1903' }
 ])
 
+const collectionTypes = computed(() => [
+  { slug: 'men-watches', label: locale.value === 'th' ? 'บุรุษ' : 'Men' },
+  { slug: 'women-watches', label: locale.value === 'th' ? 'สุภาพสตรี' : 'Ladies' },
+  { slug: 'sport-watches', label: locale.value === 'th' ? 'สปอร์ต & ไดเวอร์' : 'Sport & Diver' },
+  { slug: 'classic-watches', label: locale.value === 'th' ? 'คลาสสิก & เดรส' : 'Classic & Dress' },
+  { slug: 'couple-watches', label: locale.value === 'th' ? 'คู่รัก' : 'Couple' },
+  { slug: 'men-jewelry', label: locale.value === 'th' ? 'จิวเวลรี่บุรุษ' : 'Men’s Jewelry' },
+  { slug: 'women-jewelry', label: locale.value === 'th' ? 'จิวเวลรี่สุภาพสตรี' : 'Ladies’ Jewelry' }
+])
+
+const brandCollectionGroups = computed(() => brandHouses.value.map((brand) => ({
+  ...brand,
+  featured: brand.slug === 'olympianus',
+  allTo: {
+    path: localePath('/products'),
+    query: { brand: brand.slug, sort: 'shopee' }
+  },
+  shopeeTo: {
+    path: localePath('/products'),
+    query: { brand: brand.slug, source: 'shopee', sort: 'shopee' }
+  },
+  categories: collectionTypes.value.map((type) => ({
+    ...type,
+    to: {
+      path: localePath('/products'),
+      query: { brand: brand.slug, category: type.slug, sort: 'shopee' }
+    }
+  }))
+})))
+
+const pressSubItems = computed(() => [
+  {
+    key: 'news',
+    path: '/news',
+    query: undefined,
+    title: 'News',
+    desc: locale.value === 'th' ? 'ข่าวสารและประกาศล่าสุดจาก OPWatch' : 'Latest OPWatch news and announcements'
+  },
+  {
+    key: 'reviews',
+    path: '/reviews',
+    query: { type: 'reviews' },
+    title: locale.value === 'th' ? 'รีวิวสินค้า' : 'Product Reviews',
+    desc: locale.value === 'th' ? 'รีวิวเรือนเวลาจากการใช้งานและการทดสอบ' : 'Hands-on timepiece reviews and testing'
+  },
+  {
+    key: 'articles',
+    path: '/reviews',
+    query: { type: 'articles' },
+    title: locale.value === 'th' ? 'บทความ' : 'Articles',
+    desc: locale.value === 'th' ? 'คู่มือเลือกซื้อ เปรียบเทียบกลไก และการดูแลนาฬิกา' : 'Buying guides, movement comparisons, and watch care'
+  }
+])
+
 watch(() => route.fullPath, () => {
   mobileOpen.value = false
   collectionsOpen.value = false
   servicesOpen.value = false
+  pressOpen.value = false
   searchOpen.value = false
 })
 </script>
@@ -96,7 +150,7 @@ watch(() => route.fullPath, () => {
       'is-transparent': !isLightBar,
       'is-light': isLightBar
     }"
-    @mouseleave="collectionsOpen = false; servicesOpen = false"
+    @mouseleave="collectionsOpen = false; servicesOpen = false; pressOpen = false"
   >
     <div class="container op-hdr__row">
       <!-- Left: Authentic Olym Pianus Crown Shield + Script Logo -->
@@ -109,14 +163,14 @@ watch(() => route.fullPath, () => {
         <NuxtLink
           :to="localePath('/about')"
           class="op-hdr__link"
-          @mouseenter="collectionsOpen = false; servicesOpen = false"
+          @mouseenter="collectionsOpen = false; servicesOpen = false; pressOpen = false"
         >
           {{ locale === 'th' ? 'About' : 'About' }}
         </NuxtLink>
 
         <div
           class="op-hdr__dropdown-wrap"
-          @mouseenter="collectionsOpen = true; servicesOpen = false"
+          @mouseenter="collectionsOpen = true; servicesOpen = false; pressOpen = false"
         >
           <NuxtLink
             :to="localePath('/products')"
@@ -133,7 +187,7 @@ watch(() => route.fullPath, () => {
         <NuxtLink
           :to="localePath('/promotions')"
           class="op-hdr__link op-hdr__link--promo"
-          @mouseenter="collectionsOpen = false; servicesOpen = false"
+          @mouseenter="collectionsOpen = false; servicesOpen = false; pressOpen = false"
         >
           {{ locale === 'th' ? 'โปรโมชั่น' : 'Promotions' }}
         </NuxtLink>
@@ -141,7 +195,7 @@ watch(() => route.fullPath, () => {
         <!-- Services Sub-Menu: Services & Branches · Warranty & Repair · Track Order -->
         <div
           class="op-hdr__dropdown-wrap op-hdr__dropdown-wrap--services"
-          @mouseenter="servicesOpen = true; collectionsOpen = false"
+          @mouseenter="servicesOpen = true; collectionsOpen = false; pressOpen = false"
           @mouseleave="servicesOpen = false"
         >
           <NuxtLink
@@ -193,27 +247,58 @@ watch(() => route.fullPath, () => {
           </Transition>
         </div>
 
-        <NuxtLink
-          :to="localePath('/reviews')"
-          class="op-hdr__link"
-          :class="{ 'router-link-active': route.path.includes('/reviews') }"
-          @mouseenter="collectionsOpen = false; servicesOpen = false"
+        <!-- Press Sub-Menu: News first, then product reviews, then articles -->
+        <div
+          class="op-hdr__dropdown-wrap op-hdr__dropdown-wrap--press"
+          @mouseenter="pressOpen = true; collectionsOpen = false; servicesOpen = false"
+          @mouseleave="pressOpen = false"
         >
-          {{ locale === 'th' ? 'บทความ-รีวิวสินค้า' : 'Reviews' }}
-        </NuxtLink>
+          <NuxtLink
+            :to="localePath('/press')"
+            class="op-hdr__link op-hdr__link--has-sub"
+            :class="{ 'router-link-active': isPressRoute || pressOpen }"
+            :aria-expanded="pressOpen"
+          >
+            Press
+            <svg
+              width="10"
+              height="10"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              class="op-hdr__chev"
+              :class="{ 'is-open': pressOpen }"
+            >
+              <path d="m6 9 6 6 6-6" />
+            </svg>
+          </NuxtLink>
 
-        <NuxtLink
-          :to="localePath('/news')"
-          class="op-hdr__link"
-          @mouseenter="collectionsOpen = false; servicesOpen = false"
-        >
-          News
-        </NuxtLink>
+          <Transition name="fade-drop">
+            <div v-if="pressOpen" class="op-press-dropdown" role="menu" aria-label="Press">
+              <p class="op-svc-dropdown__eyebrow">{{ locale === 'th' ? 'OPWATCH PRESS · ข่าวสารและเรื่องราว' : 'OPWATCH PRESS · STORIES & JOURNAL' }}</p>
+              <NuxtLink
+                v-for="item in pressSubItems"
+                :key="item.key"
+                :to="item.query ? { path: localePath(item.path), query: item.query } : localePath(item.path)"
+                class="op-svc-dropdown__item"
+                role="menuitem"
+                @click="pressOpen = false"
+              >
+                <div class="op-svc-dropdown__text">
+                  <strong>{{ item.title }}</strong>
+                  <span>{{ item.desc }}</span>
+                </div>
+                <span class="op-svc-dropdown__arrow">→</span>
+              </NuxtLink>
+            </div>
+          </Transition>
+        </div>
 
         <NuxtLink
           :to="localePath('/contact')"
           class="op-hdr__link"
-          @mouseenter="collectionsOpen = false; servicesOpen = false"
+          @mouseenter="collectionsOpen = false; servicesOpen = false; pressOpen = false"
         >
           {{ locale === 'th' ? 'Contact' : 'Contact' }}
         </NuxtLink>
@@ -270,49 +355,46 @@ watch(() => route.fullPath, () => {
       </div>
     </div>
 
-    <!-- Collections Mega-Menu (olympianus.com Pure White #ffffff + #ebebf1 + Royal Sapphire #1d2088) -->
+    <!-- Collections Mega-Menu: brand first, then product types within each brand -->
     <Transition name="fade-drop">
       <div v-if="collectionsOpen" class="op-mega" @mouseenter="collectionsOpen = true" @mouseleave="collectionsOpen = false">
         <div class="container op-mega__grid">
-          <div>
-            <p class="op-mega__eyebrow">{{ locale === 'th' ? '6 คอลเลกชันต้นฉบับ OLYM PIANUS' : 'OLYM PIANUS COLLECTIONS' }}</p>
-            <div class="op-mega__links">
-              <NuxtLink
-                v-for="c in opCollections"
-                :key="c.label"
-                :to="{ path: localePath('/products'), query: c.query }"
-                class="op-mega__item"
+          <div class="op-mega__collection-groups">
+            <p class="op-mega__eyebrow">{{ locale === 'th' ? 'เลือกแบรนด์ก่อน แล้วเลือกประเภทสินค้า' : 'CHOOSE A BRAND, THEN EXPLORE ITS COLLECTIONS' }}</p>
+            <div class="op-mega__brand-grid">
+              <section
+                v-for="brand in brandCollectionGroups"
+                :key="brand.slug"
+                class="op-mega__brand-group"
+                :class="{ 'is-featured': brand.featured }"
               >
-                <span>{{ c.label }}</span>
-                <span class="op-mega__arrow">→</span>
-              </NuxtLink>
+                <NuxtLink :to="brand.allTo" class="op-mega__brand-head">
+                  <img :src="brand.logo" :alt="brand.name" class="op-mega__brand-logo" loading="lazy" />
+                  <span>
+                    <strong>{{ brand.name }}</strong>
+                    <small>{{ brand.tag }}</small>
+                  </span>
+                </NuxtLink>
+                <NuxtLink v-if="brand.featured" :to="brand.shopeeTo" class="op-mega__shopee-link">
+                  🛍 {{ locale === 'th' ? 'สินค้า Olym Pianus จาก Shopee Official' : 'Olym Pianus on Shopee Official' }} <span>→</span>
+                </NuxtLink>
+                <div class="op-mega__type-list">
+                  <NuxtLink v-for="type in brand.categories" :key="type.slug" :to="type.to">
+                    {{ type.label }} <span>→</span>
+                  </NuxtLink>
+                </div>
+              </section>
             </div>
           </div>
 
-          <div class="op-mega__brands">
-            <p class="op-mega__eyebrow">{{ locale === 'th' ? '3 แบรนด์สินค้าทางการ' : '3 OFFICIAL WATCH BRANDS' }}</p>
-            <NuxtLink
-              v-for="b in brandHouses"
-              :key="b.slug"
-              :to="localePath(`/brands/${b.slug}`)"
-              class="op-mega__brand"
-            >
-              <img :src="b.logo" :alt="b.name" class="op-mega__brand-logo" loading="lazy" />
-              <div class="op-mega__brand-meta">
-                <strong>{{ b.name }}</strong>
-                <span>{{ b.tag }}</span>
-              </div>
-            </NuxtLink>
-            <NuxtLink :to="localePath('/products')" class="op-mega__all">
-              {{ locale === 'th' ? 'ดูเรือนเวลาทั้งหมดในบูติก →' : 'View Full Boutique Catalogue →' }}
-            </NuxtLink>
-          </div>
-
-          <NuxtLink :to="{ path: localePath('/products'), query: { sort: 'featured' } }" class="op-mega__visual">
-            <img src="/images/op/hero-diver-dark.jpg" alt="Olym Pianus Collection" />
+          <NuxtLink
+            :to="{ path: localePath('/products'), query: { brand: 'olympianus', source: 'shopee', sort: 'shopee' } }"
+            class="op-mega__visual"
+          >
+            <img src="/images/op/hero-diver-dark.jpg" alt="Olym Pianus Shopee Official Collection" />
             <div class="op-mega__visual-cap">
-              <span>RECOMMEND</span>
-              <strong>899832AGS · Master Diver</strong>
+              <span>SHOPEE OFFICIAL · SHOP 232486539</span>
+              <strong>{{ locale === 'th' ? 'Olym Pianus แนะนำจาก Shopee →' : 'Olym Pianus Shopee Picks →' }}</strong>
             </div>
           </NuxtLink>
         </div>
@@ -343,17 +425,22 @@ watch(() => route.fullPath, () => {
           <div class="op-mobile__links">
             <NuxtLink :to="localePath('/about')">About</NuxtLink>
             <NuxtLink :to="localePath('/products')">Collections (All Watches)</NuxtLink>
-            <NuxtLink
-              v-for="c in opCollections"
-              :key="c.label"
-              :to="{ path: localePath('/products'), query: c.query }"
-              class="op-mobile__sub"
-            >
-              — {{ c.label }}
-            </NuxtLink>
-            <NuxtLink v-for="b in brandHouses" :key="b.slug" :to="localePath(`/brands/${b.slug}`)" class="op-mobile__sub">
-              ✦ {{ b.name }} ({{ b.tag }})
-            </NuxtLink>
+            <template v-for="brand in brandCollectionGroups" :key="brand.slug">
+              <NuxtLink :to="brand.allTo" class="op-mobile__sub">
+                ✦ {{ brand.name }}{{ brand.featured ? (locale === 'th' ? ' · Shopee Official ก่อน' : ' · Shopee Official first') : '' }}
+              </NuxtLink>
+              <NuxtLink v-if="brand.featured" :to="brand.shopeeTo" class="op-mobile__sub op-mobile__sub--deep">
+                🛍 {{ locale === 'th' ? 'สินค้า Olym Pianus จาก Shopee' : 'Olym Pianus Shopee Official' }}
+              </NuxtLink>
+              <NuxtLink
+                v-for="type in brand.categories"
+                :key="type.slug"
+                :to="type.to"
+                class="op-mobile__sub op-mobile__sub--deep"
+              >
+                — {{ type.label }}
+              </NuxtLink>
+            </template>
             <NuxtLink :to="localePath('/promotions')">{{ locale === 'th' ? 'โปรโมชั่น & คูปองส่วนลด' : 'Promotions & Vouchers' }}</NuxtLink>
 
             <!-- Mobile Services Collapsible Sub-Menu -->
@@ -387,10 +474,27 @@ watch(() => route.fullPath, () => {
               </NuxtLink>
             </template>
 
-            <NuxtLink :to="localePath('/reviews')">
-              {{ locale === 'th' ? 'บทความ - รีวิวสินค้า' : 'Articles & Watch Reviews' }}
-            </NuxtLink>
-            <NuxtLink :to="localePath('/news')">News</NuxtLink>
+            <button
+              type="button"
+              class="op-mobile__group-btn"
+              :aria-expanded="mobilePressOpen"
+              @click="mobilePressOpen = !mobilePressOpen"
+            >
+              <span>Press</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" :class="{ 'is-open': mobilePressOpen }">
+                <path d="m6 9 6 6 6-6" />
+              </svg>
+            </button>
+            <template v-if="mobilePressOpen">
+              <NuxtLink
+                v-for="item in pressSubItems"
+                :key="item.key"
+                :to="item.query ? { path: localePath(item.path), query: item.query } : localePath(item.path)"
+                class="op-mobile__sub"
+              >
+                — {{ item.title }}
+              </NuxtLink>
+            </template>
             <NuxtLink :to="localePath('/contact')">Contact</NuxtLink>
             <NuxtLink :to="localePath(isAuthenticated ? '/account' : '/account/login')">
               {{ isAuthenticated ? customer?.name : t('nav.login') }}
@@ -459,6 +563,29 @@ watch(() => route.fullPath, () => {
 }
 .op-hdr__chev.is-open {
   transform: rotate(180deg);
+}
+
+/* Press Sub-Menu Dropdown */
+.op-press-dropdown {
+  position: absolute;
+  top: calc(100% + 14px);
+  left: -24px;
+  width: 360px;
+  background: #ffffff;
+  border: 1px solid var(--line-strong);
+  border-top: 2.5px solid var(--sapphire);
+  padding: 18px 20px 14px;
+  box-shadow: var(--shadow-lg);
+  z-index: 60;
+  color: var(--ink);
+}
+.op-press-dropdown::before {
+  content: '';
+  position: absolute;
+  top: -18px;
+  left: 0;
+  right: 0;
+  height: 18px;
 }
 
 /* Services Sub-Menu Dropdown */
@@ -656,9 +783,92 @@ watch(() => route.fullPath, () => {
 }
 .op-mega__grid {
   display: grid;
-  grid-template-columns: 1.25fr 1fr 0.95fr;
-  gap: 44px;
+  grid-template-columns: minmax(0, 2.2fr) minmax(230px, 0.85fr);
+  gap: 34px;
   align-items: start;
+}
+.op-mega__brand-grid {
+  display: grid;
+  grid-template-columns: 1.18fr 1fr 1fr;
+  gap: 12px;
+}
+.op-mega__brand-group {
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid var(--sand);
+  background: #ffffff;
+}
+.op-mega__brand-group.is-featured {
+  border: 1.5px solid #ee4d2d;
+  background: linear-gradient(180deg, #fff8f5 0%, #ffffff 45%);
+  box-shadow: 0 8px 22px rgba(238, 77, 45, 0.08);
+}
+.op-mega__brand-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 46px;
+  color: var(--ink);
+}
+.op-mega__brand-head .op-mega__brand-logo {
+  width: 50px;
+  height: 40px;
+}
+.op-mega__brand-head > span {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.op-mega__brand-head strong {
+  font-family: var(--font-display);
+  font-size: 16px;
+  line-height: 1.2;
+}
+.op-mega__brand-head small {
+  color: var(--ink-muted);
+  font-size: 10px;
+  line-height: 1.35;
+}
+.op-mega__shopee-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  margin: 8px 0 5px;
+  padding: 7px 8px;
+  border-radius: 7px;
+  background: #fff0eb;
+  color: #d84325;
+  font-size: 10.5px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+.op-mega__type-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px 8px;
+  margin-top: 9px;
+}
+.op-mega__type-list a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  min-width: 0;
+  padding: 5px 1px;
+  border-bottom: 1px solid #f0eef7;
+  color: var(--ink-soft);
+  font-size: 10.5px;
+  line-height: 1.3;
+}
+.op-mega__type-list a:hover {
+  color: var(--sapphire);
+  border-color: var(--sapphire);
+}
+.op-mega__type-list a span {
+  color: var(--sapphire);
+  opacity: 0.6;
 }
 .op-mega__eyebrow {
   font-family: var(--font-roman);
@@ -862,6 +1072,11 @@ watch(() => route.fullPath, () => {
   font-size: 13.5px;
   color: var(--ink-soft);
   letter-spacing: 0.03em;
+}
+.op-mobile__links a.op-mobile__sub--deep {
+  padding-left: 30px;
+  font-size: 12.5px;
+  color: var(--ink-muted);
 }
 .pt-12 { padding-top: 12px; }
 

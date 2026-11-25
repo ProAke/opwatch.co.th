@@ -114,6 +114,7 @@ function addToBag(e: Event) {
       <!-- Luxury Serif Caption + Central-Grade Savings & Points -->
       <div class="op-card__body">
         <p v-if="product.sku" class="op-card__sku">{{ product.sku }}</p>
+        <span v-if="product.shopeeLinked" class="op-card__source">🛍 Shopee Official</span>
         <h3 class="op-card__title">{{ title }}</h3>
 
         <div class="op-card__price-row">
@@ -274,6 +275,19 @@ function addToBag(e: Event) {
   letter-spacing: 0.22em;
   color: var(--sapphire);
   text-transform: uppercase;
+}
+.op-card__source {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: #fff0eb;
+  color: #d84325;
+  font-family: var(--font-sans);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
 }
 .op-card__title {
   font-family: var(--font-display);
