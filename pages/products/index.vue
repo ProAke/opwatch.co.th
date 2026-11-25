@@ -8,6 +8,7 @@ const reqFetch = useRequestFetch()
 const PAGE_SIZE = 36
 const selectedBrand = ref((route.query.brand as string) || '')
 const selectedCategory = ref((route.query.category as string) || '')
+const selectedSource = ref((route.query.source as string) || '')
 const selectedSort = ref((route.query.sort as string) || 'featured')
 const searchInput = ref((route.query.q as string) || '')
 const currentPage = ref(Math.max(1, Number(route.query.page) || 1))
@@ -17,6 +18,7 @@ watch(
   (q) => {
     selectedBrand.value = (q.brand as string) || ''
     selectedCategory.value = (q.category as string) || ''
+    selectedSource.value = (q.source as string) || ''
     selectedSort.value = (q.sort as string) || 'featured'
     searchInput.value = (q.q as string) || ''
     currentPage.value = Math.max(1, Number(q.page) || 1)
@@ -27,6 +29,7 @@ const apiUrl = computed(() => {
   const params = new URLSearchParams()
   if (selectedBrand.value) params.set('brand', selectedBrand.value)
   if (selectedCategory.value) params.set('category', selectedCategory.value)
+  if (selectedSource.value) params.set('source', selectedSource.value)
   if (selectedSort.value) params.set('sort', selectedSort.value)
   if (searchInput.value.trim()) params.set('q', searchInput.value.trim())
   params.set('page', String(currentPage.value))
@@ -68,6 +71,7 @@ function applyFilter(patch: Record<string, string>) {
   const next: Record<string, string> = {
     ...(selectedBrand.value ? { brand: selectedBrand.value } : {}),
     ...(selectedCategory.value ? { category: selectedCategory.value } : {}),
+    ...(selectedSource.value ? { source: selectedSource.value } : {}),
     ...(selectedSort.value && selectedSort.value !== 'featured' ? { sort: selectedSort.value } : {}),
     ...(searchInput.value.trim() ? { q: searchInput.value.trim() } : {}),
     ...patch
@@ -87,6 +91,11 @@ function goToPage(p: number) {
   if (import.meta.client) {
     window.scrollTo({ top: 360, behavior: 'smooth' })
   }
+}
+
+function toggleShopeeSource() {
+  const enable = selectedSource.value !== 'shopee'
+  applyFilter({ source: enable ? 'shopee' : '', sort: enable ? 'shopee' : 'featured' })
 }
 
 function resetAll() {
@@ -160,6 +169,14 @@ function resetAll() {
           >
             {{ locale === 'en' && b.nameEn ? b.nameEn : b.nameTh || b.nameEn || b.slug }}
           </button>
+          <button
+            type="button"
+            class="op-cat__pill op-cat__pill--shopee"
+            :class="{ 'is-active': selectedSource === 'shopee' }"
+            @click="toggleShopeeSource"
+          >
+            🛍 {{ locale === 'th' ? 'Shopee Official' : 'Shopee Official' }}
+          </button>
         </div>
 
         <!-- Category + Sort + Search -->
@@ -181,6 +198,7 @@ function resetAll() {
             @change="applyFilter({ sort: ($event.target as HTMLSelectElement).value })"
           >
             <option value="featured">{{ t('products.sortFeatured') }}</option>
+            <option value="shopee">{{ locale === 'th' ? 'Shopee Official มาก่อน' : 'Shopee Official first' }}</option>
             <option value="newest">{{ t('products.sortNewest') }}</option>
             <option value="price_asc">{{ t('products.sortPriceLow') }}</option>
             <option value="price_desc">{{ t('products.sortPriceHigh') }}</option>
@@ -210,7 +228,7 @@ function resetAll() {
             }}
           </p>
           <button
-            v-if="selectedBrand || selectedCategory || searchInput"
+            v-if="selectedBrand || selectedCategory || selectedSource || searchInput"
             type="button"
             class="link-underline"
             @click="resetAll"
@@ -408,6 +426,14 @@ function resetAll() {
   background: var(--sapphire);
   border-color: var(--sapphire);
   color: #ffffff;
+}
+.op-cat__pill--shopee:not(.is-active) {
+  border-color: #f4b3a4;
+  color: #d84325;
+}
+.op-cat__pill--shopee.is-active {
+  background: #ee4d2d;
+  border-color: #ee4d2d;
 }
 .op-cat__controls {
   display: flex;

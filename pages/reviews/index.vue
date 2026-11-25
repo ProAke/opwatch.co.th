@@ -4,9 +4,15 @@ const localePath = useLocalePath()
 const route = useRoute()
 const { site } = useSite()
 
+const pressType = computed(() => String(route.query.type || 'reviews') === 'articles' ? 'articles' : 'reviews')
 const selectedBrand = ref(String(route.query.brand || ''))
 const selectedCategory = ref(String(route.query.category || ''))
 const searchQuery = ref('')
+
+watch(() => route.query, (q) => {
+  selectedBrand.value = String(q.brand || '')
+  selectedCategory.value = String(q.category || '')
+})
 
 const { data, refresh } = await useFetch('/api/reviews')
 
@@ -19,13 +25,17 @@ const stats = computed<any>(() => (data.value as any)?.stats || { totalArticles:
 const fmt = (v: number) =>
   formatPrice(Number(v || 0), site.value.currencySymbol, locale.value === 'en' ? 'en-US' : 'th-TH')
 
-const categoryTabs = computed(() => [
-  { key: '', label: locale.value === 'en' ? 'All Articles & Reviews' : 'ทั้งหมด' },
-  { key: 'hands-on-review', label: locale.value === 'en' ? 'Hands-On Reviews' : 'รีวิวใช้งานจริง' },
-  { key: 'comparison', label: locale.value === 'en' ? 'Comparisons' : 'เปรียบเทียบกลไก' },
-  { key: 'buyers-guide', label: locale.value === 'en' ? 'Buyer’s Guide' : 'คู่มือเลือกซื้อ' },
-  { key: 'horology-care', label: locale.value === 'en' ? 'Watch Care' : 'การดูแลรักษา' }
-])
+const categoryTabs = computed(() => pressType.value === 'reviews'
+  ? [
+      { key: '', label: locale.value === 'en' ? 'All Reviews' : 'รีวิวทั้งหมด' },
+      { key: 'hands-on-review', label: locale.value === 'en' ? 'Hands-On Reviews' : 'รีวิวใช้งานจริง' }
+    ]
+  : [
+      { key: '', label: locale.value === 'en' ? 'All Articles' : 'บทความทั้งหมด' },
+      { key: 'comparison', label: locale.value === 'en' ? 'Comparisons' : 'เปรียบเทียบกลไก' },
+      { key: 'buyers-guide', label: locale.value === 'en' ? 'Buyer’s Guide' : 'คู่มือเลือกซื้อ' },
+      { key: 'horology-care', label: locale.value === 'en' ? 'Watch Care' : 'การดูแลรักษา' }
+    ])
 
 const brandTabs = [
   { key: '', labelTh: 'ทุกแบรนด์', labelEn: 'All Brands' },
@@ -34,8 +44,12 @@ const brandTabs = [
   { key: 'ogival', labelTh: 'Ogival Swiss 1903', labelEn: 'Ogival 1903' }
 ]
 
+const articlesForPressType = computed(() => pressType.value === 'reviews'
+  ? allArticles.value.filter((a: any) => a.category === 'hands-on-review')
+  : allArticles.value.filter((a: any) => a.category !== 'hands-on-review'))
+
 const filteredArticles = computed(() => {
-  return allArticles.value.filter((a: any) => {
+  return articlesForPressType.value.filter((a: any) => {
     if (selectedBrand.value && a.brandSlug !== selectedBrand.value) return false
     if (selectedCategory.value && a.category !== selectedCategory.value) return false
     if (searchQuery.value.trim()) {
@@ -125,13 +139,12 @@ async function submitCustomerReview() {
 }
 
 useSeoMeta({
-  title: () =>
-    locale.value === 'en'
-      ? 'Articles & Watch Reviews — Olym Pianus, Olympia Star & Ogival | OPWatch Thailand'
-      : heroPage.value?.seoTitle || 'บทความ-รีวิวสินค้า นาฬิกาของแท้ Olym Pianus, Olympia Star, Ogival | OPWatch Thailand',
-  description: () =>
-    heroPage.value?.seoDescription ||
-    'รวมบทความความรู้นาฬิกา รีวิวเจาะลึกจากการสวมใส่จริง คู่มือเปรียบเทียบกลไก Automatic vs Quartz และรีวิวผู้ใช้งานจริง โดย บริษัท อินเตอร์ไทมส์ จำกัด'
+  title: () => locale.value === 'en'
+    ? `${pressType.value === 'reviews' ? 'Product Reviews' : 'Watch Articles'} — Olym Pianus, Olympia Star & Ogival | OPWatch Thailand`
+    : `${pressType.value === 'reviews' ? 'รีวิวสินค้า' : 'บทความนาฬิกา'} Olym Pianus, Olympia Star, Ogival | OPWatch Thailand`,
+  description: () => pressType.value === 'reviews'
+    ? 'รีวิวสินค้าและการใช้งานจริงของนาฬิกา Olym Pianus, Olympia Star และ Ogival โดย OPWatch Thailand'
+    : 'บทความ คู่มือเลือกซื้อ เปรียบเทียบกลไก และการดูแลรักษานาฬิกา โดย OPWatch Thailand'
 })
 </script>
 
@@ -144,35 +157,36 @@ useSeoMeta({
     >
       <div class="container rv-hero-inner">
         <div>
-          <span class="eyebrow">{{ heroPage?.heroEyebrow || 'HOROLOGICAL JOURNAL & VERIFIED REVIEWS' }}</span>
+          <span class="eyebrow">{{ pressType === 'reviews' ? 'OPWATCH PRESS · HANDS-ON REVIEWS' : 'OPWATCH PRESS · WATCH JOURNAL' }}</span>
           <h1 class="rv-hero-title">
-            {{
-              locale === 'en'
-                ? heroPage?.titleEn || 'Articles & Hands-On Watch Reviews'
-                : 'บทความ - รีวิวสินค้า'
-            }}
+            {{ locale === 'en'
+              ? (pressType === 'reviews' ? 'Product Reviews' : 'Watch Articles & Guides')
+              : (pressType === 'reviews' ? 'รีวิวสินค้า' : 'บทความนาฬิกา') }}
           </h1>
           <p class="rv-hero-sub">
-            {{
-              locale === 'en'
-                ? heroPage?.summaryEn || 'In-depth wrist reviews, Swiss & Japanese movement comparisons, sapphire durability tests, and verified owner testimonials.'
-                : heroPage?.summary || 'เจาะลึกทุกรายละเอียดจากการสวมใส่จริง เปรียบเทียบกลไก คู่มือดูแลเรือนเวลาโดยช่างศูนย์อินเตอร์ไทมส์ และเสียงตอบรับจริงจากผู้ครอบครองทั่วไทย'
-            }}
+            {{ locale === 'en'
+              ? (pressType === 'reviews'
+                ? 'Hands-on reviews and model-specific impressions across Olym Pianus, Olympia Star, and Ogival.'
+                : 'Buying guides, movement comparisons, and practical advice for caring for your timepiece.')
+              : (pressType === 'reviews'
+                ? 'รีวิวเรือนเวลาและประสบการณ์ใช้งานของ Olym Pianus, Olympia Star และ Ogival'
+                : 'คู่มือเลือกซื้อ เปรียบเทียบกลไก และคำแนะนำการดูแลรักษานาฬิกา') }}
           </p>
         </div>
 
         <div class="rv-hero-stats">
           <div class="rv-stat-box">
-            <span class="rv-stat-val">★ {{ stats.averageRating || '4.9' }}<small>/5</small></span>
-            <span class="rv-stat-lbl">{{ locale === 'en' ? 'Verified Satisfaction' : 'คะแนนความพึงพอใจเฉลี่ย' }}</span>
+            <span class="rv-stat-val" v-if="pressType === 'reviews'">★ {{ stats.averageRating || '4.9' }}<small>/5</small></span>
+            <span class="rv-stat-val" v-else>{{ articlesForPressType.length }}</span>
+            <span class="rv-stat-lbl">{{ pressType === 'reviews' ? (locale === 'en' ? 'Average Rating' : 'คะแนนเฉลี่ย') : (locale === 'en' ? 'Articles & Guides' : 'บทความ & คู่มือ') }}</span>
           </div>
           <div class="rv-stat-box">
-            <span class="rv-stat-val">{{ allArticles.length }}</span>
-            <span class="rv-stat-lbl">{{ locale === 'en' ? 'Editorial Reviews' : 'บทความเจาะลึก' }}</span>
+            <span class="rv-stat-val">{{ filteredArticles.length }}</span>
+            <span class="rv-stat-lbl">{{ pressType === 'reviews' ? (locale === 'en' ? 'Product Reviews' : 'รีวิวสินค้า') : (locale === 'en' ? 'Matching Articles' : 'บทความที่พบ') }}</span>
           </div>
           <div class="rv-stat-box">
-            <span class="rv-stat-val">{{ allCustomerReviews.length }}+</span>
-            <span class="rv-stat-lbl">{{ locale === 'en' ? 'Owner Testimonials' : 'รีวิวผู้ใช้งานจริง' }}</span>
+            <span class="rv-stat-val">{{ pressType === 'reviews' ? allCustomerReviews.length : categoryTabs.length - 1 }}</span>
+            <span class="rv-stat-lbl">{{ pressType === 'reviews' ? (locale === 'en' ? 'Customer Reviews' : 'รีวิวจากลูกค้า') : (locale === 'en' ? 'Guide Categories' : 'หมวดบทความ') }}</span>
           </div>
         </div>
       </div>
@@ -315,7 +329,7 @@ useSeoMeta({
       </div>
 
       <!-- Verified Customer Product Reviews Wall -->
-      <section class="rv-customer-sec">
+      <section v-if="pressType === 'reviews'" class="rv-customer-sec">
         <div class="rv-customer-head">
           <div>
             <span class="rv-sec-eyebrow">VERIFIED OWNER TESTIMONIALS</span>

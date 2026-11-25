@@ -85,8 +85,9 @@ async function inspectShopeeBeforeImport(defaultFilter: 'all' | 'missing' | 'nee
         ? pendingItems.map((it: any) => String(it.sku))
         : (res.items || []).map((it: any) => String(it.sku))
     selectedStagedPromos.value = (res.promotions || []).map((pr: any) => String(pr.slug))
+    const auditSource = res.shop?.inspectionMode === 'shop_manifest' ? 'Manifest ที่บันทึกไว้' : 'ข้อมูล Shopee ที่ส่งมา'
     toast.success(
-      `ตรวจสอบเทียบสำเร็จ: พบใน Shopee ${res.summary?.totalItems || 0} รุ่น · ยังไม่มีในเว็บ ${res.summary?.missingCount || 0} รุ่น · รอซิงก์โปร ${res.summary?.needsPromoSyncCount || 0} รุ่น`
+      `ตรวจสอบเทียบ${auditSource}สำเร็จ: พบ ${res.summary?.totalItems || 0} รุ่น · ยังไม่มีในเว็บ ${res.summary?.missingCount || 0} รุ่น · รอซิงก์โปร ${res.summary?.needsPromoSyncCount || 0} รุ่น`
     )
   } catch (e: any) {
     toast.error(e?.data?.statusMessage || 'ไม่สามารถตรวจสอบข้อมูล Shopee ได้')
@@ -251,7 +252,7 @@ useHead({ title: 'จัดการสินค้า & ดึงข้อม�
     </div>
 
     <!-- =========================================================================
-         LIVE SHOPEE `opwatchthailand` VS `www.opwatch.co.th` AUDIT & PULL BANNER
+         SHOPEE MANIFEST REVIEW & CATALOG PULL BANNER
          ========================================================================= -->
     <div
       v-if="canEditProduct && auditSummary"
@@ -271,7 +272,7 @@ useHead({ title: 'จัดการสินค้า & ดึงข้อม�
               style="font-size:11px;font-weight:700;letter-spacing:0.06em;padding:3px 10px;border-radius:999px"
               :style="auditSummary.isComplete ? 'background:#d1fae5;color:#065f46' : 'background:#ffedd5;color:#c2410c'"
             >
-              {{ auditSummary.isComplete ? '✅ มาครบทุกไอเท็มแล้ว (SYNC COMPLETE)' : '⚠️ ตรวจสอบพบไอเท็มจาก Shopee ยังมาไม่ครบในเว็บไซต์' }}
+              {{ auditSummary.isComplete ? '✅ รายการใน Manifest นี้ซิงก์ครบแล้ว (MANIFEST SYNC COMPLETE)' : '⚠️ ยังมีรายการใน Manifest ที่ไม่อยู่ในเว็บไซต์หรือรออัปเดต' }}
             </span>
             <a
               href="https://shopee.co.th/opwatchthailand"
@@ -285,14 +286,14 @@ useHead({ title: 'จัดการสินค้า & ดึงข้อม�
 
           <h2 style="margin:0 0 6px;font-size:17.5px;color:#23264d">
             <template v-if="!auditSummary.isComplete">
-              พบรายการใน Shopee Official <strong>{{ auditSummary.totalItems }}</strong> ไอเท็ม — ซิงก์ครบแล้ว <strong>{{ auditSummary.alreadySyncedCount }}</strong> รุ่น ·
+              พบรายการใน Manifest ของ Shopee Official <strong>{{ auditSummary.totalItems }}</strong> ไอเท็ม — ซิงก์ครบแล้ว <strong>{{ auditSummary.alreadySyncedCount }}</strong> รุ่น ·
               <span style="color:#e11d48">ยังไม่มีในเว็บ {{ auditSummary.missingCount }} รุ่น</span>
               <template v-if="auditSummary.needsPromoSyncCount > 0">
                 · <span style="color:#d97706">รอซิงก์ราคาโปร {{ auditSummary.needsPromoSyncCount }} รุ่น</span>
               </template>
             </template>
             <template v-else>
-              ข้อมูลสินค้าและโปรโมชั่นจาก Shopee Official ทั้ง <strong>{{ auditSummary.totalItems }} / {{ auditSummary.totalItems }}</strong> ไอเท็ม อยู่ใน <code>www.opwatch.co.th</code> ครบถ้วนแล้ว!
+              รายการสินค้าและโปรโมชั่นใน Manifest ที่บันทึกไว้ทั้ง <strong>{{ auditSummary.totalItems }} / {{ auditSummary.totalItems }}</strong> ไอเท็ม อยู่ใน <code>www.opwatch.co.th</code> ครบแล้ว (ไม่ใช่การยืนยันสต็อกหรือราคาสดจาก Shopee)
             </template>
           </h2>
 
@@ -322,7 +323,7 @@ useHead({ title: 'จัดการสินค้า & ดึงข้อม�
               :disabled="quickShopeeSaving"
               @click="initiateShopeePull('quick_missing')"
             >
-              ⚡ ดึงไอเท็มที่ยังขาดเข้าเว็บไซต์ทันที ({{ auditSummary.pendingTotalCount }} รายการ)
+              ⚡ เพิ่มรายการใน Manifest ที่ยังขาด ({{ auditSummary.pendingTotalCount }} รายการ)
             </button>
             <button
               v-else
@@ -331,7 +332,7 @@ useHead({ title: 'จัดการสินค้า & ดึงข้อม�
               :disabled="quickShopeeSaving"
               @click="initiateShopeePull('re_sync_all')"
             >
-              🔄 ซิงก์อัปเดตราคา &amp; โปรโมชั่นทั้งหมดซ้ำ ({{ auditSummary.totalItems }} รุ่น)
+              🔄 อัปเดตตาม Manifest ทั้งหมดซ้ำ ({{ auditSummary.totalItems }} รุ่น)
             </button>
 
             <button
@@ -340,7 +341,7 @@ useHead({ title: 'จัดการสินค้า & ดึงข้อม�
               :disabled="shopeeInspecting"
               @click="inspectShopeeBeforeImport(auditSummary.isComplete ? 'all' : 'missing')"
             >
-              🔍 ดูตารางเทียบครบทั้ง {{ auditSummary.totalItems }} รุ่น / เลือกรายการเอง
+              🔍 ดูรายการใน Manifest {{ auditSummary.totalItems }} รุ่น / เลือกเอง
             </button>
           </div>
 
@@ -394,11 +395,11 @@ useHead({ title: 'จัดการสินค้า & ดึงข้อม�
         style="background:#f5f3ff;border:1px solid #ddd6fe;border-radius:12px;padding:12px 16px;margin-bottom:12px;font-size:12.5px;color:#23264d"
       >
         <div style="font-weight:700;color:#5b21b6;margin-bottom:4px">
-          💡 วิธีดึงสินค้าใหม่ที่เพิ่งลงใน Shopee เพิ่มเติมในอนาคต (ข้ามระบบบล็อกบอท /verify/traffic ของ Shopee 100%)
+          💡 ใช้ข้อมูลจากหน้า Shopee ที่เปิดในเบราว์เซอร์ได้ แต่ไม่รับประกันว่าจะเก็บได้ครบทั้งร้าน
         </div>
         <ol style="margin:6px 0 10px 18px;padding:0;line-height:1.65">
           <li><strong>วิธีที่ 1 (ไฟล์ Seller Center):</strong> เข้า Shopee Seller Center → สินค้าของฉัน → ดาวน์โหลดไฟล์ <code>.csv</code> แล้วกดปุ่ม <strong>"นำเข้าไฟล์ .CSV"</strong> ด้านบน</li>
-          <li><strong>วิธีที่ 2 (ปุ่ม Bookmarklet 1 คลิก):</strong> ลากปุ่มสีส้มด้านล่างไปวางบนแถบบุ๊กมาร์กเบราว์เซอร์ → เปิดหน้า <code>shopee.co.th/opwatchthailand</code> ขณะล็อกอิน → กดปุ่มบุ๊กมาร์ก ระบบจะคัดลอกสินค้าทั้งหมดในหน้านั้นเป็น JSON ให้นำมาวางด้านล่างทันที!</li>
+          <li><strong>วิธีที่ 2 (Bookmarklet):</strong> เปิดหน้า <code>shopee.co.th/opwatchthailand</code> ขณะล็อกอิน โหลดหน้าที่ต้องการให้ครบก่อน แล้วค่อยกดบุ๊กมาร์กเพื่อคัดลอกรายการที่มองเห็นเป็น JSON — ตรวจทานจำนวนและข้อมูลก่อนนำเข้า</li>
         </ol>
         <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
           <a

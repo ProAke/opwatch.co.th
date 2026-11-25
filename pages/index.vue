@@ -7,13 +7,13 @@ const toast = useToast()
 
 const { data: homeData } = await useAsyncData('op-home-data', async () => {
   const [prodRes, brandRes, promoRes] = await Promise.all([
-    reqFetch<{ items?: any[]; products?: any[]; total?: number }>('/api/products?featured=true&limit=24'),
+    reqFetch<{ items?: any[]; products?: any[]; total?: number }>('/api/products?source=shopee&sort=shopee&limit=24'),
     reqFetch<{ items?: any[]; brands?: any[] }>('/api/brands'),
     reqFetch<any>('/api/promotions?home=1').catch(() => ({ items: [], promoProducts: [], coupons: [], promoHomeEnabled: true, promoHomeColumns: 4 }))
   ])
-  const allProducts = prodRes?.items || prodRes?.products || []
+  const shopeeProducts = prodRes?.items || prodRes?.products || []
   const allBrands = brandRes?.items || brandRes?.brands || []
-  return { allProducts, allBrands, promoRes }
+  return { shopeeProducts, allBrands, promoRes }
 })
 
 const promoBanners = computed(() => homeData.value?.promoRes?.items || [])
@@ -76,16 +76,11 @@ function prevHero() {
   activeHero.value = (activeHero.value - 1 + heroSlides.value.length) % heroSlides.value.length
 }
 
-/* 2. RECOMMEND — 6 Studio Cutout Timepieces (Olym Pianus + Olympia Star + Ogival) */
+/* 2. RECOMMEND — current Shopee Official feed, Olym Pianus prioritized */
 const recommendedProducts = computed(() => {
-  const list = homeData.value?.allProducts || []
-  const op = list.filter((p: any) => p.brandSlug === 'olympianus')
-  const opa = list.filter((p: any) => p.brandSlug === 'olympia-star')
-  const og = list.filter((p: any) => p.brandSlug === 'ogival')
-  if (op.length >= 2 && opa.length >= 2 && og.length >= 2) {
-    return [...op.slice(0, 2), ...opa.slice(0, 2), ...og.slice(0, 2)]
-  }
-  return list.slice(0, 6)
+  return (homeData.value?.shopeeProducts || [])
+    .filter((p: any) => p.shopeeLinked === true)
+    .slice(0, 6)
 })
 
 /* 3. Full-Bleed 1000x1500 Portrait Carousel (exact 8 OP studio vertical frames) */
@@ -443,18 +438,22 @@ onBeforeUnmount(() => {
           <p class="op-sec-sub">
             {{
               locale === 'th'
-                ? 'คัดสรรเรือนเวลายอดนิยมจาก Olym Pianus, Olympia Star และ Ogival พร้อมสั่งซื้อออนไลน์ทันที'
-                : 'Curated signature timepieces crafted with sapphire crystal and enduring horological artistry.'
+                ? 'คัดสรรสินค้าที่มีลิงก์รายการโดยตรงจากร้าน Shopee Official ของ OPWatch Thailand และจัด Olym Pianus ไว้ก่อน'
+                : 'OPWatch Thailand listings with direct Shopee Official product links, with Olym Pianus prioritized.'
             }}
           </p>
         </div>
 
-        <div class="op-recommend__grid">
+        <div v-if="recommendedProducts.length" class="op-recommend__grid">
           <ProductCard
             v-for="item in recommendedProducts"
             :key="item.id || item.slug"
             :product="item"
           />
+        </div>
+        <div v-else class="center" style="padding:28px;background:#ffffff;border:1px solid var(--sand)">
+          <p class="muted">{{ locale === 'th' ? 'ขณะนี้ไม่มีรายการ Shopee Official ที่มีลิงก์สินค้ารายชิ้นพร้อมแสดง' : 'No Shopee Official product links are currently available to display.' }}</p>
+          <a class="btn btn--ghost btn--sm" href="https://shopee.co.th/opwatchthailand" target="_blank" rel="noopener noreferrer">{{ locale === 'th' ? 'ไปที่ร้าน OPWatch Thailand บน Shopee →' : 'Visit OPWatch Thailand on Shopee →' }}</a>
         </div>
 
         <div class="center op-recommend__cta">

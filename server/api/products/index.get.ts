@@ -1,4 +1,5 @@
 import { ensureCatalogReady } from '../../utils/seed'
+import { hasShopeeOfficialProductLink } from '../../utils/shopee'
 
 const BRAND_ALIASES: Record<string, string> = {
   olympinus: 'olympianus',
@@ -79,6 +80,7 @@ export default defineEventHandler(async (event) => {
 
   const orderMap: Record<string, { orderBy: string; orderDir: 'asc' | 'desc' }> = {
     featured: { orderBy: 'sortOrder', orderDir: 'asc' },
+    shopee: { orderBy: 'sortOrder', orderDir: 'asc' },
     price_asc: { orderBy: 'price', orderDir: 'asc' },
     price_desc: { orderBy: 'price', orderDir: 'desc' },
     newest: { orderBy: 'createdAt', orderDir: 'desc' },
@@ -99,6 +101,11 @@ export default defineEventHandler(async (event) => {
 
   if (q.featured === 'true' || q.featured === '1') {
     items = items.filter((p) => p.featured === true || Number(p.featured) === 1)
+  }
+
+  const source = String(q.source || '').trim().toLowerCase()
+  if (source === 'shopee') {
+    items = items.filter((p) => hasShopeeOfficialProductLink(p))
   }
 
   const min = q.price_min !== undefined && q.price_min !== '' ? Number(q.price_min) : null
@@ -133,6 +140,7 @@ export default defineEventHandler(async (event) => {
     return {
       ...p,
       badges,
+      shopeeLinked: hasShopeeOfficialProductLink(p),
       brand: brandObj,
       brandName: brandObj?.name || (typeof p.brand === 'string' ? p.brand : 'Opwatch'),
       brandSlug: brandObj?.slug || null,
@@ -142,6 +150,30 @@ export default defineEventHandler(async (event) => {
       discountPercent: discountPercent(p)
     }
   })
+
+  if (sort === 'shopee') {
+    items = items
+      .map((p, index) => ({ p, index }))
+      .sort((a, b) => {
+        const sourceRank = Number(Boolean(b.p.shopeeLinked)) - Number(Boolean(a.p.shopeeLinked))
+        if (sourceRank) return sourceRank
+        const brandRank = Number(a.p.brandSlug !== 'olympianus') - Number(b.p.brandSlug !== 'olympianus')
+        if (brandRank) return brandRank
+        const orderRank = Number(a.p.sortOrder ?? 9999) - Number(b.p.sortOrder ?? 9999)
+        return orderRank || a.index - b.index
+      })
+      .map(({ p }) => p)
+  }
+
+  if (source === 'shopee') {
+    const seenItemIds = new Set<string>()
+    items = items.filter((p) => {
+      const itemId = String(p.shopeeItemId || '').trim()
+      if (!itemId || seenItemIds.has(itemId)) return false
+      seenItemIds.add(itemId)
+      return true
+    })
+  }
 
   const total = items.length
   const limit = q.limit !== undefined ? Math.max(1, Number(q.limit)) : items.length || 36
